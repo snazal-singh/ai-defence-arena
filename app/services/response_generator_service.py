@@ -317,12 +317,12 @@ class ResponseGeneratorService:
     def _create_general_chat_prompt(self, user_query: str, language: Optional[str] = None,
                                   chat_context: Optional[Dict[str, Any]] = None) -> str:
         """Create prompt for general chat with optional chat context."""
-        prompt = f"""You are a chat bot called icarKno created by Carnot Research Pvt Ltd, which answers queries related to a document.
-        The user is interacting with you but has not yet uploaded any documents or selected a knowledge container.
-        Please respond naturally to the following question in a conversational tone. If appropriate, gently remind the user 
-        they can upload files in the sidebar menu or select a knowledge container to ask document-specific questions.
+        prompt = f"""You are icarKno, a document assistant created by Carnot Research Pvt Ltd.
+The user has not uploaded any documents yet. Respond conversationally and briefly.
+If relevant, mention they can upload files or select a knowledge container to ask document-specific questions.
+Do not make up information or answer factual questions from general knowledge.
 
-        """
+"""
         
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
@@ -343,163 +343,155 @@ class ResponseGeneratorService:
                               chat_context: Optional[Dict[str, Any]] = None) -> str:
         """
         Generate a prompt for the LLM with intelligent response style detection.
-        
+
         Args:
             user_question (str): User's question
             context (str): Context for the question
             language (str, optional): Language for response
             chat_context (dict, optional): Chat context information
-            
+
         Returns:
             str: Generated prompt
         """
-        # Base prompt structure with intelligent style detection
-        prompt = f"""You are a document analysis assistant providing accurate, cited responses from document excerpts.
+        prompt = f"""You are a document assistant. Answer ONLY using the information in the CONTEXT below.
 
-RESPONSE FORMAT - Answer the question in a detailed and comprehensive manner.
-
-QUALITY REQUIREMENTS:
-• Provide comprehensive, well-explained answers
-• Use structured format (headings, bullets) for complex questions; be direct for specific queries
-• Write clear, coherent sentences with natural flow
-• For out-of-context questions: "That's out of context."
+STRICT RULES:
+- Use ONLY information explicitly stated in the CONTEXT. Do not add, infer, or assume anything beyond it.
+- Do NOT expand abbreviations, acronyms, or short forms unless the full form is explicitly written in the CONTEXT.
+- Do NOT use any prior knowledge, general knowledge, or external information.
+- If the answer is not in the CONTEXT, respond exactly: "The information is not available in the provided documents."
+- Do not guess, speculate, or fill gaps with plausible-sounding information.
+- Use bullet points or structure only if required to explain the answer; otherwise answer directly.
 """
-        
+
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            
             prompt += f"""
 Previous conversation history:
 {context_text}
 """
-        language_instruction = self._get_language_instruction(language)        
+        language_instruction = self._get_language_instruction(language)
         prompt += f"""
-# CONTEXT:
+CONTEXT:
 {context}
 
-# USER QUESTION: 
+QUESTION:
 {user_question}
 
 {language_instruction}
 
-Generate ONLY the response. Do not include any other text or explanations.
+Generate ONLY the answer. No preamble, no commentary.
 """
-        
+
         return prompt
     
     def _create_data_prompt(self, user_query: str, sql_context: str, language: Optional[str] = None,
                           chat_context: Optional[Dict[str, Any]] = None) -> str:
         """Create prompt for data queries with adaptive formatting."""
-        prompt = f"""You are a data analysis assistant. Answer the question in a detailed and comprehensive manner.
+        prompt = f"""You are a data assistant. Answer ONLY using the data provided in the DATA CONTEXT below.
 
-Instructions:
-- Explain data findings with significant numbers, trends, and patterns
-- Use structured format (headings, bullets) for complex analysis; be direct for specific queries
-- Include quantitative details and comparative analysis when relevant
-- Indicate if data is limited or incomplete
-- Do not mention SQL queries or tables
-
+STRICT RULES:
+- Use ONLY the values, figures, and facts present in the DATA CONTEXT. Do not infer or extrapolate beyond what is shown.
+- Do NOT expand abbreviations or short forms unless explicitly defined in the DATA CONTEXT.
+- Do NOT use external knowledge or assumptions to fill gaps.
+- If the data does not contain enough information to answer the question, say: "The data does not contain sufficient information to answer this."
+- Do not mention SQL, queries, or table names in your response.
+- Report numbers and values exactly as they appear in the data.
 """
 
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            context_type = chat_context.get("context_type", "unknown")
-            
             prompt += f"""
-        Previous conversation context (type: {context_type}):
-        {context_text}
-        
-        Note: Use this context to understand follow-up questions and provide more relevant data analysis.
-        """
-        
+Previous conversation context:
+{context_text}
+"""
+
         language_instruction = self._get_language_instruction(language)
-        
+
         prompt += f"""
-        SQL Context:
-        {sql_context}
+DATA CONTEXT:
+{sql_context}
 
-        User Question: {user_query}
+QUESTION: {user_query}
 
-        {language_instruction}
-        
-        Generate ONLY the response. Do not include any other text or explanations.
-        """
-        
+{language_instruction}
+
+Generate ONLY the answer. No preamble, no commentary.
+"""
+
         return prompt
     
     def _create_hybrid_prompt(self, user_query: str, document_context: str, sql_context: str,
                             language: Optional[str] = None, chat_context: Optional[Dict[str, Any]] = None) -> str:
         """Create prompt for hybrid queries with adaptive formatting."""
-        prompt = f"""You are a hybrid answer generator. Answer the question in a detailed and comprehensive manner.
-        
-Instructions:
-- Integrate insights from both documents and data naturally    
-- Cross-reference information and explain relationships/discrepancies
-- Use structured format (headings, bullets) for complex questions; be direct for specific queries
-- Do not mention SQL queries or tables
+        prompt = f"""You are a document and data assistant. Answer ONLY using the DOCUMENT CONTEXT and DATA CONTEXT provided below.
 
+STRICT RULES:
+- Use ONLY information explicitly present in the DOCUMENT CONTEXT or DATA CONTEXT. Do not add, infer, or assume anything beyond them.
+- Do NOT expand abbreviations, acronyms, or short forms unless the full form is explicitly written in the provided contexts.
+- Do NOT use any external or general knowledge.
+- If the answer is not present in either context, respond exactly: "The information is not available in the provided documents or data."
+- Do not mention SQL, queries, or table names in your response.
+- Report numbers and values exactly as they appear in the data.
 """
+
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            
-            prompt += f"""Previous conversation context:
+            prompt += f"""
+Previous conversation context:
 {context_text}
-        
 """
-        
+
         language_instruction = self._get_language_instruction(language)
-        
+
         prompt += f"""
-Document Context:
+DOCUMENT CONTEXT:
 {document_context}
 
-Data Context:
+DATA CONTEXT:
 {sql_context}
 
-User Question: {user_query}
+QUESTION: {user_query}
 
 {language_instruction}
 
-Generate ONLY the response. Do not include any other text or explanations.
+Generate ONLY the answer. No preamble, no commentary.
 """
-        
+
         return prompt
     
     def _create_document_aware_chat_prompt(self, user_query: str, documents_info: Dict[str, Any],
                                          language: Optional[str] = None,
                                          chat_context: Optional[Dict[str, Any]] = None) -> str:
         """Create prompt for document-aware chat with chat context."""
-        prompt = f"""You are a chat bot called icarKno created by Carnot Research Pvt Ltd.
-        The user has uploaded or selected documents, and you're having a general conversation.
-        
-        Here's information about their documents:
-        - Number of files: {documents_info.get('file_count', 'unknown')}
-        - File types: {', '.join(documents_info.get('file_types', ['unknown']))}
-        - Topics: {documents_info.get('topics', 'various')}
-        
-        """
-        
+        prompt = f"""You are icarKno, a document assistant created by Carnot Research Pvt Ltd.
+The user has documents loaded but is asking a general question. Respond conversationally and briefly.
+Do not make up information or answer factual questions from general knowledge — only reference the documents if directly relevant.
+
+Documents available:
+- Files: {documents_info.get('file_count', 'unknown')}
+- Types: {', '.join(documents_info.get('file_types', ['unknown']))}
+- Topics: {documents_info.get('topics', 'various')}
+
+"""
+
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            context_type = chat_context.get("context_type", "unknown")
-            
-            prompt += f"""Previous conversation context:{context_text}"""
-        
-        language_instruction = self._get_language_instruction(language)
-        
-        prompt += f"""The user is asking a general question that doesn't specifically require document context.
-        Please respond naturally and conversationally, but you can briefly reference their documents 
-        if relevant to the conversation. Don't force document references if they're not relevant.
-        
-        Question:
-        ```{user_query}```
+            prompt += f"""Previous conversation context:
+{context_text}
 
-        {language_instruction}
-        """
+"""
+
+        language_instruction = self._get_language_instruction(language)
+
+        prompt += f"""Question: {user_query}
+
+{language_instruction}
+"""
 
         return prompt
         
