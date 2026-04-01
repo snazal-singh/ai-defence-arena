@@ -1,0 +1,964 @@
+"""
+Document querying API routes.
+
+This module defines routes for document querying and LLM interactions.
+"""
+
+import logging
+from flask import Blueprint, request, jsonify, current_app, Response, stream_with_context
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+import json
+import time
+
+from app.services.auth_service import get_auth_service
+from app.services.query_service import get_query_service
+from app.services.chat_history_manager import get_chat_history_manager
+from app.services.tts_service import get_tts_service
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+# Create blueprint
+queries_bp = Blueprint('queries', __name__)
+
+# Get service instances
+auth_service = get_auth_service()
+query_service = get_query_service()
+chat_history_manager = get_chat_history_manager()
+
+# Get limiter extension
+def get_limiter():
+    return current_app.extensions.get("limiter")
+
+# ----------------------------------------
+# Trial User Query Routes
+# ----------------------------------------
+
+@queries_bp.route('/trialAsk', methods=['POST'])
+def trial_ask():
+    """
+    Handle document queries for users in free trial mode.
+    
+    This endpoint:
+    1. Validates the user's fingerprint and trial limits
+    2. Processes the user's question
+    3. Generates a response using vector search and LLMs
+    
+    Note: Trial users don't get persistent chat history to limit resource usage.
+    
+    Returns:
+        JSON response with answer
+    """
+    # Apply rate limiting
+    limiter = get_limiter()
+    if limiter:
+        limiter.limit("20 per minute")(trial_ask)
+    
+    # Process query
+    data = request.get_json()
+    response, status_code = query_service.process_trial_query(data)
+    return jsonify(response), status_code
+
+# ----------------------------------------
+# Authenticated User Query Routes
+# ----------------------------------------
+
+@queries_bp.route('/ask', methods=['POST'])
+def ask():
+    """
+    Handle document queries for authenticated users.
+    
+    This endpoint:
+    1. Authenticates the user using a JWT token
+    2. Checks if the user has exceeded query limits
+    3. Processes the user's question with chat history context
+    4. Generates a response using vector search and LLMs
+    5. Saves the conversation to chat history
+    
+    Returns:
+        JSON response with answer
+    """
+    data = request.get_json()
+    
+    # Authenticate user
+    try:
+        token = data.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_name = user_email
+        context = data.get('context', False)
+        chat_id = data.get('chatId', 'default')            
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError as e:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.exception(f'Authentication error: {e}')
+        return jsonify({'message': 'Authentication failed!'}), 401
+    
+    # We only need session_id when context is True
+    if context:
+        session_id = data.get('sessionId')
+        if not session_id:
+            return jsonify({'message': 'Session ID is required for context queries!'}), 400
+            
+        session_name = user_email + str(session_id.lower())
+
+    # Process query with chat_id
+    response, status_code = query_service.process_authenticated_query(data, user_email, session_name, chat_id)
+    return jsonify(response), status_code
+
+@queries_bp.route('/ask-stream', methods=['GET'])
+def ask_stream():
+    """
+    Handle document queries with streaming for creative mode.
+    
+    This endpoint streams progress updates and the final answer for better UX.
+    """
+    data = request.args
+    
+    # Authenticate user
+    try:
+        token = data.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = data.get('sessionId')
+        chat_id = data.get('chatId')  # Extract chat_id from query parameters
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+        
+        if not chat_id:
+            chat_id = 'default'
+            
+        session_name = user_email + str(session_id.lower())
+    except Exception as e:
+        logger.exception(f'Authentication error: {e}')
+        return jsonify({'message': 'Authentication failed!'}), 401
+    
+    # Check if it's creative mode
+    mode = data.get('mode', 'default')
+    if mode != 'creative':
+        # For non-creative mode, redirect to regular endpoint
+        response, status_code = query_service.process_authenticated_query(data, user_email, session_name, chat_id)
+        return jsonify(response), status_code
+    
+    # Generate streaming response with chat history context
+    def generate():
+        try:
+            # Extract query parameters
+            user_query = query_service._extract_query_parameters(data)
+            
+            # Apply guardrails
+            guardrail_response = query_service._guardrail.process_input(user_query["message"])
+            if guardrail_response.get("status") == "blocked":
+                yield f"data: {json.dumps({'type': 'error', 'content': guardrail_response})}\n\n"
+                return
+                
+            user_query["message"] = guardrail_response.get("sanitized_input", user_query["message"])
+            
+            # Get chat context if needed with chat_id
+            chat_context = query_service.query_agent._get_chat_context_if_needed(
+                user_query["message"], session_name, {}, chat_id
+            )
+            
+            # Get streaming response from creative service with chat context
+            from app.services.creative_reasoning_service import get_creative_reasoning_service
+            creative_service = get_creative_reasoning_service()
+            
+            for event in creative_service.process_creative_query_stream(
+                user_query["message"],
+                session_name,
+                user_query["input_language"],
+                user_query["output_language"],
+                user_query["filenames"],
+                user_query["hascsvxl"],
+                chat_context,
+                chat_id
+            ):
+                yield f"data: {json.dumps(event)}\n\n"
+                
+        except Exception as e:
+            logger.error(f"Streaming error: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
+    
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',  # Disable Nginx buffering
+            'Connection': 'keep-alive'
+        }
+    )
+
+@queries_bp.route('/ask-tts', methods=['POST'])
+def ask_tts():
+    """
+    Handle document queries for authenticated users with TTS audio streaming.
+    
+    This endpoint:
+    1. Authenticates the user using a JWT token
+    2. Checks if the user has exceeded query limits
+    3. Processes the user's question with chat history context
+    4. Generates a response using vector search and LLMs
+    5. Converts the response to speech using TTS service
+    6. Streams audio response directly
+    7. Saves the conversation to chat history
+    
+    Returns:
+        Audio stream response (audio/mpeg)
+    """
+    # Apply rate limiting for TTS endpoint (more restrictive due to audio processing)
+    limiter = get_limiter()
+    if limiter:
+        limiter.limit("10 per minute")(ask_tts)
+    
+    data = request.get_json()
+    
+    # Authenticate user
+    try:
+        token = data.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_name = user_email
+        context = data.get('context', False)
+        chat_id = data.get('chatId')
+        
+        if not chat_id:
+            chat_id = 'default'
+            
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError as e:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.exception(f'Authentication error: {e}')
+        return jsonify({'message': 'Authentication failed!'}), 401
+    
+    # We only need session_id when context is True
+    if context:
+        session_id = data.get('sessionId')
+        if not session_id:
+            return jsonify({'message': 'Session ID is required for context queries!'}), 400
+            
+        session_name = user_email + str(session_id.lower())
+
+    # Process query first to get text response
+    try:
+        query_response, status_code = query_service.process_authenticated_query(
+            data, user_email, session_name, chat_id
+        )
+        
+        if status_code != 200:
+            # Return JSON error for non-200 responses
+            return jsonify(query_response), status_code
+        
+        # Extract answer text from response
+        answer_text = ""
+        if isinstance(query_response, dict) and 'answer' in query_response:
+            answer_text = query_response['answer']
+        elif isinstance(query_response, str):
+            answer_text = query_response
+        else:
+            logger.error(f"Unexpected query response format: {type(query_response)}")
+            return jsonify({'message': 'Invalid response format'}), 500
+        
+        if not answer_text or not answer_text.strip():
+            return jsonify({'message': 'Empty response generated'}), 500
+            
+    except Exception as e:
+        logger.exception(f'Error processing query for TTS: {e}')
+        return jsonify({'message': 'Error generating response'}), 500
+
+    # Generate TTS audio stream
+    try:
+        tts_service = get_tts_service()
+        
+        # Get output language preference
+        output_language = data.get('outputLanguage', 'english')
+        if isinstance(output_language, int):
+            # Convert numeric language codes
+            language_map = {1: 'hindi', 23: 'english'}
+            output_language = language_map.get(output_language, 'english')
+        
+        logger.info(f"Generating TTS for user {user_email}, language: {output_language}")
+        
+        def generate_audio():
+            """Generator function for streaming audio response."""
+            try:
+                chunk_count = 0
+                for audio_chunk in tts_service.generate_audio_stream(answer_text, output_language):
+                    chunk_count += 1
+                    yield audio_chunk
+                
+                logger.info(f"TTS streaming completed, sent {chunk_count} audio chunks")
+                
+            except Exception as e:
+                logger.error(f"Error during TTS streaming: {e}")
+                # For streaming errors, we can't return JSON, log the error
+                # The client will need to handle incomplete audio streams
+        
+        # Return streaming audio response
+        return Response(
+            generate_audio(),
+            mimetype='audio/mpeg',
+            headers={
+                'Cache-Control': 'no-cache',
+                'X-Accel-Buffering': 'no',  # Disable Nginx buffering
+                'Connection': 'keep-alive',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            }
+        )
+        
+    except ValueError as e:
+        # TTS service configuration error
+        logger.error(f"TTS service configuration error: {e}")
+        return jsonify({'message': 'TTS service not available'}), 503
+    except Exception as e:
+        logger.exception(f'Error generating TTS audio: {e}')
+        return jsonify({'message': 'Error generating audio response'}), 500
+
+# Add this utility endpoint for testing TTS service
+@queries_bp.route('/tts-health', methods=['GET'])
+def tts_health():
+    """
+    Check TTS service health and configuration.
+    
+    Returns:
+        JSON response with TTS service status
+    """
+    try:
+        # Authenticate user for this endpoint too
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        
+        tts_service = get_tts_service()
+        
+        # Test connection
+        connection_ok = tts_service.test_connection()
+        
+        return jsonify({
+            'status': 'healthy' if connection_ok else 'degraded',
+            'tts_available': connection_ok,
+            'api_configured': bool(tts_service.api_key),
+            'default_voice': tts_service.default_voice_id,
+            'message': 'TTS service is ready' if connection_ok else 'TTS service has issues'
+        })
+        
+    except Exception as e:
+        logger.error(f'TTS health check error: {e}')
+        return jsonify({
+            'status': 'unhealthy',
+            'tts_available': False,
+            'message': 'TTS service error'
+        }), 500
+
+# ----------------------------------------
+# Notes Management Routes
+# ----------------------------------------
+
+@queries_bp.route('/notes/toggle', methods=['POST'])
+def toggle_note():
+    """
+    Toggle the note state of a specific message.
+    
+    JSON Body:
+        - token: JWT authentication token
+        - sessionId: Session identifier
+        - chatId: Chat identifier within the session
+        - messageId: Message identifier to toggle
+    
+    Returns:
+        JSON response with success status
+    """
+    try:
+        data = request.get_json()
+        
+        # Authenticate user
+        token = data.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = data.get('sessionId')
+        chat_id = data.get('chatId')
+        message_id = data.get('messageId')
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+        
+        if not chat_id:
+            chat_id = 'default'
+        
+        if not message_id:
+            return jsonify({'message': 'Message ID is required!'}), 400
+            
+        user_session = user_email + str(session_id.lower())
+        
+        # Toggle message note state
+        success = chat_history_manager.toggle_message_note(user_session, chat_id, message_id)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Note state toggled successfully',
+                'message_id': message_id
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Failed to toggle note state or message not found'
+            }), 404
+        
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.error(f'Error toggling note: {e}')
+        return jsonify({'message': 'Error toggling note'}), 500
+
+@queries_bp.route('/notes/list', methods=['GET'])
+def list_notes():
+    """
+    List all saved notes for a user session.
+    
+    Query Parameters:
+        - token: JWT authentication token
+        - sessionId: Session identifier
+    
+    Returns:
+        JSON response with list of saved notes
+    """
+    try:
+        # Authenticate user
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = request.args.get('sessionId')
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+            
+        user_session = user_email + str(session_id.lower())
+        
+        # Get saved notes
+        notes = chat_history_manager.get_saved_notes(user_session)
+        
+        return jsonify({
+            'success': True,
+            'notes': notes,
+            'total_notes': len(notes)
+        })
+        
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.error(f'Error listing notes: {e}')
+        return jsonify({'message': 'Error retrieving notes'}), 500
+
+# ----------------------------------------
+# Chat History Management Routes
+# ----------------------------------------
+
+@queries_bp.route('/chat-history', methods=['GET'])
+def get_chat_history():
+    """
+    Get chat history for a specific chat within a session.
+    
+    Query Parameters:
+        - token: JWT authentication token
+        - sessionId: Session identifier
+        - chatId: Chat identifier within the session
+        - limit: Number of recent messages to return (default: 20)
+        - since: Timestamp to get messages since (optional)
+    
+    Returns:
+        JSON response with chat history
+    """
+    try:
+        # Authenticate user
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = request.args.get('sessionId')
+        chat_id = request.args.get('chatId')
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+        
+        user_session = user_email + str(session_id.lower())
+        
+        if not chat_id:
+            # Check if there's a recent empty chat first
+            latest_empty_chat = chat_history_manager.get_latest_empty_chat(user_session)
+            
+            if latest_empty_chat:
+                # Return the existing empty chat
+                return jsonify({
+                    'success': True, 
+                    'messages': [], 
+                    'total_messages': 0,
+                    'chatId': latest_empty_chat["chat_id"],
+                    'chatName': latest_empty_chat["chat_name"],
+                    'session_exists': True
+                }), 200
+            else:
+                # Create a new chat only if no empty chat exists
+                chat_id = str(int(time.time() * 1000))  # Use current timestamp in milliseconds
+                
+                # Create a chat name entry for the new chat
+                chat_history_manager._create_chat_name_entry(user_session, chat_id)
+                
+                return jsonify({
+                    'success': True, 
+                    'messages': [], 
+                    'total_messages': 0,
+                    'chatId': chat_id,
+                    'chatName': chat_history_manager._generate_default_chat_name(),
+                    'session_exists': False
+                }), 201
+        
+        # Get limit parameter
+        limit = int(request.args.get('limit', 20))
+        limit = min(limit, 100)  # Cap at 100 messages
+        
+        # Get chat session
+        chat_session = chat_history_manager._get_session(user_session, chat_id)
+        
+        # Get chat name
+        chat_name = chat_history_manager._get_chat_name(user_session, chat_id)
+        if not chat_name:
+            chat_name = chat_history_manager._generate_default_chat_name()
+            # Create chat name entry if it doesn't exist
+            chat_history_manager._create_chat_name_entry(user_session, chat_id, chat_name)
+        
+        if not chat_session:
+            return jsonify({
+                'success': True,
+                'messages': [],
+                'total_messages': 0,
+                'session_exists': False,
+                'chatId': chat_id,
+                'chatName': chat_name
+            })
+        
+        # Get recent messages
+        recent_messages = chat_session.get_recent_messages(limit)
+        
+        # Convert to response format
+        messages = []
+        for msg in recent_messages:
+            msg_dict = msg.to_dict()
+            messages.append({
+                'message_id': msg_dict.get("message_id"),
+                'timestamp': msg_dict.get("timestamp"),
+                'role': msg_dict.get("role"),
+                'content': msg_dict.get("content"),
+                'query_type': msg_dict.get("query_type"),
+                'save_to_note': msg_dict.get("save_to_note", False)
+            })
+        
+        return jsonify({
+            'success': True,
+            'messages': messages,
+            'total_messages': chat_session.total_messages,
+            'session_exists': True,
+            'chatId': chat_id,
+            'chatName': chat_name
+        })
+        
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.error(f'Error getting chat history: {e}')
+        return jsonify({'message': 'Error retrieving chat history'}), 500
+
+@queries_bp.route('/chat-history/list', methods=['GET'])
+def list_chats():
+    """
+    List all chats for a user session.
+    
+    Query Parameters:
+        - token: JWT authentication token
+        - sessionId: Session identifier
+    
+    Returns:
+        JSON response with list of chats
+    """
+    try:
+        # Authenticate user
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = request.args.get('sessionId')
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+            
+        user_session = user_email + str(session_id.lower())
+        
+        # Get list of chats
+        chats = chat_history_manager.list_chats(user_session)
+        
+        return jsonify({
+            'success': True,
+            'chats': chats,
+            'total_chats': len(chats)
+        })
+        
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.error(f'Error listing chats: {e}')
+        return jsonify({'message': 'Error retrieving chat list'}), 500
+
+@queries_bp.route('/chat-history/rename', methods=['PUT'])
+def rename_chat():
+    """
+    Rename a specific chat.
+    
+    JSON Body:
+        - token: JWT authentication token
+        - sessionId: Session identifier
+        - chatId: Chat identifier within the session
+        - newChatName: New name for the chat
+    
+    Returns:
+        JSON response with success status
+    """
+    try:
+        data = request.get_json()
+        
+        # Authenticate user
+        token = data.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = data.get('sessionId')
+        chat_id = data.get('chatId')
+        new_chat_name = data.get('newChatName')
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+        
+        if not chat_id:
+            chat_id = 'default'
+        
+        if not new_chat_name or not new_chat_name.strip():
+            return jsonify({'message': 'New chat name is required!'}), 400
+            
+        user_session = user_email + str(session_id.lower())
+        
+        # Validate chat name length
+        new_chat_name = new_chat_name.strip()
+        if len(new_chat_name) > 100:  # Reasonable limit
+            return jsonify({'message': 'Chat name is too long (max 100 characters)!'}), 400
+        
+        # Update chat name
+        success = chat_history_manager.update_chat_name(user_session, chat_id, new_chat_name)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Chat renamed successfully',
+                'chat_id': chat_id,
+                'new_chat_name': new_chat_name
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Failed to rename chat'
+            }), 500
+        
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.error(f'Error renaming chat: {e}')
+        return jsonify({'message': 'Error renaming chat'}), 500
+        
+@queries_bp.route('/chat-history/stats', methods=['GET'])
+def get_chat_history_stats():
+    """
+    Get chat history statistics for a specific chat.
+    
+    Query Parameters:
+        - token: JWT authentication token
+        - sessionId: Session identifier
+        - chatId: Chat identifier within the session
+    
+    Returns:
+        JSON response with session statistics
+    """
+    try:
+        # Authenticate user
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = request.args.get('sessionId')
+        chat_id = request.args.get('chatId')
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+        
+        if not chat_id:
+            chat_id = 'default'
+            
+        user_session = user_email + str(session_id.lower())
+        
+        # Get session stats
+        stats = chat_history_manager.get_session_stats(user_session, chat_id)
+        
+        return jsonify({
+            'success': True,
+            'stats': stats
+        })
+        
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.error(f'Error getting chat history stats: {e}')
+        return jsonify({'message': 'Error retrieving statistics'}), 500
+
+@queries_bp.route('/chat-history/clear', methods=['DELETE'])
+def clear_chat_history():
+    """
+    Clear chat history for a specific chat.
+    
+    JSON Body:
+        - token: JWT authentication token
+        - sessionId: Session identifier
+        - chatId: Chat identifier within the session
+    
+    Returns:
+        JSON response with success status
+    """
+    try:
+        # Handle both JSON body and query parameters
+        if request.is_json and request.get_json():
+            data = request.get_json()
+        else:
+            # Fallback to query parameters if JSON is not provided
+            data = {
+                'token': request.args.get('token'),
+                'sessionId': request.args.get('sessionId'),
+                'chatId': request.args.get('chatId')
+            }
+        
+        # Authenticate user
+        token = data.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = data.get('sessionId')
+        chat_id = data.get('chatId')
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+        
+        if not chat_id:
+            chat_id = 'default'
+            
+        user_session = user_email + str(session_id.lower())
+        
+        # Clear chat history
+        success = chat_history_manager.delete_session(user_session, chat_id)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Chat history cleared successfully',
+                'chat_id': chat_id
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Failed to clear chat history'
+            }), 500
+        
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.error(f'Error clearing chat history: {e}')
+        return jsonify({'message': 'Error clearing chat history'}), 500
+
+@queries_bp.route('/chat-history/clear-all', methods=['DELETE'])
+def clear_all_chats():
+    """
+    Clear all chats for a user session.
+    
+    JSON Body OR Query Parameters:
+        - token: JWT authentication token
+        - sessionId: Session identifier
+    
+    Returns:
+        JSON response with success status
+    """
+    try:
+        # Handle both JSON body and query parameters
+        if request.is_json and request.get_json():
+            data = request.get_json()
+        else:
+            # Fallback to query parameters if JSON is not provided
+            data = {
+                'token': request.args.get('token'),
+                'sessionId': request.args.get('sessionId')
+            }
+        
+        # Authenticate user
+        token = data.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = data.get('sessionId')
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+            
+        user_session = user_email + str(session_id.lower())
+        
+        # Clear all chats
+        deleted_count = chat_history_manager.delete_all_chats_for_session(user_session)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Cleared {deleted_count} chats successfully',
+            'deleted_count': deleted_count
+        })
+        
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.error(f'Error clearing all chats: {e}')
+        return jsonify({'message': 'Error clearing all chats'}), 500
+
+# ----------------------------------------
+# Demo Query Routes
+# ----------------------------------------
+
+@queries_bp.route('/demo', methods=['POST'])
+def demo():
+    """
+    Handle demo queries for public transport information.
+    
+    This endpoint:
+    1. Processes the user's question about public transport
+    2. Generates a response using a pre-defined database
+    
+    Returns:
+        JSON response with answer
+    """
+    # Apply rate limiting
+    limiter = get_limiter()
+    if limiter:
+        limiter.limit("10 per minute")(demo)
+    
+    # Process query
+    data = request.get_json()
+    response, status_code = query_service.process_demo_query(data)
+    return jsonify(response), status_code
+
+# ----------------------------------------
+# Chat Context Analysis Routes
+# ----------------------------------------
+
+@queries_bp.route('/chat-context/analyze', methods=['POST'])
+def analyze_chat_context():
+    """
+    Analyze if a query needs chat context for a specific chat (for debugging/development).
+    
+    JSON Body:
+        - token: JWT authentication token
+        - sessionId: Session identifier
+        - chatId: Chat identifier within the session
+        - query: Query to analyze
+    
+    Returns:
+        JSON response with context analysis
+    """
+    try:
+        data = request.get_json()
+        
+        # Authenticate user
+        token = data.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        
+        user_email = auth_service.authenticate(token)
+        session_id = data.get('sessionId')
+        chat_id = data.get('chatId')
+        query = data.get('query', '')
+        
+        if not session_id:
+            return jsonify({'message': 'Session ID is required!'}), 400
+        
+        if not chat_id:
+            chat_id = 'default'
+        
+        if not query:
+            return jsonify({'message': 'Query is required!'}), 400
+            
+        user_session = user_email + str(session_id.lower())
+        
+        # Analyze context need
+        from app.services.chat_context_service import get_chat_context_service
+        context_service = get_chat_context_service()
+        
+        # Check if session has history
+        session_stats = chat_history_manager.get_session_stats(user_session, chat_id)
+        has_history = session_stats.get("exists", False) and session_stats.get("total_messages", 0) > 0
+        
+        # Analyze context need
+        analysis = context_service.detect_context_need(query, has_history)
+        
+        return jsonify({
+            'success': True,
+            'analysis': analysis,
+            'session_has_history': has_history,
+            'session_stats': session_stats,
+            'chat_id': chat_id
+        })
+        
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.error(f'Error analyzing chat context: {e}')
+        return jsonify({'message': 'Error analyzing context'}), 500
