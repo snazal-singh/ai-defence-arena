@@ -4,6 +4,7 @@ automatically selecting the appropriate approach based on user preferences.
 """
 
 import logging
+import re
 import time
 import os
 from typing import Dict, Any, List, Optional, Tuple
@@ -409,7 +410,20 @@ class QueryAgentService:
             response = self.response_service.generate_document_response(
                 user_query, context, language, chat_context
             )
-            
+
+            chunks = []
+            for m in re.finditer(
+                r'\[(\d+)\]\s+"(.*?)"\s*\n\(Source:\s*(.*?),\s*Page\s*(\S+)\)',
+                context,
+                re.DOTALL,
+            ):
+                chunks.append({
+                    "index": int(m.group(1)),
+                    "text": m.group(2).strip(),
+                    "source": m.group(3).strip(),
+                    "page": m.group(4).rstrip(")").strip(),
+                })
+            response["context"] = chunks
             return response
         except Exception as e:
             logger.error(f'Error processing document query: {e}')
