@@ -82,7 +82,7 @@ GPU_SERVER_MODEL: str = getattr(Config, "GPU_SERVER_MODEL", "gpt-oss:20b")
 GPU_SERVER_DEFAULT_MAX_TOKENS: int = getattr(Config, "GPU_SERVER_DEFAULT_MAX_TOKENS", 1000)
 GPU_SERVER_VERIFY_SSL: bool = getattr(Config, "GPU_SERVER_VERIFY_SSL", False)   # set True in prod with valid cert
 
-CHAT_ENDPOINT = f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/gptoss20b/api/chat"
+CHAT_ENDPOINT = f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
 
 
 # ---------------------------------------------------------------------------
