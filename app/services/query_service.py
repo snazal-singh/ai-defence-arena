@@ -167,7 +167,7 @@ class QueryService:
                     chat_id=chat_id
                 )
 
-                logger.info(f"RESPNSE: {response}")
+                logger.info(f"RESPNSE answer: {response['answer']}")
         except Exception as e:
             logger.exception(f'Error processing query with agent: {e}')
             return {'message': 'Error generating response'}, 500

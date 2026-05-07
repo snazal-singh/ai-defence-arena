@@ -44,3 +44,5 @@ build/
 dist/
 *.egg-info/
 
+opencode.json
+CLAUDE.md

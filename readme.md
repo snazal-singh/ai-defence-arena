@@ -86,9 +86,6 @@
    ES_CLOUD_ID=your-elasticsearch-cloud-id
    ES_API_KEY=your-elasticsearch-api-key
 
-   # OpenAI
-   OPENAI_API_KEY=your-openai-api-key
-
    # Database
    MONGO_URL=mongodb://localhost:27017/icarkno
    MYSQL_HOST=localhost
@@ -221,26 +218,7 @@ See [API Documentation](api-documentation.md) for detailed endpoint information.
 - `POST /ask` - Query documents
 - `POST /freeTrial` - Trial mode upload
 - `POST /trialAsk` - Trial mode queries
-- `POST /updatepayment` - Manage subscriptions
 - `GET /healthcheck` - Health status
-
-## 🧪 Testing
-
-### Unit Tests
-
-```bash
-python -m pytest tests/
-```
-
-### Integration Tests
-
-```bash
-# Test document processing
-python upload_to_elastic.py --file test.pdf --index test_index
-
-# Test querying
-python query_elastic.py --index test_index --query "test question"
-```
 
 ## 🚀 Deployment
 
@@ -284,7 +262,6 @@ This project is proprietary software. See [LICENSE](LICENSE) for details.
 ## 🆘 Support
 
 - **Documentation**: [API Docs](api-documentation.md)
-- **Issues**: [GitHub Issues](https://github.com/your-org/icarkno/issues)
 - **Email**: support@carnotresearch.com
 
 ## 🙏 Acknowledgments
