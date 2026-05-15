@@ -1,6 +1,6 @@
 import os
 import logging
-from config import Config
+from app.config import Config
 from langchain.schema import Document
 from langchain_elasticsearch.vectorstores import ElasticsearchStore
 from langchain_ollama import OllamaEmbeddings
@@ -25,7 +25,7 @@ def disable_proxies():
 
 import logging
 import unicodedata
-from config import Config
+from app.config import Config
 
 class ElasticDocumentManager:
     def __init__(self, index_name):

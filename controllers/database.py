@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta, timezone
 
 # Third-party imports
 from pymongo import MongoClient
-from config import Config
+from app.config import Config
 import jwt
 import hashlib
 import hmac
