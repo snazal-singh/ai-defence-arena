@@ -12,7 +12,7 @@ making it easy to switch between different providers and configurations.
 # from langchain_community.chat_models import ChatOllama
 # from langchain.base_language import BaseLanguageModel
 # from langchain.callbacks.base import BaseCallbackHandler
-# from config import Config
+# from app.config import Config
 
 # # Configure logging
 # logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResu
 from langchain.base_language import BaseLanguageModel
 from langchain.callbacks.base import BaseCallbackHandler
 
-from config import Config
+from app.config import Config
 
 # Configure logging
 logger = logging.getLogger(__name__)

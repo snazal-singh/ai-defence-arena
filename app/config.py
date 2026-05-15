@@ -19,9 +19,6 @@ class BaseConfig:
     DEBUG = False
     TESTING = False
     
-    # Elasticsearch
-    ES_BASE_URL = os.getenv("ES_BASE_URL")
-        
     # MongoDB
     MONGO_URL = os.getenv("MONGO_URL")
     
@@ -41,15 +38,8 @@ class BaseConfig:
     RATELIMIT_STORAGE_URL = "memory://"
 
 
-    # Neo4j Settings
-    NEO4J_URI = os.getenv("NEO4J_URI")
-    NEO4J_USERNAME = os.getenv("NEO4J_USERNAME")
-    NEO4J_PASSWORD =  os.getenv("NEO4J_PASSWORD")
+    # Ollama
     OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL")
-    OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "qwen2.5:7b")
-
-    # Mistral OCR
-    MISTRAL_OCR_API_KEY = os.getenv("MISTRAL_OCR_API_KEY")
 
     # Eleven Labs TTS
     ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
@@ -60,13 +50,20 @@ class BaseConfig:
     GPU_SERVER_MODEL = os.getenv("GPU_SERVER_MODEL")
     GPU_SERVER_DEFAULT_MAX_TOKENS = int(os.getenv("GPU_SERVER_DEFAULT_MAX_TOKENS"))
     GPU_SERVER_VERIFY_SSL = os.getenv("GPU_SERVER_VERIFY_SSL", "false").lower() == "true"
+
+    # Document Summary
+    BASE_USERS_DIR = os.getenv("BASE_USERS_DIR")
+    SUMMARY_FALLBACK_CHAR_LIMIT = int(os.getenv("SUMMARY_FALLBACK_CHAR_LIMIT", 5000))
+    SUMMARY_MIN_SENTENCES = int(os.getenv("SUMMARY_MIN_SENTENCES", 60))
+    SUMMARY_MAX_SENTENCES = int(os.getenv("SUMMARY_MAX_SENTENCES", 300))
+    SUMMARY_EXTRACTION_RATIO = float(os.getenv("SUMMARY_EXTRACTION_RATIO", 0.35))
     
     @staticmethod
     def validate():
         """Validate that all required settings are present."""
         required_vars = [
-            "ES_BASE_URL", "ELEVENLABS_API_KEY",
-            "MONGO_URL", "MYSQL_HOST", "MYSQL_USERNAME", "MYSQL_PASSWORD","NEO4J_URI","NEO4J_USERNAME","NEO4J_PASSWORD", "MISTRAL_OCR_API_KEY","OLLAMA_BASE_URL"
+            "ELEVENLABS_API_KEY",
+            "MONGO_URL", "MYSQL_HOST", "MYSQL_USERNAME", "MYSQL_PASSWORD", "OLLAMA_BASE_URL"
         ]
         
         missing = [var for var in required_vars if not os.getenv(var)]
@@ -141,4 +138,7 @@ class ConfigFactory:
             config_class.validate()
             
         return config_class
-    
+
+
+# Convenience alias — used by application modules via `from app.config import Config`
+Config = DevelopmentConfig

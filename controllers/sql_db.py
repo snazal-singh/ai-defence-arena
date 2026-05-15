@@ -23,7 +23,7 @@ from sqlalchemy import create_engine, exc, text
 from sqlalchemy.engine.base import Engine
 
 # Local imports
-from config import Config
+from app.config import Config
 from app.services.llm_service import get_standard_llm
 
 # Configure logging

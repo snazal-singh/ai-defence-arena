@@ -11,7 +11,7 @@ from langchain_ollama import OllamaEmbeddings
 from .client import ElasticClient
 from .index_manager import ElasticIndexManager
 from app.services.llm_service import get_fast_llm
-from config import Config
+from app.config import Config
 
 
 class ElasticRetriever:
