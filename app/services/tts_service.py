@@ -10,7 +10,7 @@ import requests
 import io
 import re
 from typing import Optional, Generator
-from config import Config
+from app.config import Config
 
 logger = logging.getLogger(__name__)
 

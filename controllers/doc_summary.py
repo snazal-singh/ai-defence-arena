@@ -21,6 +21,7 @@ from summarizer import Summarizer
 
 # Local imports
 from app.services.llm_service import get_fast_llm
+from app.config import Config
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -36,12 +37,12 @@ class DocumentSummaryService:
         self.llm = get_fast_llm()
         
         # Default character limit for fallback content
-        self.fallback_char_limit = 5000
+        self.fallback_char_limit = Config.SUMMARY_FALLBACK_CHAR_LIMIT
         # Dynamic summary configuration
-        self.min_sentences = 60  # Minimum sentences to extract
-        self.max_sentences = 300  # Maximum sentences to avoid huge summaries
-        self.extraction_ratio = 0.35  # Extract 35% of total sentences
-        self.BASE_USERS_DIR = "/bryck/icarkno/qdoc-backend/users"
+        self.min_sentences = Config.SUMMARY_MIN_SENTENCES
+        self.max_sentences = Config.SUMMARY_MAX_SENTENCES
+        self.extraction_ratio = Config.SUMMARY_EXTRACTION_RATIO
+        self.BASE_USERS_DIR = Config.BASE_USERS_DIR
     
     def create_abstractive_summary(self, user_session: str) -> None:
         """
@@ -57,7 +58,7 @@ class DocumentSummaryService:
         
         # Check if files directory exists
         if not os.path.exists(files_dir):
-            logger.info(f"No files directory found for session {user_session}")
+            logger.info(f"{files_dir} files directory not found for session {user_session}")
             return
         
         # Get all file directories
