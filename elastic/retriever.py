@@ -20,7 +20,7 @@ class ElasticRetriever:
         self.client = ElasticClient().client
         self.index_manager = ElasticIndexManager()
         self.embeddings = OllamaEmbeddings(
-            model="bge-m3:latest",
+            model=Config.OLLAMA_EMBEDDING_MODEL,
             base_url=Config.OLLAMA_BASE_URL,
         )
         # Stored during search() to pass chat_context through the body_func closure
@@ -98,7 +98,7 @@ class ElasticRetriever:
             )
 
             vector_store = ElasticsearchStore(
-                es_url="http://localhost:9200",
+                es_url=Config.ES_BASE_URL,
                 index_name=self.index_name,
                 embedding=self.embeddings,
             )
