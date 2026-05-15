@@ -13,7 +13,7 @@ import json
 from pymongo import MongoClient, IndexModel, ASCENDING, DESCENDING
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
-from config import Config
+from app.config import Config
 from app.services.llm_service import get_fast_llm
 from app.models.chat_models import ChatSession, ChatMessage, ChatContext, MessageRole, QueryType
 
