@@ -19,6 +19,9 @@ class BaseConfig:
     DEBUG = False
     TESTING = False
     
+    # Elasticsearch
+    ES_BASE_URL = os.getenv("ES_BASE_URL", "http://localhost:9200")
+
     # MongoDB
     MONGO_URL = os.getenv("MONGO_URL")
     
@@ -40,6 +43,8 @@ class BaseConfig:
 
     # Ollama
     OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL")
+    OLLAMA_EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING_MODEL", "bge-m3:latest")
+    OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "qwen2.5:7b")
 
     # Eleven Labs TTS
     ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
