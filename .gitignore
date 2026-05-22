@@ -1,0 +1,51 @@
+.env
+__pycache__/
+**/__pycache__/
+*/temp/*
+*/[a-zA-Z0-9_+]*[0-9]*/*
+.venv
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.out
+users/*
+
+# Python cache/compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Elasticsearch binaries
+elasticsearch-*/ 
+*.tar.gz
+
+# Local config (if not needed in repo)
+*.local
+*.env
+
+# Build / dist artifacts
+build/
+dist/
+*.egg-info/
+files/
+
+telegram_bot.py
+
+opencode.json
+CLAUDE.md
