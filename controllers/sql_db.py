@@ -23,7 +23,7 @@ from sqlalchemy import create_engine, exc, text
 from sqlalchemy.engine.base import Engine
 
 # Local imports
-from app.config import Config
+from app.core.config import settings
 from app.services.llm_service import get_standard_llm
 
 # Configure logging
@@ -36,10 +36,10 @@ logger = logging.getLogger(__name__)
 # Configuration
 MYSQL_CONFIG = {
     "drivername": "mysql+mysqlconnector",
-    "username": Config.MYSQL_USERNAME,
-    "password": Config.MYSQL_PASSWORD,
-    "host": Config.MYSQL_HOST,
-    "port": Config.MYSQL_PORT
+    "username": settings.MYSQL_USERNAME,
+    "password": settings.MYSQL_PASSWORD,
+    "host": settings.MYSQL_HOST,
+    "port": settings.MYSQL_PORT
 }
 
 def sanitize_identifier(name: str, max_length: int = 63) -> str:
