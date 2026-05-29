@@ -1,7 +1,7 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import NotFoundError
 import logging
-from app.config import Config
+from app.core.config import settings
 
 
 class ElasticClient:
