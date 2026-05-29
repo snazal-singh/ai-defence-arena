@@ -13,7 +13,7 @@ import json
 from pymongo import MongoClient, IndexModel, ASCENDING, DESCENDING
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
-from app.config import Config
+from app.core.config import settings
 from app.services.llm_service import get_fast_llm
 from app.models.chat_models import ChatSession, ChatMessage, ChatContext, MessageRole, QueryType
 
@@ -47,7 +47,7 @@ class ChatHistoryManager:
         try:
             # Create MongoDB client with timeout settings
             self.client = MongoClient(
-                Config.MONGO_URL,
+                settings.MONGO_URL,
                 serverSelectionTimeoutMS=5000,  # 5 second timeout
                 connectTimeoutMS=5000,
                 socketTimeoutMS=5000,
@@ -68,7 +68,7 @@ class ChatHistoryManager:
             logger.info("MongoDB connection established successfully")
             
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
-            logger.error(f"Failed to connect to MongoDB at {Config.MONGO_URL}: {e}")
+            logger.error(f"Failed to connect to MongoDB at {settings.MONGO_URL}: {e}")
             logger.warning("Chat history will be disabled")
             self.client = None
             self.db = None
@@ -127,7 +127,7 @@ class ChatHistoryManager:
         if self.client is not None and self.db is not None and self.collection is not None:
             return True
         # Attempt reconnect if previously failed
-        if Config.MONGO_URL:
+        if settings.MONGO_URL:
             logger.info("MongoDB unavailable — attempting reconnect...")
             self._initialize_mongodb()
         return (self.client is not None and 
