@@ -18,10 +18,11 @@ from controllers.sql_db import create_database_with_tables, store_table_info, ad
 from controllers.doc_summary import create_abstractive_summary
 from controllers.upload import store_vector
 from controllers.delete_session import delete_session
-from controllers.database import delete_session_from_db, rename_session, update_session_timestamp, create_session, get_user_sessions, add_files_to_session
+from controllers.database import delete_session_from_db, rename_session, update_session_timestamp, create_session, get_user_sessions, add_files_to_session, remove_file_from_session
 from utils.extractText import get_text_from_files
 from app.services.url_content_service import get_url_content_service
 from app.services.file_storage_service import get_file_storage_service
+from elastic.document_manager import ElasticDocumentManager
 
 logger = logging.getLogger(__name__)
 
@@ -419,6 +420,18 @@ class DocumentService:
             logger.error(f'Error updating container timestamp: {e}')
             return False
     
+    def delete_source(self, user_session: str, session_id: str, filename: str) -> bool:
+        """Remove a single source file from a container (Elasticsearch + DB + local storage)."""
+        try:
+            logger.info(f"Deleting source '{filename}' from session {user_session}")
+            ElasticDocumentManager(user_session).delete_documents_by_filename(filename)
+            remove_file_from_session(session_id, filename)
+            get_file_storage_service().delete_file(user_session, filename)
+            return True
+        except Exception as e:
+            logger.error(f"Error deleting source '{filename}' from session {user_session}: {e}")
+            return False
+
     def fetch_user_sessions(self, email: str) -> List[Dict[str, Any]]:
         """Fetch all sessions for a user"""
         try:

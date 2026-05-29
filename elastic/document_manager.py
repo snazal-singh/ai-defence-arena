@@ -79,3 +79,21 @@ class ElasticDocumentManager:
     def delete_documents(self, document_ids):
         # TODO: Implement delete logic
         pass
+
+    def delete_documents_by_filename(self, filename: str) -> int:
+        """Delete all documents in the index whose metadata.source matches the given filename.
+
+        Returns the number of documents deleted.
+        """
+        try:
+            response = self.client.delete_by_query(
+                index=self.index_name,
+                body={"query": {"term": {"metadata.source": filename}}},
+                refresh=True,
+            )
+            deleted = response.get("deleted", 0)
+            logging.info(f"Deleted {deleted} documents with filename '{filename}' from {self.index_name}")
+            return deleted
+        except Exception as e:
+            logging.error(f"Error deleting documents by filename '{filename}': {e}")
+            raise

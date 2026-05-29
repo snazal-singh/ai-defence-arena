@@ -382,6 +382,32 @@ def delete_session_from_db(email, session_id):
         logging.error(f"Error deleting session {session_id} for user {email}: {e}")
         return False
 
+def remove_file_from_session(session_id: str, filename: str) -> bool:
+    """
+    Remove a filename entry from the file_names array of a session.
+
+    Args:
+        session_id (str): Session identifier
+        filename (str): Filename to remove
+
+    Returns:
+        bool: True if the update was applied, False if no matching session was found
+    """
+    try:
+        result = db.sessions.update_one(
+            {"sessions.session_id": session_id},
+            {"$pull": {"sessions.$.file_names": filename}},
+        )
+        if result.matched_count == 0:
+            logging.warning(f"No session found with session_id: {session_id}")
+            return False
+        logging.info(f"Removed '{filename}' from session {session_id}")
+        return True
+    except Exception as e:
+        logging.error(f"Error removing file '{filename}' from session {session_id}: {e}")
+        return False
+
+
 def get_user_sessions(email):
     """
     Retrieve all sessions for a given user email.
