@@ -10,7 +10,7 @@ import requests
 import io
 import re
 from typing import Optional, Generator
-from app.config import Config
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class TTSService:
     
     def __init__(self):
         """Initialize TTS service."""
-        self.api_key = Config.ELEVENLABS_API_KEY
+        self.api_key = settings.ELEVENLABS_API_KEY
         self.base_url = "https://api.elevenlabs.io/v1"
         self.default_voice_id = "21m00Tcm4TlvDq8ikWAM"  # Rachel voice
         self.model_id = "eleven_monolingual_v1"
