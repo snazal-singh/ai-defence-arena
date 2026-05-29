@@ -1,149 +1,60 @@
 """
-Configuration module for the Flask application.
-
-This module provides configuration management through environment variables
-and different configuration classes for different environments.
+Compatibility shim — kept so existing service/controller imports continue to work.
+All configuration is now managed centrally in app/core/config.py (Pydantic Settings).
+Do not add new config here; use `from app.core.config import settings` instead.
 """
 
-import os
-from dotenv import load_dotenv
+from app.core.config import settings
 
-# Load environment variables from .env file
-load_dotenv()
 
-class BaseConfig:
-    """Base configuration with common settings."""
-    
-    # App settings
-    SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
-    DEBUG = False
-    TESTING = False
-    
+class Config:
+    SECRET_KEY = settings.SECRET_KEY
+    DEBUG = settings.DEBUG
+    TESTING = settings.TESTING
+
     # Elasticsearch
-    ES_BASE_URL = os.getenv("ES_BASE_URL", "http://localhost:9200")
+    ES_BASE_URL = settings.ES_BASE_URL
 
     # MongoDB
-    MONGO_URL = os.getenv("MONGO_URL")
-    
-    # MySQL
-    MYSQL_HOST = os.getenv("MYSQL_HOST")
-    MYSQL_USERNAME = os.getenv("MYSQL_USERNAME")
-    MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
-    MYSQL_PORT = int(os.getenv("MYSQL_PORT", 3306))
-    
-    # JWT Settings
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "secret")
-    JWT_ALGORITHM = "HS256"
-    
-    # Rate limiting
-    RATELIMIT_DEFAULT = "300 per day, 30 per hour"
-    RATELIMIT_STRATEGY = "fixed-window"
-    RATELIMIT_STORAGE_URL = "memory://"
+    MONGO_URL = settings.MONGO_URL
 
+    # MySQL
+    MYSQL_HOST = settings.MYSQL_HOST
+    MYSQL_USERNAME = settings.MYSQL_USERNAME
+    MYSQL_PASSWORD = settings.MYSQL_PASSWORD
+    MYSQL_PORT = settings.MYSQL_PORT
+
+    # JWT
+    JWT_SECRET_KEY = settings.JWT_SECRET_KEY
+    JWT_ALGORITHM = settings.JWT_ALGORITHM
 
     # Ollama
-    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL")
-    OLLAMA_EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING_MODEL", "bge-m3:latest")
-    OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "qwen2.5:7b")
+    OLLAMA_BASE_URL = settings.OLLAMA_BASE_URL
+    OLLAMA_LLM_MODEL = settings.OLLAMA_LLM_MODEL
+    OLLAMA_EMBEDDING_MODEL = settings.OLLAMA_EMBEDDING_MODEL
 
-    # Eleven Labs TTS
-    ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+    # TTS
+    ELEVENLABS_API_KEY = settings.ELEVENLABS_API_KEY
 
-    # GPU Server
-    GPU_SERVER_BASE_URL = os.getenv("GPU_SERVER_BASE_URL")
-    GPU_SERVER_API_KEY = os.getenv("GPU_SERVER_API_KEY")
-    GPU_SERVER_MODEL = os.getenv("GPU_SERVER_MODEL")
-    GPU_SERVER_DEFAULT_MAX_TOKENS = int(os.getenv("GPU_SERVER_DEFAULT_MAX_TOKENS"))
-    GPU_SERVER_VERIFY_SSL = os.getenv("GPU_SERVER_VERIFY_SSL", "false").lower() == "true"
+    # GPU server
+    GPU_SERVER_BASE_URL = settings.GPU_SERVER_BASE_URL
+    GPU_SERVER_API_KEY = settings.GPU_SERVER_API_KEY
+    GPU_SERVER_MODEL = settings.GPU_SERVER_MODEL
+    GPU_SERVER_DEFAULT_MAX_TOKENS = settings.GPU_SERVER_DEFAULT_MAX_TOKENS
+    GPU_SERVER_VERIFY_SSL = settings.GPU_SERVER_VERIFY_SSL
 
-    # Document Summary
-    BASE_USERS_DIR = os.getenv("BASE_USERS_DIR")
-    SUMMARY_FALLBACK_CHAR_LIMIT = int(os.getenv("SUMMARY_FALLBACK_CHAR_LIMIT", 5000))
-    SUMMARY_MIN_SENTENCES = int(os.getenv("SUMMARY_MIN_SENTENCES", 60))
-    SUMMARY_MAX_SENTENCES = int(os.getenv("SUMMARY_MAX_SENTENCES", 300))
-    SUMMARY_EXTRACTION_RATIO = float(os.getenv("SUMMARY_EXTRACTION_RATIO", 0.35))
-    
-    @staticmethod
-    def validate():
-        """Validate that all required settings are present."""
-        required_vars = [
-            "ELEVENLABS_API_KEY",
-            "MONGO_URL", "MYSQL_HOST", "MYSQL_USERNAME", "MYSQL_PASSWORD", "OLLAMA_BASE_URL"
-        ]
-        
-        missing = [var for var in required_vars if not os.getenv(var)]
-        if missing:
-            raise EnvironmentError(
-                f"Missing environment variables: {', '.join(missing)}"
-            )
+    # Gemma server
+    GEMMA_SERVER_BASE_URL = settings.GEMMA_SERVER_BASE_URL
+    GEMMA4_API_KEY = settings.GEMMA4_API_KEY
+    GEMMA4_MODEL = settings.GEMMA4_MODEL
 
-class DevelopmentConfig(BaseConfig):
-    """Development environment configuration."""
-    DEBUG = True
-    # Add development-specific settings
+    # Bhashini / translation
+    BHASHINI_INFERENCE_KEY = settings.BHASHINI_INFERENCE_KEY
+    TRANSLATION_SERVER_URL = settings.TRANSLATION_SERVER_URL
 
-class TestingConfig(BaseConfig):
-    """Testing environment configuration."""
-    TESTING = True
-    DEBUG = True
-    # Add testing-specific settings
-    
-    # Use in-memory databases for testing
-    MONGO_URL = "mongodb://localhost:27017/test"
-    
-    # Override validation for testing
-    @staticmethod
-    def validate():
-        """Skip validation in testing environment."""
-        pass
-
-class ProductionConfig(BaseConfig):
-    """Production environment configuration."""
-    # Add production-specific settings
-    
-    # Override with stronger secret key for production
-    SECRET_KEY = os.getenv("SECRET_KEY", "supersecret")
-    if not SECRET_KEY:
-        raise ValueError("SECRET_KEY environment variable is required in production")
-    
-    # More strict rate limiting for production
-    RATELIMIT_DEFAULT = "200 per day, 200 per hour"
-
-class ConfigFactory:
-    """Factory class to create configuration objects."""
-    
-    @staticmethod
-    def get_config(config_name):
-        """
-        Get the appropriate configuration class based on the name.
-        
-        Args:
-            config_name (str): Name of the configuration to use
-            
-        Returns:
-            Config class: The configuration class to use
-            
-        Raises:
-            ValueError: If an invalid configuration name is provided
-        """
-        configs = {
-            "development": DevelopmentConfig,
-            "testing": TestingConfig,
-            "production": ProductionConfig,
-            "default": DevelopmentConfig
-        }
-        
-        if config_name not in configs:
-            raise ValueError(f"Invalid configuration name: {config_name}")
-        
-        config_class = configs[config_name]
-        
-        # Validate configuration
-        if config_name != "testing":
-            config_class.validate()
-            
-        return config_class
-
-
-# Convenience alias — used by application modules via `from app.config import Config`
-Config = DevelopmentConfig
+    # File storage & summarisation
+    BASE_USERS_DIR = settings.BASE_USERS_DIR
+    SUMMARY_FALLBACK_CHAR_LIMIT = settings.SUMMARY_FALLBACK_CHAR_LIMIT
+    SUMMARY_MIN_SENTENCES = settings.SUMMARY_MIN_SENTENCES
+    SUMMARY_MAX_SENTENCES = settings.SUMMARY_MAX_SENTENCES
+    SUMMARY_EXTRACTION_RATIO = settings.SUMMARY_EXTRACTION_RATIO
