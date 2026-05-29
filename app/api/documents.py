@@ -181,6 +181,24 @@ def delete_container(
 
 
 # ---------------------------------------------------------------------------
+# Delete a source from a container
+# ---------------------------------------------------------------------------
+
+@router.delete("/containers/{session_id}/sources/{filename}")
+def delete_source(
+    session_id: str,
+    filename: str,
+    user_email: str = Depends(get_current_user),
+):
+    """Remove a single source file from a container."""
+    user_session = user_email + session_id.lower()
+    success = document_service.delete_source(user_session, session_id, filename)
+    if not success:
+        raise HTTPException(status_code=500, detail="Error deleting source.")
+    return {"message": "Source deleted successfully"}
+
+
+# ---------------------------------------------------------------------------
 # Download a file
 # ---------------------------------------------------------------------------
 

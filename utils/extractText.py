@@ -152,7 +152,6 @@ async def extract_txt(file_path: str, filename: str) -> List[Document]:
         page_content=cleaned_content,
         metadata={
             "source": filename,
-            "filename": filename,
             "page": 0,
             "content_type": "text",
         }
@@ -175,7 +174,6 @@ async def extract_pdf(file_path: str, filename: str) -> List[Document]:
             for page_num, page in enumerate(pdf):
                 base_meta = {
                     "source": filename,
-                    "filename": filename,
                     "page": page_num,
                 }
 
@@ -223,7 +221,6 @@ async def extract_pdf(file_path: str, filename: str) -> List[Document]:
                     page_content=cleaned,
                     metadata={
                         "source": filename,
-                        "filename": filename,
                         "page": item["page_number"],
                         "content_type": "text",
                     },
@@ -344,7 +341,6 @@ async def extract_docx(file_path: str, filename: str) -> List[Document]:
                     page_content=md,
                     metadata={
                         "source": filename,
-                        "filename": filename,
                         "page": page_num,
                         "content_type": "table",
                         "table_id": _make_table_id(filename, page_num, t_idx),
@@ -367,7 +363,6 @@ async def extract_docx(file_path: str, filename: str) -> List[Document]:
                     page_content=cleaned,
                     metadata={
                         "source": filename,
-                        "filename": filename,
                         "page": item["page_number"],
                         "content_type": "text",
                     },
@@ -386,7 +381,6 @@ async def extract_pptx(file_path: str, filename: str) -> List[Document]:
         for slide_num, slide in enumerate(prs.slides):
             base_meta = {
                 "source": filename,
-                "filename": filename,
                 "page": slide_num,
             }
 
@@ -444,7 +438,6 @@ async def extract_pptx(file_path: str, filename: str) -> List[Document]:
                     page_content=cleaned,
                     metadata={
                         "source": filename,
-                        "filename": filename,
                         "page": item["page_number"],
                         "content_type": "text",
                     },
@@ -503,7 +496,6 @@ async def extract_xlsx(file_path: str, filename: str) -> List[Document]:
                 page_content=cleaned_content,
                 metadata={
                     "source": filename,
-                    "filename": filename,
                     "page": sheet_data["page_number"],
                     "content_type": "text",
                 }
