@@ -13,14 +13,14 @@ from datetime import date, datetime, timedelta, timezone
 
 # Third-party imports
 from pymongo import MongoClient
-from app.config import Config
+from app.core.config import settings
 import jwt
 import hashlib
 import hmac
 from bson import ObjectId
 
 # MongoDB configuration
-mongo_url = Config.MONGO_URL
+mongo_url = settings.MONGO_URL
 jwt_secret = "secret"
 client = MongoClient(mongo_url)
 db = client.test

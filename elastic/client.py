@@ -16,7 +16,7 @@ class ElasticClient:
     def _initialize_client(self):
         # For local setup (default port: 9200)
         self.client = Elasticsearch(
-            hosts=[Config.ES_BASE_URL],
+            hosts=[settings.ES_BASE_URL],
             request_timeout=300
         )
         logging.info("Elasticsearch client initialized (local)")
