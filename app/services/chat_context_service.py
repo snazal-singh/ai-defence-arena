@@ -50,7 +50,13 @@ class ChatContextService:
             # References to previous responses
             r'\b(the\s+(answer|response|explanation|information)\s+you\s+(gave|provided|shared))\b',
             r'\b(in\s+your\s+(response|answer|explanation|previous))\b',
-            r'\b(according\s+to\s+(your|the)\s+(previous|earlier|last))\b'
+            r'\b(according\s+to\s+(your|the)\s+(previous|earlier|last))\b',
+            
+            # References to images, charts, figures, or visual components
+            r'\b(image|chart|photo|picture|figure|plot|graph|diagram|bar|bars)\b',
+            
+            # References to extreme/comparative values in a chart or table
+            r'\b(highest|lowest|tallest|shortest|maximum|minimum)\b'
         ]
         
         return [re.compile(pattern, re.IGNORECASE) for pattern in patterns]

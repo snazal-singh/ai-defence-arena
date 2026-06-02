@@ -16,11 +16,13 @@ def register_blueprints(app):
     from app.api.documents import documents_bp
     from app.api.queries import queries_bp
     from app.api.accounts import accounts_bp
+    from app.api.stt import stt_bp
     
     # Register blueprints with the app
     app.register_blueprint(auth_bp)
     app.register_blueprint(documents_bp)
     app.register_blueprint(queries_bp)
     app.register_blueprint(accounts_bp)
+    app.register_blueprint(stt_bp)
         
     return app

@@ -35,16 +35,26 @@ class ElasticRetriever:
         """Hybrid keyword + vector search with optional chat-context enhancement."""
         try:
             self._current_chat_context = chat_context
+            self._original_query = query
+            
+            # Enrich query once at start so both keyword (BM25) and vector retrievers benefit!
+            enriched = self.query_enrichment(query, chat_context)
+            self._enriched_query = enriched
+            search_query = enriched if enriched else query
+            
             retriever = self._create_ensemble_retriever()
             if not retriever:
                 return None
-            results = retriever.invoke(query, k=k)
+                
+            results = retriever.invoke(search_query, k=k)
             return results
         except Exception as e:
             logging.error(f"Search error: {e}")
             raise
         finally:
             self._current_chat_context = None
+            self._original_query = None
+            self._enriched_query = None
 
     def get_full_table_chunks(self, table_ids: List[str]) -> List[Document]:
         """Fetch every chunk that belongs to the given table_ids.
@@ -113,18 +123,20 @@ class ElasticRetriever:
             raise
 
     def _create_filtered_query(self, query: str) -> Dict[str, Any]:
-        """Build the keyword search body; uses chat context stored by search()."""
-        normalized = unicodedata.normalize("NFC", query)
-        enriched = self.query_enrichment(normalized, self._current_chat_context)
+        """Build the keyword search body; uses chat context and original query stored by search()."""
+        # query here is the search_query passed to invoke (which is already enriched)
+        original = getattr(self, "_original_query", query)
+        normalized_orig = unicodedata.normalize("NFC", original)
+        normalized_query = unicodedata.normalize("NFC", query)
 
         should_clauses = [
-            {"match": {"text": normalized}},
-            {"match": {"text.hindi": normalized}},
+            {"match": {"text": normalized_orig}},
+            {"match": {"text.hindi": normalized_orig}},
         ]
-        if enriched and enriched != normalized:
+        if normalized_query != normalized_orig:
             should_clauses += [
-                {"match": {"text": enriched}},
-                {"match": {"text.hindi": enriched}},
+                {"match": {"text": normalized_query}},
+                {"match": {"text.hindi": normalized_query}},
             ]
 
         return {
@@ -143,6 +155,10 @@ class ElasticRetriever:
                          chat_context: Optional[Dict[str, Any]] = None) -> Optional[str]:
         """Rewrite the query for better retrieval; single LLM call."""
         try:
+            # Strip image description from the query to keep query enrichment extremely fast
+            if "\n\nImage Description:" in query:
+                query = query.split("\n\nImage Description:")[0].strip()
+
             normalized = unicodedata.normalize("NFC", query)
 
             if chat_context and chat_context.get("context_used"):
@@ -158,7 +174,10 @@ class ElasticRetriever:
                     "3. Include synonyms and related terms\n"
                     "4. Fix spelling/grammar if needed\n"
                     "5. Maintain the original intent\n"
-                    "6. If query is in Hindi, preserve the Hindi script\n"
+                    "6. CROSS-LINGUAL: If the query is in Hindi, Tamil, or any other Indian language, translate it to English. "
+                    "Also, back-transliterate any technical terms written in native scripts back to Latin script "
+                    "(e.g., 'एसओपी' -> 'SOP Standard Operating Procedure', 'इवेल्युशन' -> 'evaluation'). "
+                    "Always append the English translation and back-transliterations to the query to maximize retrieval success against English documents.\n"
                     "7. Keep the enhanced query concise and focused\n\n"
                     "Provide only the enhanced query, no explanations:"
                 )
@@ -170,7 +189,10 @@ class ElasticRetriever:
                     "3. Add implicit context\n"
                     "4. Include synonyms\n"
                     "5. Maintain original intent\n"
-                    "6. If query is in Hindi, preserve the Hindi script\n\n"
+                    "6. CROSS-LINGUAL: If the query is in Hindi, Tamil, or any other Indian language, translate it to English. "
+                    "Also, back-transliterate any technical terms written in native scripts back to Latin script "
+                    "(e.g., 'एसओपी' -> 'SOP Standard Operating Procedure', 'इवेल्युशन' -> 'evaluation'). "
+                    "Always append the English translation and back-transliterations to the query to maximize retrieval success against English documents.\n\n"
                     f"Original: {normalized}\n\n"
                     "Do not include any other text or explanations."
                 )

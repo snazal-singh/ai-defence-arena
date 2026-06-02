@@ -325,9 +325,12 @@ class QueryAgentService:
             context_text = chat_context.get("context", "")
             enhanced_query = f"{user_query}\n\nContext from previous conversation:\n{context_text}"
 
-        # ADD THIS - Force DOCUMENT intent if image description present
-        if "\n\nImage Description:" in user_query:
-            logger.info("Image query detected - forcing DOCUMENT intent")
+        # Force DOCUMENT intent if image description is in the query or in the chat context
+        has_image_in_query = "\n\nImage Description:" in user_query
+        has_image_in_context = chat_context and chat_context.get("context_used") and "[Image Description:" in chat_context.get("context", "")
+        
+        if has_image_in_query or has_image_in_context:
+            logger.info("Image query or image in context detected - forcing DOCUMENT intent")
             return self._process_document_query(enhanced_query, user_session, language, chat_context)
 
         # Classify query intent

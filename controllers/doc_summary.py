@@ -247,8 +247,8 @@ class DocumentSummaryService:
             logger.info(f"Approx token count for prompt: {len(prompt.split()) * 1.33}")
             
             # Create summary with LLM
-            llm = get_fast_llm()
-            summary = llm.invoke(prompt)
+            # llm = get_fast_llm()
+            # summary = llm.invoke(prompt)
             # Create summary
             summary = self.llm.invoke(prompt)
             logger.info(f'Generated summary in {time.time() - start_time:.2f} seconds')

@@ -16,6 +16,7 @@ from app.services.auth_service import get_auth_service
 from app.services.query_service import get_query_service
 from app.services.chat_history_manager import get_chat_history_manager
 from app.services.tts_service import get_tts_service
+from app.services.indic_parler_tts_service import get_indic_parler_service
 from app.models.chat_models import MessageRole
 
 # Configure logging
@@ -78,7 +79,7 @@ def get_image_caption(image_path):
         response.raise_for_status()
         caption = response.json()["message"]["content"]
         logger.info(f" Gemma 4 Caption: {caption}")
-        print(f"[CAPTION] {caption}")
+        # print(f"[CAPTION] {caption}")
         return caption
 
     except Exception as e:
@@ -129,9 +130,9 @@ def trial_ask():
 
 @queries_bp.route('/ask', methods=['POST'])
 def ask():
-    print(f"DEBUG: request.files = {request.files}")
-    print(f"DEBUG: request.form = {request.form}")
-    print(f"DEBUG: request.content_type = {request.content_type}")
+    # print(f"DEBUG: request.files = {request.files}")
+    # print(f"DEBUG: request.form = {request.form}")
+    # print(f"DEBUG: request.content_type = {request.content_type}")
     """
     Handle document queries for authenticated users.
     
@@ -398,50 +399,50 @@ def ask_tts():
         logger.exception(f'Error processing query for TTS: {e}')
         return jsonify({'message': 'Error generating response'}), 500
 
-    # Generate TTS audio stream
+    # Generate TTS audio — uses Indic Parler TTS (local, offline, multilingual)
+    # Falls back to ElevenLabs if Parler fails.
     try:
-        tts_service = get_tts_service()
-        
-        # Get output language preference
+        # Normalize output language
         output_language = data.get('outputLanguage', 'english')
+        try:
+            output_language = int(output_language)
+        except (ValueError, TypeError):
+            pass
         if isinstance(output_language, int):
-            # Convert numeric language codes
             language_map = {1: 'hindi', 23: 'english'}
             output_language = language_map.get(output_language, 'english')
-        
-        logger.info(f"Generating TTS for user {user_email}, language: {output_language}")
-        
-        def generate_audio():
-            """Generator function for streaming audio response."""
-            try:
-                chunk_count = 0
-                for audio_chunk in tts_service.generate_audio_stream(answer_text, output_language):
-                    chunk_count += 1
-                    yield audio_chunk
-                
-                logger.info(f"TTS streaming completed, sent {chunk_count} audio chunks")
-                
-            except Exception as e:
-                logger.error(f"Error during TTS streaming: {e}")
-        
-        # Return streaming audio response
+        output_language = str(output_language).strip().lower()
+
+        logger.info(f"Generating TTS | user={user_email} | lang={output_language}")
+
+        audio_bytes = None
+        used_provider = None
+
+        # ── Primary: Indic Parler TTS (local model) ──────────────────────────
+        try:
+            parler_service = get_indic_parler_service()
+            audio_bytes = parler_service.generate_audio_bytes(answer_text, output_language)
+            used_provider = "indic-parler"
+            logger.info(f"Indic Parler TTS succeeded | bytes={len(audio_bytes)}")
+        except Exception as parler_err:
+            logger.error(f"Indic Parler TTS failed: {parler_err}")
+            return jsonify({'message': f'Local TTS generation failed: {parler_err}'}), 500
+
+        # ── Return Indic Parler audio buffer ──────────────────────────────────
         return Response(
-            generate_audio(),
+            audio_bytes,
             mimetype='audio/mpeg',
             headers={
+                'Content-Length': str(len(audio_bytes)),
                 'Cache-Control': 'no-cache',
-                'X-Accel-Buffering': 'no',  # Disable Nginx buffering
-                'Connection': 'keep-alive',
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Headers': 'Content-Type',
+                'X-TTS-Provider': used_provider,
             }
         )
-        
-    except ValueError as e:
-        logger.error(f"TTS service configuration error: {e}")
-        return jsonify({'message': 'TTS service not available'}), 503
+
     except Exception as e:
-        logger.exception(f'Error generating TTS audio: {e}')
+        logger.exception(f'Unexpected error in TTS generation: {e}')
         return jsonify({'message': 'Error generating audio response'}), 500
 
 @queries_bp.route('/tts-health', methods=['GET'])
@@ -477,6 +478,54 @@ def tts_health():
             'tts_available': False,
             'message': 'TTS service error'
         }), 500
+
+@queries_bp.route('/tts', methods=['GET', 'POST'])
+def tts_direct():
+    """
+    Direct text-to-speech endpoint using local Indic Parler TTS.
+    Converts given text to audio and returns the bytes.
+    """
+    try:
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            text = data.get('text')
+            output_language = data.get('outputLanguage', 'english')
+        else:
+            text = request.args.get('text')
+            output_language = request.args.get('outputLanguage', 'english')
+
+        if not text or not text.strip():
+            return jsonify({'message': 'Text is required'}), 400
+
+        # Normalize output language
+        try:
+            output_language = int(output_language)
+        except (ValueError, TypeError):
+            pass
+        if isinstance(output_language, int):
+            language_map = {1: 'hindi', 23: 'english'}
+            output_language = language_map.get(output_language, 'english')
+        output_language = str(output_language).strip().lower()
+
+        logger.info(f"Generating Direct TTS | lang={output_language} | text_len={len(text)}")
+
+        parler_service = get_indic_parler_service()
+        audio_bytes = parler_service.generate_audio_bytes(text, output_language)
+
+        return Response(
+            audio_bytes,
+            mimetype='audio/mpeg',
+            headers={
+                'Content-Length': str(len(audio_bytes)),
+                'Cache-Control': 'no-cache',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'X-TTS-Provider': 'indic-parler',
+            }
+        )
+    except Exception as e:
+        logger.exception(f'Direct TTS generation error: {e}')
+        return jsonify({'message': f'Direct TTS generation failed: {e}'}), 500
 
 # ----------------------------------------
 # Notes Management Routes

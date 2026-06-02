@@ -349,6 +349,20 @@ Do not make up information or answer factual questions from general knowledge.
             user_question = parts[0].strip()
             image_description = parts[1].strip()
 
+        # Check if an image is involved (either in the current query or in the chat history)
+        has_image = bool(image_description) or (
+            chat_context and 
+            chat_context.get("context_used") and 
+            "[Image Description:" in chat_context.get("context", "")
+        )
+
+        image_rule = ""
+        if has_image:
+            image_rule = """- If the user's query is asking about the provided image (either in the current query as '[Image Provided by User]' or in the previous conversation history as '[Image Description]'), you MUST first verify if the image content is related to the documents in the CONTEXT. An image is considered related if its topic, text, charts, or content directly matches, supports, or is discussed in the provided documents.
+    - If the image content is NOT related to the documents in the CONTEXT, and the user's query is asking about the image, respond exactly: "The provided image is not related to the documents." and do not answer any questions about the image itself.
+    - If the image is related to the documents, you must treat the image description as part of the CONTEXT and answer the question about the image using both the documents and the image description.
+    - If the user's query is about the documents (and not asking about the image itself), answer the question normally using the document context, even if an unrelated image is present in the context or history."""
+
         prompt = f"""You are a document assistant. Answer ONLY using the information in the CONTEXT below.
 
     STRICT RULES:
@@ -358,6 +372,7 @@ Do not make up information or answer factual questions from general knowledge.
     - If the answer is not in the CONTEXT, respond exactly: "The information is not available in the provided documents."
     - Do not guess, speculate, or fill gaps with plausible-sounding information.
     - Use bullet points or structure only if required to explain the answer; otherwise answer directly.
+    {image_rule}
     """
 
         if chat_context and chat_context.get("context_used"):
