@@ -1,32 +1,63 @@
-"""
-Blueprint API routes for Speech-to-Text (STT) processing.
-"""
-
 import os
 import uuid
 import logging
-from flask import Blueprint, request, jsonify
-from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+import jwt
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
+from fastapi.responses import JSONResponse
 
-from app.services.auth_service import get_auth_service
+from app.core.config import settings
 from app.services.stt_service import get_stt_service
 
+# Configure logging
 logger = logging.getLogger(__name__)
 
-# Create blueprint
-stt_bp = Blueprint('stt', __name__)
+router = APIRouter(tags=["STT"])
 
-# Get service instances
-auth_service = get_auth_service()
 stt_service = get_stt_service()
 
 ALLOWED_EXTENSIONS = {'wav', 'mp3', 'm4a', 'ogg', 'webm', 'aac', 'flac'}
 
-def allowed_file(filename):
+def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@stt_bp.route('/transcribe', methods=['POST'])
-def transcribe():
+
+def authenticate_user_stt(request: Request, token: Optional[str] = None) -> str:
+    """Robust authentication for STT, checking Form parameters, query params, or headers."""
+    if not token:
+        # Check header
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header[7:]
+            
+    if not token:
+        # Check query parameter
+        token = request.query_params.get("token")
+        
+    if not token:
+        logger.warning("Transcription request missing auth token.")
+        raise HTTPException(status_code=401, detail="Token is missing!")
+        
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        email: str | None = payload.get("email")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Could not validate credentials")
+        return email
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
+
+@router.post("/transcribe")
+async def transcribe(
+    request: Request,
+    audio: UploadFile = File(...),
+    language: str = Form("Hindi"),
+    strategy: str = Form("rnnt"),
+    token: Optional[str] = Form(None)
+):
     """
     Handle speech-to-text transcription of uploaded audio files.
     
@@ -34,71 +65,58 @@ def transcribe():
     - 'audio': The audio file to transcribe
     - 'language': The name of the language (e.g. 'Hindi', 'Tamil')
     - 'strategy': The decoding strategy 'rnnt' or 'ctc' (optional, defaults to 'rnnt')
-    - 'token': JWT authentication token (optional in form, can be in headers/args)
+    - 'token': JWT authentication token (optional in Form, can be in headers or query params)
     """
-    # 1. Authentication Check
-    token = request.form.get('token') or request.args.get('token') or request.headers.get('Authorization')
-    if token and token.startswith('Bearer '):
-        token = token[7:]
-        
-    if not token:
-        logger.warning("Transcription request missing auth token.")
-        return jsonify({'message': 'Token is missing!'}), 401
-        
-    try:
-        user_email = auth_service.authenticate(token)
-        logger.info(f"Authenticated user {user_email} for audio transcription")
-    except ExpiredSignatureError:
-        return jsonify({'message': 'Token has expired!'}), 401
-    except InvalidTokenError:
-        return jsonify({'message': 'Token is invalid!'}), 401
-    except Exception as e:
-        logger.exception(f"Authentication failed: {e}")
-        return jsonify({'message': 'Authentication failed!'}), 401
+    # 1. Authentication
+    user_email = authenticate_user_stt(request, token)
+    logger.info(f"Authenticated user {user_email} for audio transcription")
 
-    # 2. Input Payload Parsing
-    if 'audio' not in request.files:
-        return jsonify({'message': 'No audio file provided'}), 400
+    # 2. Validation
+    if not audio.filename:
+        raise HTTPException(status_code=400, detail="Empty audio file filename")
         
-    audio_file = request.files['audio']
-    language = request.form.get('language', 'Hindi')
-    strategy = request.form.get('strategy', 'rnnt')
-    
-    if audio_file.filename == '':
-        return jsonify({'message': 'Empty audio file filename'}), 400
-        
-    if not allowed_file(audio_file.filename):
-        return jsonify({'message': f'Unsupported file format. Allowed: {", ".join(ALLOWED_EXTENSIONS)}'}), 400
+    if not allowed_file(audio.filename):
+        raise HTTPException(
+            status_code=400, 
+            detail=f'Unsupported file format. Allowed: {", ".join(ALLOWED_EXTENSIONS)}'
+        )
 
     # 3. Process transcription safely
     temp_dir = os.path.abspath("temp_stt_uploads")
     os.makedirs(temp_dir, exist_ok=True)
     
-    ext = audio_file.filename.rsplit('.', 1)[1].lower()
+    ext = audio.filename.rsplit('.', 1)[1].lower()
     temp_filename = f"stt_{uuid.uuid4().hex}.{ext}"
     temp_path = os.path.join(temp_dir, temp_filename)
     
     try:
         # Save file to temp path
-        audio_file.save(temp_path)
+        content = await audio.read()
+        with open(temp_path, "wb") as f:
+            f.write(content)
         logger.debug(f"Saved temp audio file to: {temp_path}")
         
         # Call STT service
         transcript = stt_service.transcribe(temp_path, language, strategy)
         
         if transcript is None:
-            return jsonify({'message': 'Transcription failed. Please check the model configuration.'}), 500
+            raise HTTPException(
+                status_code=500, 
+                detail="Transcription failed. Please check the model configuration."
+            )
             
-        return jsonify({
+        return {
             'status': 'success',
             'transcription': transcript,
             'language': language,
             'strategy': strategy
-        }), 200
+        }
         
+    except HTTPException as he:
+        raise he
     except Exception as e:
         logger.exception(f"Exception during transcribe endpoint execution: {e}")
-        return jsonify({'message': 'Internal error during transcription processing'}), 500
+        raise HTTPException(status_code=500, detail="Internal error during transcription processing")
         
     finally:
         # Guarantee cleanup of uploaded file
