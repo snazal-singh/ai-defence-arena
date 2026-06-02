@@ -133,7 +133,7 @@ def authenticate_user_robust(request: Request, data: dict) -> str:
 
 @router.post("/trial-ask")
 @limiter.limit("20/minute")
-async def trial_ask(request: Request):
+async def trial_ask(request: Request, body: Optional[TrialQueryRequest] = None):
     """Process a document query for a fingerprint-identified trial user with optional image uploads."""
     if "multipart/form-data" in request.headers.get("content-type", ""):
         form = await request.form()
@@ -158,7 +158,10 @@ async def trial_ask(request: Request):
             
             os.remove(image_path)
     else:
-        data = await request.json()
+        if body:
+            data = body.model_dump()
+        else:
+            data = await request.json()
 
     response, status_code = query_service.process_trial_query(data)
     return JSONResponse(content=response, status_code=status_code)
@@ -169,7 +172,7 @@ async def trial_ask(request: Request):
 # ---------------------------------------------------------------------------
 
 @router.post("/ask")
-async def ask(request: Request):
+async def ask(request: Request, body: Optional[QueryRequest] = None):
     """Process a document query with full chat-history context for an authenticated user."""
     image_url = None
     caption = None
@@ -217,7 +220,10 @@ async def ask(request: Request):
                 data['message'] = f"Image Description: {caption}"
             logger.info(f"FINAL MESSAGE SENT TO RAG:\n{data['message']}")
     else:
-        data = await request.json()
+        if body:
+            data = body.model_dump()
+        else:
+            data = await request.json()
 
     # Authenticate user robustly
     user_email = authenticate_user_robust(request, data)
