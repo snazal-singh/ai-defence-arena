@@ -44,6 +44,7 @@ build/
 dist/
 *.egg-info/
 files/
+chat_images/
 
 telegram_bot.py
 

@@ -320,7 +320,6 @@ Respond with JSON only:
             image_cap = msg.get("image_caption")
             if image_cap:
                 content = f"{content} [Image Description: {image_cap}]"
-            
             context_parts.append(f"{role}: {content}")
             token_count += len(content.split()) * 1.3  # Rough token estimate
         
@@ -372,7 +371,6 @@ Respond with JSON only:
             image_cap = msg.get("image_caption")
             if image_cap:
                 content = f"{content} [Image Description: {image_cap}]"
-            
             context_parts.append(f"{role}: {content}")
             token_count += len(content.split()) * 1.3
         
@@ -406,7 +404,6 @@ Respond with JSON only:
             image_cap = msg.get("image_caption")
             if image_cap:
                 content = f"{content} [Image Description: {image_cap}]"
-            
             context_parts.append(f"{role}: {content}")
             token_count += len(content.split()) * 1.3
         

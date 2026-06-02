@@ -319,11 +319,11 @@ class QueryAgentService:
                           resources: Dict[str, bool], language: Optional[str],
                           filenames: Optional[List[str]], has_csvxl: bool,
                           chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    
         enhanced_query = user_query
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
             enhanced_query = f"{user_query}\n\nContext from previous conversation:\n{context_text}"
+<<<<<<< HEAD
 
         # Force DOCUMENT intent if image description is in the query or in the chat context
         has_image_in_query = "\n\nImage Description:" in user_query
@@ -340,8 +340,11 @@ class QueryAgentService:
             has_data_tables=has_csvxl
         )
         logger.info(f'Query intent classification: {intent.name} with confidence {confidence}')
+<<<<<<< HEAD
 
     
+=======
+>>>>>>> origin/main
         
         # For general chat queries when documents are available, use document-aware chat
         if intent == QueryIntent.GENERAL_CHAT and resources.get('has_documents', False):

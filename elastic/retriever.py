@@ -11,7 +11,7 @@ from langchain_ollama import OllamaEmbeddings
 from .client import ElasticClient
 from .index_manager import ElasticIndexManager
 from app.services.llm_service import get_fast_llm
-from app.config import Config
+from app.core.config import settings
 
 
 class ElasticRetriever:
@@ -20,8 +20,8 @@ class ElasticRetriever:
         self.client = ElasticClient().client
         self.index_manager = ElasticIndexManager()
         self.embeddings = OllamaEmbeddings(
-            model=Config.OLLAMA_EMBEDDING_MODEL,
-            base_url=Config.OLLAMA_BASE_URL,
+            model=settings.OLLAMA_EMBEDDING_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
         )
         # Stored during search() to pass chat_context through the body_func closure
         self._current_chat_context: Optional[Dict[str, Any]] = None
@@ -108,7 +108,7 @@ class ElasticRetriever:
             )
 
             vector_store = ElasticsearchStore(
-                es_url=Config.ES_BASE_URL,
+                es_url=settings.ES_BASE_URL,
                 index_name=self.index_name,
                 embedding=self.embeddings,
             )
@@ -158,7 +158,6 @@ class ElasticRetriever:
             # Strip image description from the query to keep query enrichment extremely fast
             if "\n\nImage Description:" in query:
                 query = query.split("\n\nImage Description:")[0].strip()
-
             normalized = unicodedata.normalize("NFC", query)
 
             if chat_context and chat_context.get("context_used"):

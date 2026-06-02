@@ -21,7 +21,7 @@ from summarizer import Summarizer
 
 # Local imports
 from app.services.llm_service import get_fast_llm
-from app.config import Config
+from app.core.config import settings
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -37,12 +37,12 @@ class DocumentSummaryService:
         self.llm = get_fast_llm()
         
         # Default character limit for fallback content
-        self.fallback_char_limit = Config.SUMMARY_FALLBACK_CHAR_LIMIT
+        self.fallback_char_limit = settings.SUMMARY_FALLBACK_CHAR_LIMIT
         # Dynamic summary configuration
-        self.min_sentences = Config.SUMMARY_MIN_SENTENCES
-        self.max_sentences = Config.SUMMARY_MAX_SENTENCES
-        self.extraction_ratio = Config.SUMMARY_EXTRACTION_RATIO
-        self.BASE_USERS_DIR = Config.BASE_USERS_DIR
+        self.min_sentences = settings.SUMMARY_MIN_SENTENCES
+        self.max_sentences = settings.SUMMARY_MAX_SENTENCES
+        self.extraction_ratio = settings.SUMMARY_EXTRACTION_RATIO
+        self.BASE_USERS_DIR = settings.BASE_USERS_DIR
     
     def create_abstractive_summary(self, user_session: str) -> None:
         """
@@ -247,8 +247,6 @@ class DocumentSummaryService:
             logger.info(f"Approx token count for prompt: {len(prompt.split()) * 1.33}")
             
             # Create summary with LLM
-            # llm = get_fast_llm()
-            # summary = llm.invoke(prompt)
             # Create summary
             summary = self.llm.invoke(prompt)
             logger.info(f'Generated summary in {time.time() - start_time:.2f} seconds')

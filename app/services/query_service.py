@@ -81,19 +81,18 @@ class QueryService:
             
             # Process with query agent
             response = self.query_agent.process_query(
-                    user_query["message"],
-                    session_name,
-                    user_query["input_language"],
-                    user_query["output_language"],
-                    user_query["filenames"],
-                    user_query["hascsvxl"],
-                    user_query["mode"],
-                    is_trial=False,
-                    chat_id=chat_id,
-                    image_url=data.get('image_url'),
-                    image_caption=data.get('image_caption')
-                )
-            
+                user_query["message"],
+                session_name,
+                user_query["input_language"],
+                user_query["output_language"],
+                user_query["filenames"],
+                user_query["hascsvxl"],
+                user_query["mode"],
+                is_trial=True,
+                chat_id=user_query.get("chat_id"),
+                image_url=data.get('image_url'),
+                image_caption=data.get('image_caption')
+            )
         except Exception as e:
             logger.exception(f'Error processing query with agent: {e}')
             return {'message': 'Error generating response'}, 500
