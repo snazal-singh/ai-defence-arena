@@ -161,7 +161,13 @@ async def trial_ask(request: Request, body: Optional[TrialQueryRequest] = None):
         if body:
             data = body.model_dump()
         else:
-            data = await request.json()
+            try:
+                data = await request.json()
+            except Exception:
+                data = {}
+
+    if not data or not data.get('fingerprint'):
+        raise HTTPException(status_code=400, detail="Missing required 'fingerprint' parameter in request body.")
 
     response, status_code = query_service.process_trial_query(data)
     return JSONResponse(content=response, status_code=status_code)
@@ -223,7 +229,10 @@ async def ask(request: Request, body: Optional[QueryRequest] = None):
         if body:
             data = body.model_dump()
         else:
-            data = await request.json()
+            try:
+                data = await request.json()
+            except Exception:
+                data = {}
 
     # Authenticate user robustly
     user_email = authenticate_user_robust(request, data)
