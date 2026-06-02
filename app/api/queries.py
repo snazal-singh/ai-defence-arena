@@ -7,7 +7,7 @@ import base64
 import requests
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form, File, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse, FileResponse, Response
 
 from app.api.deps import get_current_user, get_current_user_sse
@@ -133,15 +133,29 @@ def authenticate_user_robust(request: Request, data: dict) -> str:
 
 @router.post("/trial-ask")
 @limiter.limit("20/minute")
-async def trial_ask(request: Request, body: Optional[TrialQueryRequest] = None):
+async def trial_ask(
+    request: Request,
+    fingerprint: Optional[str] = Form(None),
+    message: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None),
+    filenames: Optional[str] = Form(None),
+    body: Optional[TrialQueryRequest] = None,
+):
     """Process a document query for a fingerprint-identified trial user with optional image uploads."""
     if "multipart/form-data" in request.headers.get("content-type", ""):
-        form = await request.form()
-        image = form.get("image")
         data = {
-            'fingerprint': form.get('fingerprint'),
-            'message': form.get('message', '')
+            'fingerprint': fingerprint or '',
+            'message': message or ''
         }
+        if filenames:
+            try:
+                import json
+                data['filenames'] = json.loads(filenames)
+            except Exception:
+                data['filenames'] = []
+        else:
+            data['filenames'] = []
+
         if image and image.filename:
             image_path = f"/tmp/{image.filename}"
             content = await image.read()
@@ -167,7 +181,7 @@ async def trial_ask(request: Request, body: Optional[TrialQueryRequest] = None):
                 data = {}
 
     if not data or not data.get('fingerprint'):
-        raise HTTPException(status_code=400, detail="Missing required 'fingerprint' parameter in request body.")
+        raise HTTPException(status_code=400, detail="Missing required 'fingerprint' parameter in request body or form.")
 
     response, status_code = query_service.process_trial_query(data)
     return JSONResponse(content=response, status_code=status_code)
