@@ -878,8 +878,4 @@ def get_chat_history_manager() -> ChatHistoryManager:
     global _chat_history_manager
     if _chat_history_manager is None:
         _chat_history_manager = ChatHistoryManager()
-<<<<<<< HEAD
     return _chat_history_manager
-=======
-    return _chat_history_manager
->>>>>>> origin/main
