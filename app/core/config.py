@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     MISTRAL_OCR_API_KEY: str
 
     # Eleven Labs TTS
-    ELEVENLABS_API_KEY: str
+    ELEVENLABS_API_KEY: str = ""
 
     # OpenAI / Gemini
     OPENAI_API_KEY: str = ""
