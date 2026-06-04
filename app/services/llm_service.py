@@ -193,6 +193,12 @@ class GPUServerChatModel(BaseChatModel):
         # {"message": {"role": "assistant", "content": "..."}, ...}
         try:
             content = data["message"]["content"]
+            eval_count = data.get("eval_count", 0)
+            eval_duration_ns = data.get("eval_duration", 0)
+
+            if eval_duration_ns > 0:
+                tok_sec = eval_count / (eval_duration_ns / 1e9)
+                logger.info(f"Generation Speed: {tok_sec:.2f} tok/sec")
         except (KeyError, TypeError) as exc:
             logger.error("Unexpected GPU server response format: %s", data)
             raise ValueError(f"Unexpected response format from GPU server: {data}") from exc

@@ -1,274 +1,386 @@
 """
-Text-to-Speech service module for backend TTS processing.
+Text-to-Speech service module using Vexyl-TTS (ai4bharat/indic-parler-tts).
 
-This module handles TTS operations using Eleven Labs API and provides
-fallback mechanisms for audio generation.
+Connects to the local Vexyl-TTS WebSocket server for true sentence-level
+streaming synthesis. Preserves the same public API as the former ElevenLabs
+implementation so callers in queries.py need no changes.
+
+Audio format: WAV (the route serves audio/wav).
 """
 
-import logging
-import requests
+import asyncio
+import base64
 import io
+import json
+import logging
 import re
-from typing import Optional, Generator
+import time
+import threading
+import uuid
+from typing import Generator, Optional
+
+import requests
+import websockets
+
 from app.config import Config
 
 logger = logging.getLogger(__name__)
 
-class TTSService:
-    """Service for handling text-to-speech operations."""
+# ─── Language mapping ──────────────────────────────────────────────────────────
+# Maps Sachet language identifiers (string names + numeric codes) → Vexyl BCP-47
+_LANG_MAP: dict[str, str] = {
+    # Text names
+    "english": "en-IN",
+    "hindi":   "hi-IN",
+    "malayalam": "ml-IN",
+    "tamil":   "ta-IN",
+    "telugu":  "te-IN",
+    "kannada": "kn-IN",
+    "bengali": "bn-IN",
+    "gujarati":"gu-IN",
+    "marathi": "mr-IN",
+    "punjabi": "pa-IN",
+    "odia":    "or-IN",
+    "assamese":"as-IN",
+    "urdu":    "ur-IN",
+    "nepali":  "ne-IN",
+    "sanskrit":"sa-IN",
+    "konkani": "kok-IN",
+    "bodo":    "brx-IN",
+    "dogri":   "doi-IN",
+    "maithili":"mai-IN",
+    "manipuri":"mni-IN",
+    "santali": "sat-IN",
+    "sindhi":  "sd-IN",
     
-    def __init__(self):
-        """Initialize TTS service."""
-        self.api_key = Config.ELEVENLABS_API_KEY
-        self.base_url = "https://api.elevenlabs.io/v1"
-        self.default_voice_id = "21m00Tcm4TlvDq8ikWAM"  # Rachel voice
-        self.model_id = "eleven_monolingual_v1"
-        
-    def _get_voice_id(self, language: str = "english") -> str:
-        """
-        Get appropriate voice ID based on language.
-        
-        Args:
-            language: Language preference
-            
-        Returns:
-            Voice ID string
-        """
-        # Voice mapping based on language
-        voice_map = {
-            "english": "21m00Tcm4TlvDq8ikWAM",  # Rachel
-            "hindi": "21m00Tcm4TlvDq8ikWAM",    # Same voice, multilingual
-            "1": "21m00Tcm4TlvDq8ikWAM",        # Hindi numeric code
-        }
-        
-        return voice_map.get(language.lower(), self.default_voice_id)
-    
-    def _clean_text_for_tts(self, text: str) -> str:
-        """
-        Clean text for better TTS pronunciation.
-        
-        Args:
-            text: Raw text to clean
-            
-        Returns:
-            Cleaned text suitable for TTS
-        """
-        if not text:
-            return ""
-                
-        # Remove complex citations with filenames and page numbers
-        text = re.sub(
-            r'\[([^,\]]+\.(?:pdf|doc|docx|txt|xls|xlsx|ppt|pptx|csv))[,\s]+Page\s*[\d\s,-]+\]',
-            '', text, flags=re.IGNORECASE
-        )
-        
-        # Remove citations [1], [2], etc.
-        text = re.sub(r'\[\d+\]', '', text)
-        
-        # Remove any remaining brackets with source-like content
-        text = re.sub(
-            r'\[[^\]]*\.(?:pdf|doc|docx|txt|xls|xlsx|ppt|pptx|csv)[^\]]*\]',
-            '', text, flags=re.IGNORECASE
-        )
-        
-        # Remove markdown formatting
-        text = re.sub(r'#{1,6}\s+', '', text)  # Headers
-        text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)  # Bold
-        text = re.sub(r'\*([^*]+)\*', r'\1', text)  # Italic
-        text = re.sub(r'```[\s\S]*?```', '', text)  # Code blocks
-        text = re.sub(r'`([^`]+)`', r'\1', text)  # Inline code
-        text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)  # Links
-        
-        # Remove special symbols
-        text = re.sub(r'[?>]+', '', text)
-        
-        # Replace abbreviations for better speech
-        text = re.sub(r'\bDr\.', 'Doctor', text)
-        text = re.sub(r'\bMr\.', 'Mister', text)
-        text = re.sub(r'\bMrs\.', 'Misses', text)
-        text = re.sub(r'\bMs\.', 'Miss', text)
-        
-        # Clean up whitespace
-        text = re.sub(r'\s+', ' ', text)
-        
-        return text.strip()
-    
-    def _split_text_for_streaming(self, text: str, max_length: int = 200) -> list:
-        """
-        Split text into chunks suitable for streaming TTS.
-        
-        Args:
-            text: Text to split
-            max_length: Maximum length per chunk
-            
-        Returns:
-            List of text chunks
-        """        
-        # Split by sentences first
-        sentences = re.split(r'[.!?]+', text)
-        chunks = []
-        current_chunk = ""
-        
-        for sentence in sentences:
-            sentence = sentence.strip()
-            if not sentence:
-                continue
-                
-            # If adding this sentence would exceed max length, save current chunk
-            if current_chunk and len(current_chunk) + len(sentence) > max_length:
-                chunks.append(current_chunk.strip())
-                current_chunk = sentence
-            else:
-                if current_chunk:
-                    current_chunk += ". " + sentence
+    # Numeric string keys matching frontend data.js
+    "23": "en-IN",  # English
+    "1":  "hi-IN",  # Hindi
+    "2":  "kok-IN", # Konkani
+    "3":  "kn-IN",  # Kannada
+    "4":  "doi-IN", # Dogri
+    "5":  "brx-IN", # Bodo
+    "6":  "ur-IN",  # Urdu
+    "7":  "ta-IN",  # Tamil
+    "8":  "ks-IN",  # Kashmiri
+    "9":  "as-IN",  # Assamese
+    "10": "bn-IN",  # Bengali
+    "11": "mr-IN",  # Marathi
+    "12": "sd-IN",  # Sindhi
+    "13": "mai-IN", # Maithili
+    "14": "pa-IN",  # Punjabi
+    "15": "ml-IN",  # Malayalam
+    "16": "mni-IN", # Manipuri
+    "17": "te-IN",  # Telugu
+    "18": "sa-IN",  # Sanskrit
+    "19": "ne-IN",  # Nepali
+    "20": "sat-IN", # Santali
+    "21": "gu-IN",  # Gujarati
+    "22": "or-IN",  # Odia
+}
+
+
+def _to_vexyl_lang(language) -> str:
+    """Normalize a Sachet language specifier to a Vexyl BCP-47 code."""
+    if isinstance(language, int):
+        language = str(language)
+    key = str(language).lower().strip()
+    return _LANG_MAP.get(key, "en-IN")
+
+
+def _ws_to_http(ws_url: str) -> str:
+    """Convert ws:// → http:// for REST health/batch calls."""
+    return ws_url.replace("ws://", "http://", 1).replace("wss://", "https://", 1)
+
+
+# ─── Clean text ───────────────────────────────────────────────────────────────
+
+def _clean_text_for_tts(text: str) -> str:
+    """Strip markdown, citations, and symbols that degrade TTS quality."""
+    if not text:
+        return ""
+
+    # Remove citations with filenames [report.pdf, Page 3-5]
+    text = re.sub(
+        r'\[([^,\]]+\.(?:pdf|doc|docx|txt|xls|xlsx|ppt|pptx|csv))[,\s]+Page\s*[\d\s,-]+\]',
+        '', text, flags=re.IGNORECASE
+    )
+    # Remove numeric citations [1], [2]
+    text = re.sub(r'\[\d+\]', '', text)
+    # Remove remaining bracket-enclosed filenames
+    text = re.sub(
+        r'\[[^\]]*\.(?:pdf|doc|docx|txt|xls|xlsx|ppt|pptx|csv)[^\]]*\]',
+        '', text, flags=re.IGNORECASE
+    )
+    # Strip markdown
+    text = re.sub(r'#{1,6}\s+', '', text)          # headers
+    text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)  # bold
+    text = re.sub(r'\*([^*]+)\*', r'\1', text)       # italic
+    text = re.sub(r'```[\s\S]*?```', '', text)        # code blocks
+    text = re.sub(r'`([^`]+)`', r'\1', text)          # inline code
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)  # links
+    text = re.sub(r'[>]+', '', text)                  # blockquotes
+    # Expand common abbreviations
+    text = re.sub(r'\bDr\.', 'Doctor', text)
+    text = re.sub(r'\bMr\.', 'Mister', text)
+    text = re.sub(r'\bMrs\.', 'Misses', text)
+    text = re.sub(r'\bMs\.', 'Miss', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+
+# ─── Async synthesis core ─────────────────────────────────────────────────────
+
+async def _async_generate_audio_stream(text: str, lang_code: str):
+    """
+    Async generator: opens a WebSocket to Vexyl-TTS, sends a streaming synthesis
+    request (sentence mode), yields raw WAV bytes for each audio_chunk received.
+    """
+    ws_url = Config.VEXYL_TTS_URL
+    request_id = f"sachet_{uuid.uuid4().hex[:12]}"
+
+    logger.info(f"[VexylTTS] Connecting to {ws_url} for request {request_id}")
+
+    try:
+        async with websockets.connect(ws_url, open_timeout=10, close_timeout=5) as ws:
+            # Wait for "ready" handshake
+            ready_raw = await asyncio.wait_for(ws.recv(), timeout=10)
+            ready = json.loads(ready_raw)
+            if ready.get("type") != "ready":
+                logger.warning(f"[VexylTTS] Unexpected first message: {ready}")
+
+            # Send synthesis request (sentence-level streaming)
+            await ws.send(json.dumps({
+                "type":           "synthesize",
+                "text":           text,
+                "lang":           lang_code,
+                "style":          "default",
+                "stream":         True,
+                "streaming_mode": "sentence",
+                "request_id":     request_id,
+            }))
+            logger.debug(f"[VexylTTS] Sent synthesize request for {len(text)} chars")
+
+            chunk_count = 0
+            # Collect messages until audio_end or error
+            while True:
+                try:
+                    raw = await asyncio.wait_for(ws.recv(), timeout=60)
+                except asyncio.TimeoutError:
+                    logger.error("[VexylTTS] Timeout waiting for audio chunk")
+                    break
+
+                msg = json.loads(raw)
+                msg_type = msg.get("type")
+
+                if msg_type == "audio_chunk":
+                    audio_b64 = msg.get("audio_b64", "")
+                    if audio_b64:
+                        wav_bytes = base64.b64decode(audio_b64)
+                        chunk_count += 1
+                        logger.debug(f"[VexylTTS] Chunk {chunk_count}: {len(wav_bytes)} bytes")
+                        yield wav_bytes
+
+                elif msg_type == "audio":
+                    # Full (non-streaming) response — yield the whole buffer
+                    audio_b64 = msg.get("audio_b64", "")
+                    if audio_b64:
+                        yield base64.b64decode(audio_b64)
+                    break
+
+                elif msg_type == "audio_end":
+                    logger.info(
+                        f"[VexylTTS] Stream complete: {chunk_count} chunks, "
+                        f"{msg.get('total_bytes', 0)} bytes total"
+                    )
+                    break
+
+                elif msg_type == "error":
+                    logger.error(f"[VexylTTS] Server error: {msg.get('message')}")
+                    break
+
                 else:
-                    current_chunk = sentence
-        
-        # Add remaining chunk
-        if current_chunk.strip():
-            chunks.append(current_chunk.strip())
-        
-        return [chunk for chunk in chunks if len(chunk.strip()) > 0]
-    
-    def test_connection(self) -> bool:
-        """
-        Test connection to Eleven Labs API.
-        
-        Returns:
-            True if connection successful, False otherwise
-        """
-        if not self.api_key:
-            logger.error("No API key available for testing")
-            return False
-        
+                    # Ignore status / info messages
+                    logger.debug(f"[VexylTTS] Ignored message type: {msg_type}")
+
+    except (websockets.exceptions.ConnectionClosed,
+            websockets.exceptions.WebSocketException) as exc:
+        logger.error(f"[VexylTTS] WebSocket error: {exc}")
+        raise
+    except Exception as exc:
+        logger.error(f"[VexylTTS] Unexpected error: {exc}", exc_info=True)
+        raise
+
+
+def _run_async_generator_to_queue(coro_gen, queue: "asyncio.Queue", loop):
+    """Run an async generator in a dedicated event loop thread, pushing items to queue."""
+    async def _drain():
         try:
-            response = requests.get(
-                f"{self.base_url}/voices",
-                headers={"xi-api-key": self.api_key},
-                timeout=5
-            )
-            
-            if response.status_code == 200:
-                voices = response.json().get('voices', [])
-                logger.info(f"Eleven Labs connection successful, {len(voices)} voices available")
-                return True
-            else:
-                logger.error(f"Eleven Labs API test failed: {response.status_code}")
-                return False
-                
-        except Exception as e:
-            logger.error(f"Eleven Labs connection test error: {e}")
-            return False
-    
+            async for item in coro_gen:
+                loop.call_soon_threadsafe(queue.put_nowait, item)
+        except Exception as exc:
+            loop.call_soon_threadsafe(queue.put_nowait, exc)
+        finally:
+            loop.call_soon_threadsafe(queue.put_nowait, None)  # sentinel
+
+    loop.run_until_complete(_drain())
+
+
+# ─── Service class ────────────────────────────────────────────────────────────
+
+class TTSService:
+    """Service for handling text-to-speech operations via Vexyl-TTS."""
+
+    def __init__(self):
+        """Initialize the TTS service."""
+        self.tts_url = Config.VEXYL_TTS_URL
+        self.http_base = _ws_to_http(self.tts_url)
+        logger.info(f"[VexylTTS] TTSService initialised → {self.tts_url}")
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
     def generate_audio_stream(self, text: str, language: str = "english") -> Generator[bytes, None, None]:
         """
-        Generate audio stream from text using Eleven Labs API.
-        
+        Generate WAV audio stream from text using Vexyl-TTS server.
+
         Args:
-            text: Text to convert to speech
-            language: Language preference
-            
+            text:     Text to convert to speech.
+            language: Sachet language name or numeric code.
+
         Yields:
-            Audio chunks as bytes
+            WAV audio chunks as bytes.
         """
-        if not self.api_key:
-            logger.error("Eleven Labs API key not configured")
-            raise ValueError("TTS service not configured")
-        
-        # Clean text for TTS
-        cleaned_text = self._clean_text_for_tts(text)
-        if not cleaned_text:
-            logger.warning("No text to convert after cleaning")
+        cleaned = _clean_text_for_tts(text)
+        if not cleaned:
+            logger.warning("[VexylTTS] No text after cleaning; skipping synthesis")
             return
-        
-        logger.info(f"Generating TTS for text length: {len(cleaned_text)}")
-        
-        # Split text into manageable chunks for streaming
-        chunks = self._split_text_for_streaming(cleaned_text)
-        voice_id = self._get_voice_id(language)
-        
-        for i, chunk in enumerate(chunks):
+
+        lang_code = _to_vexyl_lang(language)
+        logger.info(f"[VexylTTS] Routing query to Vexyl server | lang={lang_code} | chars={len(cleaned)}")
+
+        # Bridge: run the async generator in a background thread with its own
+        # event loop, communicate results back via a thread-safe queue.
+        import queue as _queue
+
+        result_queue: _queue.Queue = _queue.Queue()
+
+        def _thread_target():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
             try:
-                logger.debug(f"Processing TTS chunk {i+1}/{len(chunks)}: {chunk[:50]}...")
-                
-                # Make API request for this chunk
-                response = requests.post(
-                    f"{self.base_url}/text-to-speech/{voice_id}",
-                    headers={
-                        "Accept": "audio/mpeg",
-                        "Content-Type": "application/json",
-                        "xi-api-key": self.api_key
-                    },
-                    json={
-                        "text": chunk,
-                        "model_id": self.model_id,
-                        "voice_settings": {
-                            "stability": 0.5,
-                            "similarity_boost": 0.75
-                        }
-                    },
-                    timeout=30,
-                    stream=True
-                )
-                
-                if response.status_code == 200:
-                    # Stream the audio data
-                    for audio_chunk in response.iter_content(chunk_size=8192):
-                        if audio_chunk:
-                            yield audio_chunk
-                    logger.debug(f"Successfully processed chunk {i+1}")
-                else:
-                    logger.error(f"TTS API error for chunk {i+1}: {response.status_code}")
-                    # Continue with next chunk rather than failing completely
-                    continue
-                    
+                async def _drain():
+                    try:
+                        async for chunk in _async_generate_audio_stream(cleaned, lang_code):
+                            result_queue.put(chunk)
+                    except Exception as exc:
+                        result_queue.put(exc)
+                    finally:
+                        result_queue.put(None)  # sentinel
+
+                loop.run_until_complete(_drain())
             except Exception as e:
-                logger.error(f"Error processing TTS chunk {i+1}: {e}")
-                # Continue with next chunk
-                continue
-        
-        logger.info("TTS audio generation completed")
-    
+                logger.error(f"[VexylTTS] Error running async event loop in thread: {e}")
+            finally:
+                loop.close()
+
+        thread = threading.Thread(target=_thread_target, daemon=True)
+        thread.start()
+
+        header_sent = False
+
+        while True:
+            item = result_queue.get()
+            if item is None:
+                break
+            if isinstance(item, Exception):
+                logger.error(f"[VexylTTS] Stream error in thread: {item}")
+                break
+            
+            if isinstance(item, bytes):
+                if not header_sent:
+                    if len(item) >= 44:
+                        # Construct a master infinite WAV header from the first chunk's parameters
+                        header = bytearray(item[:44])
+                        header[4:8] = (0x7f000024).to_bytes(4, 'little')   # ChunkSize (file size - 8)
+                        header[40:44] = (0x7f000000).to_bytes(4, 'little') # Subchunk2Size (data size)
+                        yield bytes(header)
+                        # Yield the actual PCM data of the first chunk
+                        yield item[44:]
+                        header_sent = True
+                    else:
+                        yield item
+                else:
+                    # Strip the 44-byte WAV header and yield only the raw PCM bytes
+                    yield item[44:]
+
+        thread.join(timeout=5)
+
     def generate_audio_buffer(self, text: str, language: str = "english") -> Optional[bytes]:
         """
-        Generate complete audio buffer from text.
-        
+        Generate complete WAV audio buffer from text using Vexyl-TTS server.
+
         Args:
-            text: Text to convert to speech
-            language: Language preference
-            
+            text:     Text to convert to speech.
+            language: Sachet language name or numeric code.
+
         Returns:
-            Complete audio data as bytes, or None if failed
+            Complete WAV audio as bytes, or None on failure.
         """
-        try:
-            audio_buffer = io.BytesIO()
-            
-            for chunk in self.generate_audio_stream(text, language):
-                audio_buffer.write(chunk)
-            
-            audio_data = audio_buffer.getvalue()
-            audio_buffer.close()
-            
-            if len(audio_data) > 0:
-                return audio_data
-            else:
-                logger.warning("No audio data generated")
-                return None
-                
-        except Exception as e:
-            logger.error(f"Error generating audio buffer: {e}")
+        cleaned = _clean_text_for_tts(text)
+        if not cleaned:
             return None
 
-# Singleton instance
-_tts_service = None
+        try:
+            buf = io.BytesIO()
+            for chunk in self.generate_audio_stream(cleaned, language):
+                buf.write(chunk)
+            
+            data = bytearray(buf.getvalue())
+            if len(data) >= 44:
+                # Update the header sizes to match the actual generated file size
+                data_size = len(data) - 44
+                data[4:8] = (data_size + 36).to_bytes(4, 'little')
+                data[40:44] = data_size.to_bytes(4, 'little')
+                
+            return bytes(data) if data else None
+        except Exception as exc:
+            logger.error(f"[VexylTTS] generate_audio_buffer error: {exc}")
+            return None
+
+    def test_connection(self) -> bool:
+        """
+        Test connectivity to the Vexyl-TTS server via HTTP health endpoint.
+
+        Returns:
+            True if server is reachable and healthy.
+        """
+        health_url = f"{self.http_base}/health"
+        try:
+            resp = requests.get(health_url, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                logger.info(f"[VexylTTS] Health OK: {data.get('status', 'ok')}")
+                return True
+            logger.warning(f"[VexylTTS] Health returned {resp.status_code}")
+            return False
+        except Exception as exc:
+            logger.error(f"[VexylTTS] Health check failed: {exc}")
+            return False
+
+    @property
+    def vexyl_url(self) -> str:
+        return self.tts_url
+
+
+# ─── Singleton ────────────────────────────────────────────────────────────────
+
+_tts_service: Optional[TTSService] = None
+
 
 def get_tts_service() -> TTSService:
-    """
-    Get the TTS service singleton instance.
-    
-    Returns:
-        TTSService: The TTS service instance
-    """
+    """Get the TTS service singleton instance."""
     global _tts_service
     if _tts_service is None:
         _tts_service = TTSService()

@@ -16,6 +16,7 @@ from app.services.auth_service import get_auth_service
 from app.services.query_service import get_query_service
 from app.services.chat_history_manager import get_chat_history_manager
 from app.services.tts_service import get_tts_service
+from app.services.stt_service import get_stt_service
 from app.models.chat_models import MessageRole
 
 # Configure logging
@@ -424,10 +425,10 @@ def ask_tts():
             except Exception as e:
                 logger.error(f"Error during TTS streaming: {e}")
         
-        # Return streaming audio response
+        # Return streaming audio response (WAV from Vexyl-TTS)
         return Response(
             generate_audio(),
-            mimetype='audio/mpeg',
+            mimetype='audio/wav',
             headers={
                 'Cache-Control': 'no-cache',
                 'X-Accel-Buffering': 'no',  # Disable Nginx buffering
@@ -444,11 +445,82 @@ def ask_tts():
         logger.exception(f'Error generating TTS audio: {e}')
         return jsonify({'message': 'Error generating audio response'}), 500
 
+@queries_bp.route('/synthesize', methods=['POST'])
+def synthesize():
+    """
+    Synthesize arbitrary text into speech using Vexyl-TTS.
+    
+    Expected JSON body:
+        token (str): JWT authentication token
+        text (str): The text content to synthesize
+        language (str/int): Sachet language specifier (e.g. 'hindi', 'english', 1, 23)
+        
+    Returns:
+        Audio stream response (audio/wav)
+    """
+    limiter = get_limiter()
+    if limiter:
+        limiter.limit("20 per minute")(synthesize)
+        
+    data = request.get_json()
+    if not data:
+        return jsonify({'message': 'Missing request body!'}), 400
+        
+    token = data.get('token')
+    if not token:
+        return jsonify({'message': 'Token is missing!'}), 401
+        
+    try:
+        user_email = auth_service.authenticate(token)
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError as e:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.exception(f'Authentication error: {e}')
+        return jsonify({'message': 'Authentication failed!'}), 401
+        
+    text = data.get('text')
+    if not text or not text.strip():
+        return jsonify({'message': 'Text is required!'}), 400
+        
+    language = data.get('language', 'english')
+    
+    try:
+        tts_service = get_tts_service()
+        
+        logger.info(f"Synthesizing text for user {user_email}, language: {language}")
+        
+        def generate_audio():
+            try:
+                for audio_chunk in tts_service.generate_audio_stream(text, language):
+                    yield audio_chunk
+            except Exception as e:
+                logger.error(f"Error during synthesis streaming: {e}")
+                
+        return Response(
+            generate_audio(),
+            mimetype='audio/wav',
+            headers={
+                'Cache-Control': 'no-cache',
+                'X-Accel-Buffering': 'no',
+                'Connection': 'keep-alive',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            }
+        )
+    except ValueError as e:
+        logger.error(f"TTS service configuration error: {e}")
+        return jsonify({'message': 'TTS service not available'}), 503
+    except Exception as e:
+        logger.exception(f'Error generating TTS audio: {e}')
+        return jsonify({'message': 'Error generating audio response'}), 500
+
 @queries_bp.route('/tts-health', methods=['GET'])
 def tts_health():
     """
-    Check TTS service health and configuration.
-    
+    Check Vexyl-TTS service health and configuration.
+
     Returns:
         JSON response with TTS service status
     """
@@ -456,20 +528,19 @@ def tts_health():
         token = request.args.get('token')
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
-        
-        user_email = auth_service.authenticate(token)
-        
+
+        auth_service.authenticate(token)
+
         tts_service = get_tts_service()
         connection_ok = tts_service.test_connection()
-        
+
         return jsonify({
             'status': 'healthy' if connection_ok else 'degraded',
             'tts_available': connection_ok,
-            'api_configured': bool(tts_service.api_key),
-            'default_voice': tts_service.default_voice_id,
-            'message': 'TTS service is ready' if connection_ok else 'TTS service has issues'
+            'vexyl_url': tts_service.vexyl_url,
+            'message': 'Vexyl-TTS is ready' if connection_ok else 'Vexyl-TTS is not reachable'
         })
-        
+
     except Exception as e:
         logger.error(f'TTS health check error: {e}')
         return jsonify({
@@ -477,6 +548,101 @@ def tts_health():
             'tts_available': False,
             'message': 'TTS service error'
         }), 500
+
+
+# ----------------------------------------
+# STT Routes (Vexyl-STT)
+# ----------------------------------------
+
+@queries_bp.route('/stt-transcribe', methods=['POST'])
+def stt_transcribe():
+    """
+    Transcribe an audio file via Vexyl-STT batch API.
+
+    Accepts multipart/form-data with:
+        token    - JWT authentication token
+        audio    - audio file (WAV/MP3/OGG/FLAC/WEBM)
+        language - language code or 'auto' (default: auto)
+
+    Returns:
+        JSON: {transcript, language, latency_ms, job_id}
+    """
+    # Auth
+    try:
+        token = request.form.get('token') or (request.get_json(silent=True) or {}).get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        auth_service.authenticate(token)
+    except ExpiredSignatureError:
+        return jsonify({'message': 'Token has expired!'}), 401
+    except InvalidTokenError:
+        return jsonify({'message': 'Token is invalid!'}), 401
+    except Exception as e:
+        logger.exception(f'STT auth error: {e}')
+        return jsonify({'message': 'Authentication failed!'}), 401
+
+    audio_file = request.files.get('audio')
+    if not audio_file:
+        return jsonify({'message': 'No audio file provided'}), 400
+
+    language = request.form.get('language', 'auto')
+
+    try:
+        audio_bytes = audio_file.read()
+        if not audio_bytes:
+            return jsonify({'message': 'Audio file is empty'}), 400
+
+        stt_service = get_stt_service()
+        result = stt_service.transcribe_audio_bytes(
+            audio_bytes=audio_bytes,
+            language=language,
+            filename=audio_file.filename or 'audio.wav',
+        )
+        return jsonify(result)
+
+    except RuntimeError as e:
+        logger.error(f'STT transcription error: {e}')
+        return jsonify({'message': str(e)}), 502
+    except TimeoutError as e:
+        logger.error(f'STT transcription timeout: {e}')
+        return jsonify({'message': 'Transcription timed out'}), 504
+    except Exception as e:
+        logger.exception(f'STT unexpected error: {e}')
+        return jsonify({'message': 'Transcription failed'}), 500
+
+
+@queries_bp.route('/stt-health', methods=['GET'])
+def stt_health():
+    """
+    Check Vexyl-STT service health.
+
+    Returns:
+        JSON: {status, stt_available, vexyl_url, message}
+    """
+    try:
+        token = request.args.get('token')
+        if not token:
+            return jsonify({'message': 'Token is missing!'}), 401
+        auth_service.authenticate(token)
+
+        stt_service = get_stt_service()
+        connection_ok = stt_service.test_connection()
+
+        return jsonify({
+            'status': 'healthy' if connection_ok else 'degraded',
+            'stt_available': connection_ok,
+            'vexyl_url': stt_service.stt_url,
+            'message': 'Vexyl-STT is ready' if connection_ok else 'Vexyl-STT is not reachable'
+        })
+
+    except Exception as e:
+        logger.error(f'STT health check error: {e}')
+        return jsonify({
+            'status': 'unhealthy',
+            'stt_available': False,
+            'message': 'STT service error'
+        }), 500
+
 
 # ----------------------------------------
 # Notes Management Routes

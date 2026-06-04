@@ -46,8 +46,9 @@ class BaseConfig:
     OLLAMA_EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING_MODEL", "bge-m3:latest")
     OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "qwen2.5:7b")
 
-    # Eleven Labs TTS
-    ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+    # Vexyl TTS / STT (local on-premise servers)
+    VEXYL_TTS_URL = os.getenv("VEXYL_TTS_URL", "ws://127.0.0.1:8092")
+    VEXYL_STT_URL = os.getenv("VEXYL_STT_URL", "ws://127.0.0.1:8091")
 
     # GPU Server
     GPU_SERVER_BASE_URL = os.getenv("GPU_SERVER_BASE_URL")
@@ -67,7 +68,6 @@ class BaseConfig:
     def validate():
         """Validate that all required settings are present."""
         required_vars = [
-            "ELEVENLABS_API_KEY",
             "MONGO_URL", "MYSQL_HOST", "MYSQL_USERNAME", "MYSQL_PASSWORD", "OLLAMA_BASE_URL"
         ]
         
@@ -107,7 +107,7 @@ class ProductionConfig(BaseConfig):
         raise ValueError("SECRET_KEY environment variable is required in production")
     
     # More strict rate limiting for production
-    RATELIMIT_DEFAULT = "200 per day, 200 per hour"
+    RATELIMIT_DEFAULT = "2000 per day, 2000 per hour"
 
 class ConfigFactory:
     """Factory class to create configuration objects."""
