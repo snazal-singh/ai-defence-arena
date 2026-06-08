@@ -146,7 +146,7 @@ class QueryIntentService:
     
     def _is_data_query(self, query: str) -> bool:
         """
-        Determine if a query is related to structured data (SQL tables).
+        Determine if a query is related to structured data (SQL/MongoDB tables).
         
         Args:
             query: The user's query text
@@ -154,19 +154,20 @@ class QueryIntentService:
         Returns:
             True if query is for structured data, False otherwise
         """
-        prompt = f"""The user has uploaded documents (like PDF, DOCX, TXT) and also spreadsheets/CSV files. Determine if the user's query is asking specifically about data that would be stored in tables, spreadsheets, or requires numerical analysis.
+        prompt = f"""The user has uploaded documents (like PDF, DOCX, TXT) and also spreadsheets/CSV tables. The system also contains a MongoDB database of structured disaster alerts.
+        Determine if the user's query is asking specifically about structured database/table records (like numbers, counts, warnings, lists of alerts) or requires calculations.
 
         Respond with:
-        1 - If the query is primarily about tabular data, statistics, calculations, or analysis of numerical information
-        0 - If the query is primarily about textual information, conceptual understanding, or general content of documents
+        1 - If the query is about tabular data, calculations, statistics, or list/counts of alerts (e.g. Cyclone, Tsunami, Rainfall warnings).
+        0 - If the query is about textual information, conceptual understanding, summaries, or general content of document files.
 
         Examples:
         "What's the average sales in Q3?" → 1
-        "Plot a graph of the revenue trend" → 1  
-        "How many employees have over 5 years experience?" → 1
+        "List warnings for Cyclone" → 1
+        "How many Tsunami alerts are there?" → 1
+        "Find alerts covering Goa" → 1
         "What does the document say about climate change?" → 0
         "Summarize the introduction" → 0
-        "Find mentions of AI technology" → 0
 
         User query: {query}
 
@@ -192,19 +193,19 @@ class QueryIntentService:
         Returns:
             True if query also needs document context, False otherwise
         """
-        prompt = f"""The user has uploaded both documents (PDF, DOCX, TXT) and tabular data (CSV, Excel). 
-        The query appears to be primarily related to the tabular data, but determine if understanding 
-        the documents would also be important for answering this query comprehensively.
+        prompt = f"""The user has uploaded both documents (PDF, DOCX, TXT) and structured data tables (MySQL tables and MongoDB alerts). 
+        The query appears to be primarily related to the tabular database data, but determine if understanding 
+        the document files (guidelines, manuals, reports) would also be important for answering this query comprehensively.
 
         Respond with:
-        1 - If the query might benefit from both tabular data AND document context
-        0 - If the query can be fully answered with just the tabular data alone
+        1 - If the query might benefit from both database tables (SQL/MongoDB) AND document context (PDF/Word/Text).
+        0 - If the query can be fully answered with just the database data alone (e.g. standard counts, list of records, simple stats).
 
         Examples:
-        "What's the revenue compared to the projections mentioned in the report?" → 1
-        "Find discrepancies between the financial data and what's written in the document" → 1
-        "Calculate the average sales for each region" → 0
-        "What's the total expense by department?" → 0
+        "What's the cyclone warning compared to the safety protocols in the PDF guide?" → 1
+        "Find discrepancies between the warning logs and what's written in the manual" → 1
+        "How many Tsunami alerts are there?" → 0
+        "List all Cyclone warnings in the Goa region" → 0
 
         User query: {query}
 

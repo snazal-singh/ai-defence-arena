@@ -254,30 +254,56 @@ class ContextProviderService:
             
     def get_data_context(self, user_session: str, user_query: str) -> str:
         """
-        Get data context from SQL database.
+        Get data context from structured databases (SQL and MongoDB).
         
         Args:
             user_session: User's session identifier
             user_query: User's query
             
         Returns:
-            SQL query results formatted as context
+            Structured query results formatted as context
         """
+        sql_doc = ""
+        mongo_doc = ""
+
+        # 1. Fetch context from SQL Database if sheet metadata exists
+        sheet_metadata_path = os.path.join('users', user_session, "files", "sheet_metadata.json")
+        if os.path.exists(sheet_metadata_path):
+            try:
+                logger.info(f"Querying SQL database for session: {user_session}")
+                res, error = query_database(user_session, user_query)
+                if error:
+                    logger.error(f"SQL query error: {error}")
+                elif res:
+                    sql_doc = res
+                    logger.info("SQL query results added to context")
+            except Exception as e:
+                logger.error(f"Error querying SQL: {e}")
+
+        # 2. Fetch context from MongoDB Database (e.g. disaster_alerts alerts)
         try:
-            sql_doc, error = query_database(user_session, user_query)
+            logger.info("Querying MongoDB database...")
+            from controllers.mongodb_db import query_mongodb
+            res, error = query_mongodb(user_query)
             if error:
-                logger.error(f"SQL query error: {error}")
-                return ""
-                
-            if not sql_doc:
-                logger.info(f"No results found for SQL query")
-                return ""
-                
-            logger.info(f'SQL query results added to context')
-            return sql_doc
+                logger.error(f"MongoDB query error: {error}")
+            elif res:
+                mongo_doc = res
+                logger.info("MongoDB query results added to context")
         except Exception as e:
-            logger.error(f'Error getting data context: {e}')
-            return ""
+            logger.error(f"Error querying MongoDB: {e}")
+
+        # Combine SQL and MongoDB context results
+        combined_doc = ""
+        if sql_doc:
+            combined_doc += sql_doc
+        if mongo_doc:
+            if combined_doc:
+                combined_doc += "\n\n"
+            combined_doc += mongo_doc
+
+        return combined_doc
+
             
     def get_summary_context(self, user_session: str, user_query: str, 
                          language: Optional[str] = None, 
@@ -351,12 +377,27 @@ class ContextProviderService:
         # Check for database tables by looking for sheet_metadata.json
         sheet_metadata_path = os.path.join('users', user_session, "files", "sheet_metadata.json")
         has_data_tables = os.path.exists(sheet_metadata_path)
+
+        # Also check if MongoDB structured alerts database exists and is populated
+        has_mongodb_tables = False
+        try:
+            import pymongo
+            from app.core.config import settings
+            mongo_url = getattr(settings, "MONGO_URL", "mongodb://localhost:27017/")
+            client = pymongo.MongoClient(mongo_url)
+            if client["disaster_alerts"]["alerts"].count_documents({}) > 0:
+                has_mongodb_tables = True
+        except Exception:
+            pass
+
+        has_data_tables = has_data_tables or has_mongodb_tables
         
         return {
             "has_documents": has_documents,
             "has_data_tables": has_data_tables,
             "has_summaries": summary_exists
         }
+
     
     def _extract_doc_info(self, docs):
         """
