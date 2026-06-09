@@ -136,6 +136,108 @@ def translate_to_indic(text: str, language: str) -> str:
     return text
 
 
+LANGUAGE_ID_TO_NAME: dict[int, str] = {
+    1: 'Hindi',
+    2: 'Konkani',
+    3: 'Kannada',
+    4: 'Dogri',
+    5: 'Bodo',
+    6: 'Urdu',
+    7: 'Tamil',
+    8: 'Kashmiri',
+    9: 'Assamese',
+    10: 'Bengali',
+    11: 'Marathi',
+    12: 'Sindhi',
+    13: 'Maithili',
+    14: 'Punjabi',
+    15: 'Malayalam',
+    16: 'Manipuri',
+    17: 'Telugu',
+    18: 'Sanskrit',
+    19: 'Nepali',
+    20: 'Santali',
+    21: 'Gujarati',
+    22: 'Odia',
+    23: 'English',
+}
+
+
+def translate_to_english(text: str, language_id: int) -> str:
+    """
+    Translate *text* (Indic) to English via the remote IndicTrans2 inference server.
+
+    Returns the original text unchanged if:
+    - *language_id* maps to "English",
+    - *language_id* is unsupported,
+    - TRANSLATION_SERVER_URL is not set,
+    - the remote call fails (logs a warning).
+    """
+    if not text or not text.strip():
+        return text
+
+    try:
+        lang_id_int = int(language_id)
+    except (ValueError, TypeError):
+        logger.warning("Invalid language_id '%s'; returning original text.", language_id)
+        return text
+
+    language_name = LANGUAGE_ID_TO_NAME.get(lang_id_int, "English")
+
+    if language_name == "English":
+        return text
+
+    if language_name not in LANGUAGE_TO_FLORES:
+        logger.warning(
+            "Language '%s' (ID: %d) is not supported by IndicTrans2; returning original text.",
+            language_name,
+            lang_id_int,
+        )
+        return text
+
+    if _SERVER_URL is None:
+        logger.error(
+            "TRANSLATION_SERVER_URL is not set. Cannot translate to English from '%s'. "
+            "Returning original text.",
+            language_name,
+        )
+        return text
+
+    try:
+        response = requests.post(
+            f"{_SERVER_URL}/translate-to-english",
+            json={"text": text, "language": language_name},
+            headers=_headers(),
+            timeout=_REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+        return response.json()["translated"]
+
+    except requests.exceptions.ConnectionError:
+        logger.error(
+            "Could not connect to translation server at %s. "
+            "Returning original text.",
+            _SERVER_URL,
+        )
+    except requests.exceptions.Timeout:
+        logger.error(
+            "Translation to English request to %s timed out after %ds. "
+            "Returning original text.",
+            _SERVER_URL,
+            _REQUEST_TIMEOUT,
+        )
+    except Exception as exc:
+        logger.error(
+            "Translation to English from '%s' failed: %s. Returning original text.",
+            language_name,
+            exc,
+            exc_info=True,
+        )
+
+    return text
+
+
+
 def _split_into_sentences(text: str) -> list[str]:
     """Kept for backwards compatibility — no longer used by this module."""
     import re

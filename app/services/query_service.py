@@ -174,7 +174,7 @@ class QueryService:
                     image_caption=data.get('image_caption')
                 )
 
-                logger.info(f"RESPNSE answer: {response['answer']}")
+                logger.info(f"RESPONSE answer: {response['answer']}")
         except Exception as e:
             logger.exception(f'Error processing query with agent: {e}')
             return {'message': 'Error generating response'}, 500
@@ -236,6 +236,30 @@ class QueryService:
             
         input_language = int(data.get('inputLanguage', 23))
         output_language = int(data.get('outputLanguage', 23))
+
+        logger.info(f"User query before translation: {user_query}")
+        
+        # Translate input query to English if it is in an Indic language (not English, code 23)
+        if input_language != 23:
+            try:
+                from utils.translation import translate_to_english
+                logger.info(f"Translating input query from language ID {input_language} to English...")
+                
+                # Check for appended image caption (added in queries.py)
+                image_desc_marker = "\n\nImage Description:"
+                if image_desc_marker in user_query:
+                    parts = user_query.split(image_desc_marker, 1)
+                    user_msg_part = parts[0]
+                    image_desc_part = parts[1]
+                    translated_msg = translate_to_english(user_msg_part, input_language)
+                    user_query = f"{translated_msg}{image_desc_marker}{image_desc_part}"
+                else:
+                    user_query = translate_to_english(user_query, input_language)
+                
+                logger.info(f"Translated query: {user_query}")
+            except Exception as e:
+                logger.error(f"Failed to translate user query: {e}")
+
         context = True if data.get('context', False) or data.get('sessionId') else False
         hascsvxl = data.get('hasCsvOrXlsx', False)
         mode = data.get('mode', 'default')
@@ -254,6 +278,7 @@ class QueryService:
             "chat_id": chat_id,
             "session_id": session_id
         }
+
 
 # Create a singleton instance
 _query_service = None

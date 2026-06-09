@@ -43,7 +43,7 @@ AUTH_TOKEN = (
     ".oWlvwHt-8iTNDSOanKZqFqgyQ7aF6iheMNTEi5oU02w"
 )
 
-SESSION_ID = "20260523T173056"
+SESSION_ID = "20260518T131615"
 
 CONCURRENT_USERS = 10
 
@@ -66,17 +66,66 @@ CONCURRENT_USERS = 10
 #     "What future work is suggested?",
 # ]
 
+# QUESTIONS = [
+#     "What is the exact timeline to complete the Transition Phase from OTSi?", # [1]
+#     "What is the minimum cumulative revenue required to meet the Financial Capacity condition?", # [2, 3]
+#     "What are the specific weights assigned to the Technical and Financial Proposals?", # [4]
+#     "What is the required professional experience length for the Project Director & Team Leader?", # [5]
+#     "What must be demonstrated for the secure sandboxed execution during the PoC?", # [6]
+#     "What is the maximum time allowed for synchronizing API-based datasets?", # [7]
+#     "What are the mandated RPO and RTO parameters for the disaster recovery site?", # [8]
+#     "What percentage of the Agreement Value is retained as Performance Security?", # [9]
+#     "What is the daily percentage rate for liquidated damages in case of delay?", # [10]
+#     "What percentage of the total fee is paid upon the successful Go-Live of the NDAP?" # [11]
+# ]
+
 QUESTIONS = [
-    "What is the exact timeline to complete the Transition Phase from OTSi?", # [1]
-    "What is the minimum cumulative revenue required to meet the Financial Capacity condition?", # [2, 3]
-    "What are the specific weights assigned to the Technical and Financial Proposals?", # [4]
-    "What is the required professional experience length for the Project Director & Team Leader?", # [5]
-    "What must be demonstrated for the secure sandboxed execution during the PoC?", # [6]
-    "What is the maximum time allowed for synchronizing API-based datasets?", # [7]
-    "What are the mandated RPO and RTO parameters for the disaster recovery site?", # [8]
-    "What percentage of the Agreement Value is retained as Performance Security?", # [9]
-    "What is the daily percentage rate for liquidated damages in case of delay?", # [10]
-    "What percentage of the total fee is paid upon the successful Go-Live of the NDAP?" # [11]
+    "Define what a docking station is and its purpose.",
+    "Explain the difference between LCD, LED, and OLED displays in laptops.",
+    "What is the purpose of a laptop's Fn (Function) key?",
+    "List three common internal expansion slots used in laptops.",
+    "What are the two standard sizes for ExpressCards?",
+    "What is SODIMM and how does it differ from standard DIMM?",
+    "Define the term 'CRU' (Customer Replaceable Unit).",
+    "Define the term 'FRU' (Field Replaceable Unit).",
+    "What is a smart card reader and what are the two types?",
+    "What is the main use of an E-reader compared to a tablet?",
+    "List three types of wearable devices mentioned in the material.",
+    "What is a fitness tracker used for?",
+    "Explain what Bluetooth is and its typical range.",
+    "What is NFC (Near Field Communication) and what is a common use case?",
+    "What is Infrared (IR) technology used for in modern mobile devices?",
+    "Define 'Cellular WAN'.",
+    "What are the differences between 1G, 2G, 3G, 4G, and 5G?",
+    "What is a SIM card used for?",
+    "Identify the different types of USB connectors used in mobile devices (Mini, Micro, USB-C).",
+    "What is the purpose of 'Airplane Mode'?",
+    "Describe the process of Bluetooth pairing.",
+    "What is a Passkey in the context of Bluetooth?",
+    "What is SMTP used for?",
+    "What is the purpose of MIME in email communication?",
+    "What is data synchronization?",
+    "List three types of data that can be synchronized between a mobile device and a PC.",
+    "What is 'Sleep Mode' in a laptop?",
+    "How can you extend the battery life of a mobile device?",
+    "How do you enable or disable Bluetooth on a mobile device?",
+    "How do you configure an Android device for email?",
+    "How do you configure an iOS device for email?",
+    "How do you replace an integrated webcam?",
+    "What should you check if a laptop doesn't power on after a component replacement?",
+    "Why is preventive maintenance important for laptops?",
+    "List three cleaning tools safe for use on laptops.",
+    "How should you clean a laptop screen?",
+    "How do you clean a laptop keyboard?",
+    "What are the environmental factors that can damage a laptop?",
+    "How do you perform a software-based preventive maintenance on a mobile device?",
+    "Why is it important to back up data before performing maintenance?",
+    "List three items that should be included in a laptop maintenance schedule.",
+    "What is the first step in the troubleshooting process?",
+    "What could be the cause of a laptop battery not charging?",
+    "What is the purpose of the 'Event Viewer' in troubleshooting laptop issues?",
+    "How do you verify if a laptop's AC adapter is functioning correctly?",
+    "Explain the importance of documenting findings after a repair."
 ]
 
 

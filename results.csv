@@ -1,0 +1,170 @@
+User ID,Question,Status Code,Total Time (s),TTFB (s),Answer Length,Est Tok/sec,Answer Preview,Error,Success
+1,Define what a docking station is and its purpose.,200,121.7228,121.7228,135,0.28,A docking station adds ports to a laptop. It also adds the ability to connect to...,,True
+2,"Explain the difference between LCD, LED, and OLED displays in laptops.",200,121.7223,121.7223,476,0.98,"According to the provided documents [2] and [6], there are three types of laptop...",,True
+3,What is the purpose of a laptop's Fn (Function) key?,200,120.3642,120.3642,92,0.19,The purpose of the Function (Fn) key is to activate a second function on a dual-...,,True
+4,List three common internal expansion slots used in laptops.,200,82.8421,82.8421,200,0.6,"The information is not available in the provided documents.
+
+However, I can prov...",,True
+5,What are the two standard sizes for ExpressCards?,200,128.5629,128.5629,61,0.12,75mm x 54mm (ExpressCard/54) and 75mm x 34mm (ExpressCard/34),,True
+6,What is SODIMM and how does it differ from standard DIMM?,200,126.4127,126.4127,95,0.19,I encountered an error while processing your query. Please try again or rephrase...,,True
+7,Define the term 'CRU' (Customer Replaceable Unit).,200,66.2893,66.2893,95,0.36,I encountered an error while processing your query. Please try again or rephrase...,,True
+8,Define the term 'FRU' (Field Replaceable Unit).,200,126.1026,126.1026,95,0.19,I encountered an error while processing your query. Please try again or rephrase...,,True
+9,What is a smart card reader and what are the two types?,200,67.8463,67.8463,95,0.35,I encountered an error while processing your query. Please try again or rephrase...,,True
+10,What is the main use of an E-reader compared to a tablet?,200,66.8133,66.8133,95,0.36,I encountered an error while processing your query. Please try again or rephrase...,,True
+11,List three types of wearable devices mentioned in the material.,200,78.9964,78.9964,138,0.44,"• Smartwatches
+• Fitness trackers
+• Virtual reality (VR) headsets 
+• Augmented r...",,True
+12,What is a fitness tracker used for?,200,68.2073,68.2073,95,0.35,I encountered an error while processing your query. Please try again or rephrase...,,True
+13,Explain what Bluetooth is and its typical range.,200,106.6459,106.6459,289,0.68,"Bluetooth is a technology that allows devices to handle voice, music, videos, an...",,True
+14,What is NFC (Near Field Communication) and what is a common use case?,200,66.8887,66.8887,95,0.36,I encountered an error while processing your query. Please try again or rephrase...,,True
+15,What is Infrared (IR) technology used for in modern mobile devices?,200,87.4988,87.4988,144,0.41,"If a mobile device is IR enabled, it can be used to control other IR controlled ...",,True
+16,Define 'Cellular WAN'.,200,129.5876,129.5875,95,0.18,I encountered an error while processing your query. Please try again or rephrase...,,True
+17,"What are the differences between 1G, 2G, 3G, 4G, and 5G?",200,21.3373,21.3372,2456,28.78,"Based on the provided content, I will analyze the differences between 1G, 2G, 3G...",,True
+18,What is a SIM card used for?,200,67.4855,67.4855,95,0.35,I encountered an error while processing your query. Please try again or rephrase...,,True
+19,"Identify the different types of USB connectors used in mobile devices (Mini, Micro, USB-C).",200,120.7958,120.7958,31,0.06,"Mini-USB, Micro-USB, and USB-C.",,True
+20,What is the purpose of 'Airplane Mode'?,200,67.4837,67.4837,95,0.35,I encountered an error while processing your query. Please try again or rephrase...,,True
+21,Describe the process of Bluetooth pairing.,200,114.2398,114.2398,459,1.0,"When a Bluetooth device is in discoverable mode, it transmits Bluetooth and devi...",,True
+22,What is a Passkey in the context of Bluetooth?,200,68.458,68.458,99,0.36,"I'm sorry, but I couldn't generate a summary at this time. Error: Cannot create ...",,True
+23,What is SMTP used for?,200,119.7504,119.7504,280,0.58,Email clients use SMTP to send email to servers. Email servers also use SMTP to ...,,True
+24,What is the purpose of MIME in email communication?,200,66.8852,66.8851,95,0.36,I encountered an error while processing your query. Please try again or rephrase...,,True
+25,What is data synchronization?,200,86.4707,86.4707,127,0.37,Data synchronization means the exchange of data between two or more devices whil...,,True
+26,List three types of data that can be synchronized between a mobile device and a PC.,200,68.2945,68.2945,99,0.36,"I'm sorry, but I couldn't generate a summary at this time. Error: Cannot create ...",,True
+27,What is 'Sleep Mode' in a laptop?,200,71.8346,71.8346,95,0.33,I encountered an error while processing your query. Please try again or rephrase...,,True
+28,How can you extend the battery life of a mobile device?,200,76.0308,76.0308,672,2.21,Proper care and maintenance can help laptop components run more efficiently and ...,,True
+29,How do you enable or disable Bluetooth on a mobile device?,200,100.2747,100.2747,471,1.17,The information is not available in the provided documents regarding how to enab...,,True
+30,How do you configure an Android device for email?,200,69.4492,69.4492,95,0.34,I encountered an error while processing your query. Please try again or rephrase...,,True
+31,How do you configure an iOS device for email?,200,128.9608,128.9608,95,0.18,I encountered an error while processing your query. Please try again or rephrase...,,True
+32,How do you replace an integrated webcam?,200,101.2758,101.2758,59,0.15,The information is not available in the provided documents.,,True
+33,What should you check if a laptop doesn't power on after a component replacement?,200,104.5496,104.5496,59,0.14,The information is not available in the provided documents.,,True
+34,Why is preventive maintenance important for laptops?,200,108.4901,108.4901,308,0.71,Proper care and maintenance can help laptop components run more efficiently and ...,,True
+35,List three cleaning tools safe for use on laptops.,200,79.4273,79.4273,57,0.18,"* Compressed air
+* Mild cleaning solutions
+* Cotton swabs",,True
+36,How should you clean a laptop screen?,200,71.1048,71.1048,95,0.33,I encountered an error while processing your query. Please try again or rephrase...,,True
+37,How do you clean a laptop keyboard?,200,110.432,110.432,301,0.68,Routine maintenance includes the monthly cleaning of these laptop components: * ...,,True
+38,What are the environmental factors that can damage a laptop?,200,84.1101,84.1101,87,0.26,"* Dirt and contamination
+* Spills
+* Drops
+* Excessive heat or cold
+* Excessive m...",,True
+39,How do you perform a software-based preventive maintenance on a mobile device?,200,123.536,123.536,478,0.97,"According to the document (Page 64), preventative maintenance for mobile devices...",,True
+40,Why is it important to back up data before performing maintenance?,200,79.236,79.236,286,0.9,"Preventative maintenance for mobile devices requires only three basic tasks: 
+* ...",,True
+41,List three items that should be included in a laptop maintenance schedule.,200,69.7117,69.7117,95,0.34,I encountered an error while processing your query. Please try again or rephrase...,,True
+42,What is the first step in the troubleshooting process?,200,84.6283,84.6283,28,0.08,Step 1 Identify the Problem.,,True
+43,What could be the cause of a laptop battery not charging?,200,76.4276,76.4276,37,0.12,* The battery does not hold a charge.,,True
+44,What is the purpose of the 'Event Viewer' in troubleshooting laptop issues?,200,116.7856,116.7856,131,0.28,"To check for warnings or errors, as stated in the step ""Verify solution and full...",,True
+45,How do you verify if a laptop's AC adapter is functioning correctly?,200,109.1998,109.1998,177,0.41,Use AC adapter with laptop (Step 3 - Test the Theory to Determine Cause for lapt...,,True
+46,Explain the importance of documenting findings after a repair.,200,74.2887,74.2886,537,1.81,Documenting findings after a repair is crucial to ensure that the steps taken an...,,True
+47,Define what a docking station is and its purpose.,200,118.5837,118.5837,185,0.39,"Both a Docking Station and a Port Replicator add ports to a laptop. However, onl...",,True
+48,"Explain the difference between LCD, LED, and OLED displays in laptops.",200,82.5058,82.5058,411,1.25,"According to [2] ITE v7.0 18:
+
+* Liquid-crystal display (LCD) - Commonly uses Tw...",,True
+49,What is the purpose of a laptop's Fn (Function) key?,200,90.7605,90.7605,579,1.59,The purpose of the Function (Fn) key is to activate a second function on a dual-...,,True
+50,List three common internal expansion slots used in laptops.,200,68.4465,68.4465,95,0.35,I encountered an error while processing your query. Please try again or rephrase...,,True
+51,What are the two standard sizes for ExpressCards?,200,36.1347,36.1347,2277,15.75,"**Summary Analysis: Laptop Policy and ExpressCard Sizes**
+
+This comprehensive su...",,True
+52,What is SODIMM and how does it differ from standard DIMM?,200,60.0669,60.0668,2285,9.51,"**SODIMM: A Specialized Memory Module for Laptops**
+
+In the context of laptop ha...",,True
+53,Define the term 'CRU' (Customer Replaceable Unit).,200,125.6784,125.6784,125,0.25,Customer-replaceable units (CRUs) include components such as the laptop battery ...,,True
+54,Define the term 'FRU' (Field Replaceable Unit).,200,115.5488,115.5488,196,0.42,"Field-replaceable units (FRUs) include components such as the motherboard, LCD d...",,True
+55,What is a smart card reader and what are the two types?,200,115.8843,115.8843,347,0.75,"A smart card reader is used to read and write to smart cards.
+
+There are two typ...",,True
+56,What is the main use of an E-reader compared to a tablet?,200,96.2871,96.2871,107,0.28,The main use of an e-reader compared to a tablet is optimized for reading text a...,,True
+57,List three types of wearable devices mentioned in the material.,200,124.8412,124.8412,100,0.2,"• Smartwatches
+• Fitness monitors
+• VR headsets 
+• Smart headsets 
+• Augmented r...",,True
+58,What is a fitness tracker used for?,200,129.5702,129.5702,95,0.18,I encountered an error while processing your query. Please try again or rephrase...,,True
+59,Explain what Bluetooth is and its typical range.,200,95.1392,95.1392,363,0.95,Bluetooth is described by the Institute of Electrical and Electronics Engineers ...,,True
+60,What is NFC (Near Field Communication) and what is a common use case?,200,81.3704,81.3704,293,0.9,Near field communication (NFC) enables mobile devices to establish radio communi...,,True
+61,What is Infrared (IR) technology used for in modern mobile devices?,200,77.4774,77.4774,144,0.46,"If a mobile device is IR enabled, it can be used to control other IR controlled ...",,True
+62,Define 'Cellular WAN'.,200,66.3115,66.3115,95,0.36,I encountered an error while processing your query. Please try again or rephrase...,,True
+63,"What are the differences between 1G, 2G, 3G, 4G, and 5G?",200,77.1482,77.1482,95,0.31,I encountered an error while processing your query. Please try again or rephrase...,,True
+64,What is a SIM card used for?,200,67.3463,67.3463,95,0.35,I encountered an error while processing your query. Please try again or rephrase...,,True
+65,"Identify the different types of USB connectors used in mobile devices (Mini, Micro, USB-C).",200,73.1435,73.1435,31,0.11,"Mini-USB, Micro-USB, and USB-C.",,True
+66,What is the purpose of 'Airplane Mode'?,200,63.1975,63.1975,99,0.39,"I'm sorry, but I couldn't generate a summary at this time. Error: Cannot create ...",,True
+67,Describe the process of Bluetooth pairing.,200,89.1492,89.1492,431,1.21,"When a Bluetooth device is in discoverable mode, it transmits its name and infor...",,True
+68,What is a Passkey in the context of Bluetooth?,200,103.763,103.763,214,0.52,"The PIN is often a number, but can also be a numeric code or passkey. The PIN is...",,True
+69,What is SMTP used for?,200,111.3335,111.3335,122,0.27,"SMTP (Simple Mail Transfer Protocol) is used to:
+
+* Send email from clients to s...",,True
+70,What is the purpose of MIME in email communication?,200,97.3057,97.3056,159,0.41,"MIME extends the text-based email format to include other formats, such as pictu...",,True
+71,What is data synchronization?,200,128.5371,128.5371,95,0.18,I encountered an error while processing your query. Please try again or rephrase...,,True
+72,List three types of data that can be synchronized between a mobile device and a PC.,200,44.1614,44.1614,1609,9.11,"**Summary of Key Findings**
+
+The provided content encompasses two main sources: ...",,True
+73,What is 'Sleep Mode' in a laptop?,200,129.7697,129.7697,95,0.18,I encountered an error while processing your query. Please try again or rephrase...,,True
+74,How can you extend the battery life of a mobile device?,200,126.0778,126.0778,95,0.19,I encountered an error while processing your query. Please try again or rephrase...,,True
+75,How do you enable or disable Bluetooth on a mobile device?,200,105.5519,105.5519,335,0.79,* Use the Bluetooth Wizard to search and discover Bluetooth devices that are in ...,,True
+76,How do you configure an Android device for email?,200,111.845,111.845,497,1.11,"The information is not available in the provided documents.
+
+However, according ...",,True
+77,How do you configure an iOS device for email?,200,99.0596,99.0596,628,1.58,"When an iOS device is turned on for the first time, the Setup Assistant guides y...",,True
+78,How do you replace an integrated webcam?,200,129.2236,129.2236,95,0.18,I encountered an error while processing your query. Please try again or rephrase...,,True
+79,What should you check if a laptop doesn't power on after a component replacement?,200,127.4818,127.4818,95,0.19,I encountered an error while processing your query. Please try again or rephrase...,,True
+80,Why is preventive maintenance important for laptops?,200,117.8212,117.8212,113,0.24,Proper care and maintenance can help laptop components run more efficiently and ...,,True
+81,List three cleaning tools safe for use on laptops.,200,124.5169,124.5169,82,0.16,"• Compressed air
+• Mild cleaning solutions
+• Cotton swabs 
+• Soft, lint-free clo...",,True
+82,How should you clean a laptop screen?,200,85.9656,85.9656,151,0.44,"Use nonabrasive materials including compressed air, mild cleaning solutions, cot...",,True
+83,How do you clean a laptop keyboard?,200,85.3947,85.3947,299,0.88,Routine maintenance includes the monthly cleaning of these laptop components: * ...,,True
+84,What are the environmental factors that can damage a laptop?,200,106.3761,106.3761,87,0.2,"* Dirt and contamination
+* Spills
+* Drops
+* Excessive heat or cold
+* Excessive m...",,True
+85,How do you perform a software-based preventive maintenance on a mobile device?,200,123.924,123.924,501,1.01,"According to [2], preventative maintenance for mobile devices requires only thre...",,True
+86,Why is it important to back up data before performing maintenance?,200,102.95,102.95,195,0.47,"To prevent loss of data due to potential damage during maintenance activities, s...",,True
+87,List three items that should be included in a laptop maintenance schedule.,200,28.6433,28.6433,2560,22.34,"**Laptop Maintenance Schedule: Essential Items to Include**
+
+To maintain the opt...",,True
+88,What is the first step in the troubleshooting process?,200,94.1332,94.1332,29,0.08,Step 1 - Identify the problem,,True
+89,What could be the cause of a laptop battery not charging?,200,72.7245,72.7245,211,0.73,"Common causes of laptop problems:
+
+* Battery does not have a charge
+* Battery wi...",,True
+90,What is the purpose of the 'Event Viewer' in troubleshooting laptop issues?,200,94.98,94.98,59,0.16,The information is not available in the provided documents.,,True
+91,How do you verify if a laptop's AC adapter is functioning correctly?,200,130.0665,130.0664,95,0.18,I encountered an error while processing your query. Please try again or rephrase...,,True
+92,Explain the importance of documenting findings after a repair.,200,93.6836,93.6836,908,2.42,"According to Step 6 in document [5] and Step 6 - Document Findings, Actions, and...",,True
+93,Define what a docking station is and its purpose.,200,107.6808,107.6808,159,0.37,"A docking station is a device that adds ports to a laptop, allowing it to connec...",,True
+94,"Explain the difference between LCD, LED, and OLED displays in laptops.",200,113.8336,113.8336,386,0.85,"According to [2], there are three types of laptop displays:
+
+* Liquid-crystal di...",,True
+95,What is the purpose of a laptop's Fn (Function) key?,200,101.5805,101.5805,252,0.62,The purpose of the Function (Fn) key is to activate a second function on a dual-...,,True
+96,List three common internal expansion slots used in laptops.,200,116.92,116.92,169,0.36,"• PCI Express Micro
+• Mini-PCIe
+• PCI Express (not explicitly stated but mention...",,True
+97,What are the two standard sizes for ExpressCards?,200,131.2918,131.2918,28,0.05,75mm x 54mm and 75mm x 34mm.,,True
+98,What is SODIMM and how does it differ from standard DIMM?,200,92.1999,92.1999,177,0.48,Most laptops use a smaller profile memory module that is called Small Outline Du...,,True
+99,Define the term 'CRU' (Customer Replaceable Unit).,200,51.7581,51.7581,2657,12.83,"**Summary of Analysis**
+
+The term 'Customer Replaceable Unit' (CRU) is a critica...",,True
+100,Define the term 'FRU' (Field Replaceable Unit).,200,71.0819,71.0819,95,0.33,I encountered an error while processing your query. Please try again or rephrase...,,True
+
+--- AGGREGATE STATS ---
+total_requests,100
+successful,100
+failed,0
+success_rate,100.0%
+avg_time,94.237
+min_time,21.337
+max_time,131.292
+median_time,95.06
+p90_time,126.52
+p95_time,129.241
+avg_ttfb,94.237
+min_ttfb,21.337
+max_ttfb,131.292
+throughput,0.76
+total_wall_time,131.292
+avg_answer_len,319.9
+avg_tok_sec,1.46
+min_tok_sec,0.05
+max_tok_sec,28.78
