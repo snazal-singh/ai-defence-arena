@@ -172,8 +172,16 @@ class DocumentSummaryService:
         # Calculate dynamic sentence count based on content
         sentence_count = self._calculate_dynamic_sentence_count(full_text)
         
+        # Ensure text does not exceed SpaCy's 1,000,000 character limit to prevent memory/E088 errors
+        max_spacy_limit = 950000
+        if len(full_text) > max_spacy_limit:
+            logger.info(f"Text length ({len(full_text)}) exceeds SpaCy limit. Truncating to {max_spacy_limit} characters to prevent memory errors.")
+            full_text_to_summarize = full_text[:max_spacy_limit]
+        else:
+            full_text_to_summarize = full_text
+            
         # Use BERT extractive summarizer model with calculated count
-        most_important_sents = self.bert_model(full_text, num_sentences=sentence_count)
+        most_important_sents = self.bert_model(full_text_to_summarize, num_sentences=sentence_count)
         
         # Save the most important sentences to a file
         with open(summary_path, 'w', encoding='utf8') as file:
