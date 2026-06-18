@@ -37,46 +37,12 @@ chat_history_manager = get_chat_history_manager()
 # Gemma 4 Image Captioning
 # ---------------------------------------------------------------------------
 
-GEMMA_SERVER_BASE_URL = os.getenv("GEMMA_SERVER_BASE_URL")
-GEMMA4_API_KEY = os.getenv("GEMMA4_API_KEY")
-GEMMA4_MODEL = os.getenv("GEMMA4_MODEL")
+from app.services.vision_service import get_vision_service
 
 
 def get_image_caption(image_path: str) -> str:
     """Query the Gemma4 vision server to generate a detailed caption for the image."""
-    try:
-        with open(image_path, "rb") as f:
-            image_base64 = base64.b64encode(f.read()).decode("utf-8")
-
-        payload = {
-            "model": GEMMA4_MODEL,
-            "messages": [{
-                "role": "user",
-                "content": "Describe this image in detail. Mention all objects, text, charts, or any relevant content you see.",
-                "images": [image_base64]
-            }],
-            "stream": False
-        }
-
-        headers = {
-            "Authorization": f"Bearer {GEMMA4_API_KEY}",
-            "Content-Type": "application/json"
-        }
-
-        response = requests.post(
-            f"{GEMMA_SERVER_BASE_URL}/cdot/ollama2/api/chat",
-            json=payload,
-            headers=headers,
-            timeout=60
-        )
-        response.raise_for_status()
-        caption = response.json()["message"]["content"]
-        logger.info(f" Gemma 4 Caption: {caption}")
-        return caption
-
-    except Exception as e:
-        logger.error(f"Gemma 4 captioning error: {e}")
-        return ""
+    return get_vision_service().get_image_caption(image_path)
 
 
 # ---------------------------------------------------------------------------
