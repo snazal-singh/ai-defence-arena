@@ -56,8 +56,10 @@ def _make_table_id(filename: str, page: int, table_index: int) -> str:
     return f"{safe}_p{page}_t{table_index}"
 
 
+from werkzeug.utils import secure_filename
+
 def clean_filename(filename: str) -> str:
-    """Clean filename by removing temporary path prefixes"""
+    """Clean filename by removing temporary path prefixes and securing it."""
     if not filename:
         return filename
     
@@ -67,7 +69,7 @@ def clean_filename(filename: str) -> str:
     if '/' in filename:
         filename = filename.split('/')[-1]
     
-    return filename
+    return secure_filename(filename)
 
 def clean_text(text: str) -> str:
     """Apply universal text cleaning across all file types"""
