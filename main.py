@@ -12,11 +12,13 @@ from slowapi.errors import RateLimitExceeded
 from app.core.config import settings
 from app.core.limiter import limiter
 from app.models.mongo import Fingerprint, UserSession, User
+from app.models.benchmark import BenchmarkJob, BenchmarkDataset
 from app.api.auth import router as auth_router
 from app.api.accounts import router as accounts_router
 from app.api.queries import router as queries_router
 from app.api.documents import router as documents_router
 from app.api.stt import router as stt_router
+from app.api.benchmark import router as benchmark_router
 from fastapi.responses import FileResponse
 import os
 
@@ -29,7 +31,10 @@ logger = logging.getLogger(__name__)
 
 async def init_db() -> None:
     client = AsyncIOMotorClient(settings.MONGO_URL)
-    await init_beanie(database=client.test, document_models=[Fingerprint, UserSession, User])
+    await init_beanie(
+        database=client.test,
+        document_models=[Fingerprint, UserSession, User, BenchmarkJob, BenchmarkDataset],
+    )
     logger.info("MongoDB and Beanie initialized")
 
 
@@ -85,6 +90,12 @@ app.include_router(accounts_router, prefix=PREFIX)
 app.include_router(documents_router, prefix=PREFIX)
 app.include_router(queries_router, prefix=PREFIX)
 app.include_router(stt_router, prefix=PREFIX)
+app.include_router(benchmark_router, prefix=PREFIX)
+
+
+@app.get("/benchmark-ui", include_in_schema=False)
+def serve_benchmark_ui():
+    return FileResponse("benchmark_ui.html")
 
 
 if __name__ == "__main__":
