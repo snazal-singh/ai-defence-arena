@@ -226,20 +226,7 @@ async def ask(request: Request, body: Optional[QueryRequest] = None):
             raise HTTPException(status_code=400, detail="sessionId is required when context=true.")
         session_name = user_email + str(session_id.lower())
 
-    # Pre-store user message with image before full RAG execution (if image uploaded)
-    if image_url:
-        from app.models.chat_models import MessageRole
-        # Ensure we store the user turn with its image payload
-        chat_history_manager.store_user_message(
-            user_session=session_name,
-            chat_id=chat_id,
-            role=MessageRole.USER,
-            content=data['message'],
-            image_caption=caption,
-            image_url=image_url
-        )
-        # Skip standard user message storage in RAG agent because we already saved it here
-        data['skip_user_message_storage'] = True
+
 
     data['image_url'] = image_url
     data['image_caption'] = caption
