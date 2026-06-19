@@ -434,8 +434,9 @@ async def tts_direct(request: Request):
 # Public Demo query
 # ---------------------------------------------------------------------------
 
-@router.post("/demoAsk")
-def demo_ask(body: DemoQueryRequest):
+@router.post("/demo")
+@limiter.limit("10/minute")
+def demo(request: Request, body: DemoQueryRequest):
     """Public demo endpoint — answers questions about public transport."""
     response, status_code = query_service.process_demo_query(body.model_dump())
     return JSONResponse(content=response, status_code=status_code)
