@@ -130,13 +130,8 @@ class QueryAgentService:
 
         # Save conversation turn to chat history with chat_id
         assistant_response_text = response.get("answer", "")
-        # Save conversation turn to chat history with chat_id
-        # assistant_response_text = response.get("answer", "")
         response["image_url"] = image_url
         response["image_caption"] = image_caption
-        
-        # Determine query type based on response structure
-        query_type = "general"
         
         # Determine query type based on response structure
         query_type = "general"
