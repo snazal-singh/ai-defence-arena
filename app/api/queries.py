@@ -59,38 +59,7 @@ def serve_file(filepath: str):
     return FileResponse(file_path)
 
 
-# ---------------------------------------------------------------------------
-# Helper to authenticate user from token in headers OR payload data
-# ---------------------------------------------------------------------------
 
-import jwt
-
-def authenticate_user_robust(request: Request, data: dict) -> str:
-    """Robust authentication extracting token from headers OR form/json request data."""
-    token = None
-    
-    # 1. Try to get from Authorization header
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split(" ")[1]
-    
-    # 2. Fallback to form/json token
-    if not token and isinstance(data, dict):
-        token = data.get("token")
-        
-    if not token:
-        raise HTTPException(status_code=401, detail="Token is missing!")
-        
-    try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-        user_email: str | None = payload.get("email")
-        if user_email is None:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
-        return user_email
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
 
 
 # ---------------------------------------------------------------------------
@@ -158,7 +127,11 @@ async def trial_ask(
 # ---------------------------------------------------------------------------
 
 @router.post("/ask")
-async def ask(request: Request, body: Optional[QueryRequest] = None):
+async def ask(
+    request: Request,
+    body: Optional[QueryRequest] = None,
+    user_email: str = Depends(get_current_user),
+):
     """Process a document query with full chat-history context for an authenticated user."""
     image_url = None
     caption = None
@@ -214,8 +187,7 @@ async def ask(request: Request, body: Optional[QueryRequest] = None):
             except Exception:
                 data = {}
 
-    # Authenticate user robustly
-    user_email = authenticate_user_robust(request, data)
+    # user_email is authenticated via Depends(get_current_user)
     session_name = user_email
     context = data.get('context', False)
     chat_id = data.get('chatId', 'default')
