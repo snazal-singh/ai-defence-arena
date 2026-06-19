@@ -377,10 +377,7 @@ STRICT RULES:
 
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            prompt += f"""
-Previous conversation history:
-{context_text}
-"""
+            prompt += f"\nPrevious conversation history:\n{context_text}\n"
         language_instruction = self._get_language_instruction(language)
         
         # Inject image description into CONTEXT
@@ -417,10 +414,7 @@ STRICT RULES:
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            prompt += f"""
-Previous conversation context:
-{context_text}
-"""
+            prompt += f"\nPrevious conversation context:\n{context_text}\n"
 
         language_instruction = self._get_language_instruction(language)
 
@@ -454,10 +448,7 @@ STRICT RULES:
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            prompt += f"""
-Previous conversation context:
-{context_text}
-"""
+            prompt += f"\nPrevious conversation context:\n{context_text}\n"
 
         language_instruction = self._get_language_instruction(language)
 
@@ -495,10 +486,7 @@ Documents available:
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            prompt += f"""Previous conversation context:
-{context_text}
-
-"""
+            prompt += f"\nPrevious conversation context:\n{context_text}\n\n"
 
         language_instruction = self._get_language_instruction(language)
 
