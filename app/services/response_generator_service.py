@@ -359,28 +359,28 @@ Do not make up information or answer factual questions from general knowledge.
         image_rule = ""
         if has_image:
             image_rule = """- If the user's query is asking about the provided image (either in the current query as '[Image Provided by User]' or in the previous conversation history as '[Image Description]'), you MUST first verify if the image content is related to the documents in the CONTEXT. An image is considered related if its topic, text, charts, or content directly matches, supports, or is discussed in the provided documents.
-    - If the image content is NOT related to the documents in the CONTEXT, and the user's query is asking about the image, respond exactly: "The provided image is not related to the documents." and do not answer any questions about the image itself.
-    - If the image is related to the documents, you must treat the image description as part of the CONTEXT and answer the question about the image using both the documents and the image description.
-    - If the user's query is about the documents (and not asking about the image itself), answer the question normally using the document context, even if an unrelated image is present in the context or history."""
+- If the image content is NOT related to the documents in the CONTEXT, and the user's query is asking about the image, respond exactly: "The provided image is not related to the documents." and do not answer any questions about the image itself.
+- If the image is related to the documents, you must treat the image description as part of the CONTEXT and answer the question about the image using both the documents and the image description.
+- If the user's query is about the documents (and not asking about the image itself), answer the question normally using the document context, even if an unrelated image is present in the context or history."""
 
         prompt = f"""You are a document assistant. Answer ONLY using the information in the CONTEXT below.
 
-    STRICT RULES:
-    - Use ONLY information explicitly stated in the CONTEXT. Do not add, infer, or assume anything beyond it.
-    - Do NOT expand abbreviations, acronyms, or short forms unless the full form is explicitly written in the CONTEXT.
-    - Do NOT use any prior knowledge, general knowledge, or external information.
-    - If the answer is not in the CONTEXT, respond exactly: "The information is not available in the provided documents."
-    - Do not guess, speculate, or fill gaps with plausible-sounding information.
-    - Use bullet points or structure only if required to explain the answer; otherwise answer directly.
-    {image_rule}
-    """
+STRICT RULES:
+- Use ONLY information explicitly stated in the CONTEXT. Do not add, infer, or assume anything beyond it.
+- Do NOT expand abbreviations, acronyms, or short forms unless the full form is explicitly written in the CONTEXT.
+- Do NOT use any prior knowledge, general knowledge, or external information.
+- If the answer is not in the CONTEXT, respond exactly: "The information is not available in the provided documents."
+- Do not guess, speculate, or fill gaps with plausible-sounding information.
+- Use bullet points or structure only if required to explain the answer; otherwise answer directly.
+{image_rule}
+"""
 
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
             prompt += f"""
-    Previous conversation history:
-    {context_text}
-    """
+Previous conversation history:
+{context_text}
+"""
         language_instruction = self._get_language_instruction(language)
         
         # Inject image description into CONTEXT
@@ -388,16 +388,16 @@ Do not make up information or answer factual questions from general knowledge.
             context = f"{context}\n\n[Image Provided by User]: {image_description}"
 
         prompt += f"""
-    CONTEXT:
-    {context}
+CONTEXT:
+{context}
 
-    QUESTION:
-    {user_question}
+QUESTION:
+{user_question}
 
-    {language_instruction}
+{language_instruction}
 
-    Generate ONLY the answer. No preamble, no commentary.
-    """
+Generate ONLY the answer. No preamble, no commentary.
+"""
         return prompt
     
     def _create_data_prompt(self, user_query: str, sql_context: str, language: Optional[str] = None,
