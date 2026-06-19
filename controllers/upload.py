@@ -149,7 +149,7 @@ def get_hierarchical_chunks(pages, filename=None):
                     meta["filename"] = filename
 
                 final_chunks.append(Document(
-                    page_content=chunk.replace("\n", " "),
+                    page_content=chunk,
                     metadata=meta,
                 ))
 
