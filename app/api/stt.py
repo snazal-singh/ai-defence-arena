@@ -1,11 +1,11 @@
 import os
 import uuid
 import logging
-import jwt
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import JSONResponse
 
+from app.api.deps import get_current_user
 from app.core.config import settings
 from app.services.stt_service import get_stt_service
 
@@ -22,41 +22,13 @@ def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def authenticate_user_stt(request: Request, token: Optional[str] = None) -> str:
-    """Robust authentication for STT, checking Form parameters, query params, or headers."""
-    if not token:
-        # Check header
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header[7:]
-            
-    if not token:
-        # Check query parameter
-        token = request.query_params.get("token")
-        
-    if not token:
-        logger.warning("Transcription request missing auth token.")
-        raise HTTPException(status_code=401, detail="Token is missing!")
-        
-    try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
-        email: str | None = payload.get("email")
-        if email is None:
-            raise HTTPException(status_code=401, detail="Could not validate credentials")
-        return email
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
-
-
 @router.post("/transcribe")
 async def transcribe(
     request: Request,
     audio: UploadFile = File(...),
     language: str = Form("Hindi"),
     strategy: str = Form("rnnt"),
-    token: Optional[str] = Form(None)
+    user_email: str = Depends(get_current_user),
 ):
     """
     Handle speech-to-text transcription of uploaded audio files.
@@ -65,10 +37,8 @@ async def transcribe(
     - 'audio': The audio file to transcribe
     - 'language': The name of the language (e.g. 'Hindi', 'Tamil')
     - 'strategy': The decoding strategy 'rnnt' or 'ctc' (optional, defaults to 'rnnt')
-    - 'token': JWT authentication token (optional in Form, can be in headers or query params)
     """
     # 1. Authentication
-    user_email = authenticate_user_stt(request, token)
     logger.info(f"Authenticated user {user_email} for audio transcription")
 
     # 2. Validation
