@@ -123,7 +123,8 @@ def get_hierarchical_chunks(pages, filename=None):
                 "table_index": page.metadata.get("table_index", 0),
                 "header": "",
             }
-
+            if filename:
+                meta["filename"] = filename
             final_chunks.append(Document(page_content=page.page_content, metadata=meta))
             continue
 
@@ -144,8 +145,11 @@ def get_hierarchical_chunks(pages, filename=None):
                         if f"Header {i}" in doc.metadata
                     ]),
                 }
+                if filename:
+                    meta["filename"] = filename
+
                 final_chunks.append(Document(
-                    page_content=chunk.replace("\n", " "),
+                    page_content=chunk,
                     metadata=meta,
                 ))
 

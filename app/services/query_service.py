@@ -8,6 +8,7 @@ Updated to use the agent-based approach for more efficient and modular processin
 import logging
 import time
 from typing import Dict, Any, Tuple
+import os
 
 from app.services.query_agent_service import get_query_agent_service
 from controllers.database import is_user_limit_over, is_trial_limit_over
@@ -87,7 +88,10 @@ class QueryService:
                 user_query["filenames"],
                 user_query["hascsvxl"],
                 user_query["mode"],
-                is_trial=True
+                is_trial=True,
+                chat_id=user_query.get("chat_id"),
+                image_url=data.get('image_url'),
+                image_caption=data.get('image_caption')
             )
         except Exception as e:
             logger.exception(f'Error processing query with agent: {e}')
@@ -164,7 +168,9 @@ class QueryService:
                     user_query["hascsvxl"],
                     user_query["mode"],
                     is_trial=False,
-                    chat_id=chat_id
+                    chat_id=chat_id,
+                    image_url=data.get('image_url'),
+                    image_caption=data.get('image_caption')
                 )
 
                 logger.info(f"RESPNSE answer: {response['answer']}")
@@ -225,7 +231,7 @@ class QueryService:
         """
         user_query = data.get('message')
         if not user_query:
-            raise ValueError("Query message is missing")
+            user_query = "Describe and summarize the provided image."
             
         input_language = int(data.get('inputLanguage', 23))
         output_language = int(data.get('outputLanguage', 23))

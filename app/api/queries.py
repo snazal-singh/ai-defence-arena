@@ -1,12 +1,17 @@
 import json
 import logging
 import time
+import os
+import uuid
+import base64
+import requests
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form, File, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse, Response
 
 from app.api.deps import get_current_user, get_current_user_sse
+from app.core.config import settings
 from app.core.limiter import limiter
 from app.schemas.query import (
     AnalyzeContextRequest,
@@ -18,8 +23,8 @@ from app.schemas.query import (
 )
 from app.services.chat_history_manager import get_chat_history_manager
 from app.services.query_service import get_query_service
-from app.services.tts_service import get_tts_service
 
+# Configure logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Queries"])
@@ -29,14 +34,91 @@ chat_history_manager = get_chat_history_manager()
 
 
 # ---------------------------------------------------------------------------
+# Gemma 4 Image Captioning
+# ---------------------------------------------------------------------------
+
+from app.services.vision_service import get_vision_service
+
+
+def get_image_caption(image_path: str) -> str:
+    """Query the Gemma4 vision server to generate a detailed caption for the image."""
+    return get_vision_service().get_image_caption(image_path)
+
+
+# ---------------------------------------------------------------------------
+# Static serving for chat images
+# ---------------------------------------------------------------------------
+
+@router.get("/chat_images/{filepath:path}")
+def serve_file(filepath: str):
+    """Serve saved chat images from the local chat_images directory."""
+    base_dir = os.path.abspath("chat_images")
+    file_path = os.path.join(base_dir, filepath)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path)
+
+
+
+
+
+# ---------------------------------------------------------------------------
 # Trial query (no auth)
 # ---------------------------------------------------------------------------
 
 @router.post("/trial-ask")
 @limiter.limit("20/minute")
-def trial_ask(request: Request, body: TrialQueryRequest):
-    """Process a document query for a fingerprint-identified trial user."""
-    response, status_code = query_service.process_trial_query(body.model_dump())
+async def trial_ask(
+    request: Request,
+    fingerprint: Optional[str] = Form(None),
+    message: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None),
+    filenames: Optional[str] = Form(None),
+    body: Optional[TrialQueryRequest] = None,
+):
+    """Process a document query for a fingerprint-identified trial user with optional image uploads."""
+    if "multipart/form-data" in request.headers.get("content-type", ""):
+        data = {
+            'fingerprint': fingerprint or '',
+            'message': message or ''
+        }
+        if filenames:
+            try:
+                import json
+                data['filenames'] = json.loads(filenames)
+            except Exception:
+                data['filenames'] = []
+        else:
+            data['filenames'] = []
+
+        if image and image.filename:
+            image_path = f"/tmp/{image.filename}"
+            content = await image.read()
+            with open(image_path, "wb") as f:
+                f.write(content)
+                
+            caption = get_image_caption(image_path)
+            
+            if data['message']:
+                data['message'] = f"{data['message']}\n\nImage Description: {caption}"
+            else:
+                data['message'] = f"Image Description: {caption}"
+            logger.info(f"📨 FINAL TRIAL MESSAGE SENT TO RAG:\n{data['message']}")
+            
+            os.remove(image_path)
+    else:
+        if body:
+            data = body.model_dump()
+        else:
+            try:
+                data = await request.json()
+            except Exception:
+                data = {}
+
+    if not data or not data.get('fingerprint'):
+        raise HTTPException(status_code=400, detail="Missing required 'fingerprint' parameter in request body or form.")
+
+    response, status_code = query_service.process_trial_query(data)
     return JSONResponse(content=response, status_code=status_code)
 
 
@@ -45,16 +127,81 @@ def trial_ask(request: Request, body: TrialQueryRequest):
 # ---------------------------------------------------------------------------
 
 @router.post("/ask")
-def ask(body: QueryRequest, user_email: str = Depends(get_current_user)):
+async def ask(
+    request: Request,
+    body: Optional[QueryRequest] = None,
+    user_email: str = Depends(get_current_user),
+):
     """Process a document query with full chat-history context for an authenticated user."""
-    data = body.model_dump()
-    session_name = user_email
-    chat_id = body.chatId or "default"
+    image_url = None
+    caption = None
+    
+    if "multipart/form-data" in request.headers.get("content-type", ""):
+        form = await request.form()
+        image = form.get("image")
+        data = {
+            'token': form.get('token'),
+            'message': form.get('message', ''),
+            'context': form.get('context', "false").lower() in ("true", "1"),
+            'chatId': form.get('chatId', 'default'),
+            'sessionId': form.get('sessionId'),
+            'inputLanguage': int(form.get('inputLanguage', 23)),
+            'outputLanguage': int(form.get('outputLanguage', 23)),
+            'filenames': form.getlist('filenames'),
+            'hasCsvOrXlsx': form.get('hasCsvOrXlsx', "false").lower() in ("true", "1"),
+            'mode': form.get('mode', 'default'),
+        }
+        
+        if image and image.filename:
+            # Save image permanently to files directory instead of /tmp/
+            BASE_USERS_DIR = "chat_images"
+            session_id_for_path = data.get('sessionId', 'default')
+            ext = os.path.splitext(image.filename)[1] or ".jpg"
+            image_filename = f"img_{int(time.time())}_{uuid.uuid4().hex[:8]}{ext}"
+            image_dir = os.path.join(BASE_USERS_DIR, session_id_for_path)
+            os.makedirs(image_dir, exist_ok=True)
+            image_save_path = os.path.join(image_dir, image_filename)
+            
+            # Read and write content
+            content = await image.read()
+            with open(image_save_path, "wb") as f:
+                f.write(content)
 
-    if body.context:
-        if not body.sessionId:
+            # Get caption from Gemma4
+            caption = get_image_caption(image_save_path)
+
+            # Build URL for frontend to fetch image
+            image_url = f"/chat_images/{session_id_for_path}/{image_filename}"
+
+            if data['message']:
+                data['message'] = f"{data['message']}\n\nImage Description: {caption}"
+            else:
+                data['message'] = f"Image Description: {caption}"
+            logger.info(f"FINAL MESSAGE SENT TO RAG:\n{data['message']}")
+    else:
+        if body:
+            data = body.model_dump()
+        else:
+            try:
+                data = await request.json()
+            except Exception:
+                data = {}
+
+    # user_email is authenticated via Depends(get_current_user)
+    session_name = user_email
+    context = data.get('context', False)
+    chat_id = data.get('chatId', 'default')
+    
+    if context:
+        session_id = data.get('sessionId')
+        if not session_id:
             raise HTTPException(status_code=400, detail="sessionId is required when context=true.")
-        session_name = user_email + body.sessionId.lower()
+        session_name = user_email + str(session_id.lower())
+
+
+
+    data['image_url'] = image_url
+    data['image_caption'] = caption
 
     response, status_code = query_service.process_authenticated_query(data, user_email, session_name, chat_id)
     return JSONResponse(content=response, status_code=status_code)
@@ -146,15 +293,14 @@ def ask_stream(
 
 
 # ---------------------------------------------------------------------------
-# Query with TTS audio streaming
+# Query with local offline TTS audio response
 # ---------------------------------------------------------------------------
 
 @router.post("/ask-tts")
 @limiter.limit("10/minute")
 def ask_tts(request: Request, body: QueryRequest, user_email: str = Depends(get_current_user)):
     """
-    Process a document query and stream the answer as an audio/mpeg response via TTS.
-    The query is resolved synchronously first; audio is then streamed chunk by chunk.
+    Process a document query and return the answer as a local multilingual Indic Parler TTS audio buffer.
     """
     data = body.model_dump()
     session_name = user_email
@@ -180,25 +326,25 @@ def ask_tts(request: Request, body: QueryRequest, user_email: str = Depends(get_
     output_language = body.outputLanguage or 23
     language_map = {1: "hindi", 23: "english"}
     lang_str = language_map.get(output_language, "english") if isinstance(output_language, int) else output_language
+    lang_str = str(lang_str).strip().lower()
 
-    tts_service = get_tts_service()
-
-    def generate_audio():
-        try:
-            for chunk in tts_service.generate_audio_stream(answer_text, lang_str):
-                yield chunk
-        except Exception as e:
-            logger.error(f"TTS streaming error: {e}")
-
-    return StreamingResponse(
-        generate_audio(),
-        media_type="audio/mpeg",
-        headers={
-            "Cache-Control": "no-cache",
-            "X-Accel-Buffering": "no",
-            "Connection": "keep-alive",
-        },
-    )
+    try:
+        from app.services.indic_parler_tts_service import get_indic_parler_service
+        parler_service = get_indic_parler_service()
+        audio_bytes = parler_service.generate_audio_bytes(answer_text, lang_str)
+        
+        return Response(
+            content=audio_bytes,
+            media_type="audio/mpeg",
+            headers={
+                "Content-Length": str(len(audio_bytes)),
+                "Cache-Control": "no-cache",
+                "X-TTS-Provider": "indic-parler",
+            }
+        )
+    except Exception as e:
+        logger.exception(f"TTS generation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Local TTS generation failed: {str(e)}")
 
 
 # ---------------------------------------------------------------------------
@@ -207,20 +353,85 @@ def ask_tts(request: Request, body: QueryRequest, user_email: str = Depends(get_
 
 @router.get("/tts-health")
 def tts_health(user_email: str = Depends(get_current_user)):
-    """Check whether the TTS service is reachable and correctly configured."""
-    tts_service = get_tts_service()
-    ok = tts_service.test_connection()
-    return {
-        "status": "healthy" if ok else "degraded",
-        "tts_available": ok,
-        "api_configured": bool(tts_service.api_key),
-        "default_voice": tts_service.default_voice_id,
-        "message": "TTS service is ready" if ok else "TTS service has issues",
-    }
+    """Check whether the local Indic Parler TTS service is reachable and configured."""
+    try:
+        from app.services.indic_parler_tts_service import get_indic_parler_service
+        parler_service = get_indic_parler_service()
+        connection_ok = parler_service.test_connection()
+        return {
+            "status": "healthy" if connection_ok else "degraded",
+            "tts_available": connection_ok,
+            "default_voice": "parler-tts-indic-v1",
+            "message": "Local Indic Parler TTS service is ready" if connection_ok else "Local Indic Parler TTS service has issues",
+        }
+    except Exception as e:
+        logger.error(f"TTS health check error: {e}")
+        return {
+            "status": "unhealthy",
+            "tts_available": False,
+            "message": f"TTS service error: {str(e)}"
+        }
 
 
 # ---------------------------------------------------------------------------
-# Demo query (public, no auth)
+# Direct TTS audio synthesis endpoint
+# ---------------------------------------------------------------------------
+
+@router.api_route("/tts", methods=["GET", "POST"])
+async def tts_direct(request: Request):
+    """
+    Direct text-to-speech endpoint using local Indic Parler TTS.
+    Converts given text to audio and returns the bytes.
+    """
+    try:
+        text = None
+        output_language = "english"
+        
+        if request.method == "POST":
+            data = await request.json()
+            text = data.get("text")
+            output_language = data.get("outputLanguage", "english")
+        else:
+            text = request.query_params.get("text")
+            output_language = request.query_params.get("outputLanguage", "english")
+
+        if not text or not text.strip():
+            raise HTTPException(status_code=400, detail="Text is required")
+
+        # Normalize output language
+        try:
+            output_language = int(output_language)
+        except (ValueError, TypeError):
+            pass
+        if isinstance(output_language, int):
+            language_map = {1: 'hindi', 23: 'english'}
+            output_language = language_map.get(output_language, 'english')
+        output_language = str(output_language).strip().lower()
+
+        logger.info(f"Generating Direct TTS | lang={output_language} | text_len={len(text)}")
+
+        from app.services.indic_parler_tts_service import get_indic_parler_service
+        parler_service = get_indic_parler_service()
+        audio_bytes = parler_service.generate_audio_bytes(text, output_language)
+
+        return Response(
+            content=audio_bytes,
+            media_type="audio/mpeg",
+            headers={
+                'Content-Length': str(len(audio_bytes)),
+                'Cache-Control': 'no-cache',
+                'X-TTS-Provider': 'indic-parler',
+            }
+        )
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.exception(f'Direct TTS generation error: {e}')
+        raise HTTPException(status_code=500, detail=f'Direct TTS generation failed: {e}')
+
+
+# ---------------------------------------------------------------------------
+# Public Demo query
 # ---------------------------------------------------------------------------
 
 @router.post("/demo")
@@ -349,6 +560,8 @@ def get_chat_history(
             "content": d.get("content"),
             "query_type": d.get("query_type"),
             "save_to_note": d.get("save_to_note", False),
+            "image_url": d.get("image_url", ""),
+            "image_caption": d.get("image_caption", ""),
         })
 
     return {
