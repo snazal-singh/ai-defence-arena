@@ -75,7 +75,8 @@ class QueryAgentService:
                     input_language: int = 23, output_language: int = 23,
                     filenames: Optional[List[str]] = None,
                     has_csvxl: bool = False, mode: str = 'default',
-                    is_trial: bool = False, chat_id: str = None) -> Dict[str, Any]:
+                    is_trial: bool = False, chat_id: str = None,
+                    image_url: str = None, image_caption: str = None) -> Dict[str, Any]:
         """
         Process a user query with support for both standard and creative modes.
         
@@ -129,6 +130,8 @@ class QueryAgentService:
 
         # Save conversation turn to chat history with chat_id
         assistant_response_text = response.get("answer", "")
+        response["image_url"] = image_url
+        response["image_caption"] = image_caption
         
         # Determine query type based on response structure
         query_type = "general"
@@ -147,6 +150,8 @@ class QueryAgentService:
             chat_id=chat_id,
             query_type=query_type,
             context_used=chat_context.get("context_used", False) if chat_context else False,
+            image_url=response.get("image_url"),
+            image_caption=response.get("image_caption"),
             metadata={
                 "processing_time": response.get("processing_metadata", {}).get("processing_time"),
                 "mode": response.get("creative_reasoning", {}).get("strategy_used", "standard")
@@ -306,21 +311,25 @@ class QueryAgentService:
             )
     
     def _process_standard_query(self, user_query: str, user_session: str,
-                              resources: Dict[str, bool], language: Optional[str],
-                              filenames: Optional[List[str]], has_csvxl: bool,
-                              chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Process query using standard mode."""
-        
-        # Enhance query with chat context if available
+                          resources: Dict[str, bool], language: Optional[str],
+                          filenames: Optional[List[str]], has_csvxl: bool,
+                          chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         enhanced_query = user_query
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
             enhanced_query = f"{user_query}\n\nContext from previous conversation:\n{context_text}"
-            logger.info("Enhanced query with chat context for intent classification")
+
+        # Force DOCUMENT intent if image description is in the query or in the chat context
+        has_image_in_query = "\n\nImage Description:" in user_query
+        has_image_in_context = chat_context and chat_context.get("context_used") and "[Image Description:" in chat_context.get("context", "")
         
+        if has_image_in_query or has_image_in_context:
+            logger.info("Image query or image in context detected - forcing DOCUMENT intent")
+            return self._process_document_query(enhanced_query, user_session, language, chat_context)
+
         # Classify query intent using the enhanced query
         intent, confidence = self.intent_service.classify_intent(
-            enhanced_query, 
+            enhanced_query,
             has_documents=resources.get('has_documents', False),
             has_data_tables=has_csvxl
         )

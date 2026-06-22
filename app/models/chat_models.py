@@ -40,6 +40,12 @@ class ChatMessage:
     token_count: int = 0
     metadata: Dict[str, Any] = field(default_factory=dict)
     save_to_note: bool = False
+    # -------------------------------------------------
+    # NEW – store the raw caption when the user uploads an image
+    # This allows later queries to reference the image description
+    image_caption: Optional[str] = None
+    # NEW – store the URL/path to the saved image file for chat history display
+    image_url: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert message to dictionary for storage."""
@@ -53,7 +59,11 @@ class ChatMessage:
                 "context_used": bool(self.context_used),
                 "token_count": int(self.token_count) if self.token_count else 0,
                 "metadata": self.metadata or {},
-                "save_to_note": bool(self.save_to_note)
+                "save_to_note": bool(self.save_to_note),
+                # Persist the caption if it exists
+                "image_caption": self.image_caption or "",
+                # Persist the image URL if it exists
+                "image_url": self.image_url or ""
             }
         except Exception as e:
             logger.error(f"Error converting ChatMessage to dict: {e}")
@@ -67,7 +77,9 @@ class ChatMessage:
                 "context_used": False,
                 "token_count": 0,
                 "metadata": {},
-                "save_to_note": False
+                "save_to_note": False,
+                "image_caption": "",
+                "image_url": ""
             }
 
     @classmethod
@@ -111,7 +123,9 @@ class ChatMessage:
                 context_used=bool(data.get("context_used", False)),
                 token_count=int(data.get("token_count", 0)),
                 metadata=data.get("metadata", {}),
-                save_to_note=bool(data.get("save_to_note", False))
+                save_to_note=bool(data.get("save_to_note", False)),
+                image_caption=data.get("image_caption", None),
+                image_url=data.get("image_url", None)
             )
         except Exception as e:
             logger.error(f"Error creating ChatMessage from dict: {e}")

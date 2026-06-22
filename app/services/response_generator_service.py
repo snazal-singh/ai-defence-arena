@@ -340,19 +340,29 @@ Do not make up information or answer factual questions from general knowledge.
         return prompt
     
     def _create_document_prompt(self, user_question: str, context: str, language: Optional[str] = None,
-                              chat_context: Optional[Dict[str, Any]] = None) -> str:
-        """
-        Generate a prompt for the LLM with intelligent response style detection.
+                          chat_context: Optional[Dict[str, Any]] = None) -> str:
 
-        Args:
-            user_question (str): User's question
-            context (str): Context for the question
-            language (str, optional): Language for response
-            chat_context (dict, optional): Chat context information
+    # Extract image description from question if present
+        image_description = ""
+        if "\n\nImage Description:" in user_question:
+            parts = user_question.split("\n\nImage Description:")
+            user_question = parts[0].strip()
+            image_description = parts[1].strip()
 
-        Returns:
-            str: Generated prompt
-        """
+        # Check if an image is involved (either in the current query or in the chat history)
+        has_image = bool(image_description) or (
+            chat_context and 
+            chat_context.get("context_used") and 
+            "[Image Description:" in chat_context.get("context", "")
+        )
+
+        image_rule = ""
+        if has_image:
+            image_rule = """- If the user's query is asking about the provided image (either in the current query as '[Image Provided by User]' or in the previous conversation history as '[Image Description]'), you MUST first verify if the image content is related to the documents in the CONTEXT. An image is considered related if its topic, text, charts, or content directly matches, supports, or is discussed in the provided documents.
+- If the image content is NOT related to the documents in the CONTEXT, and the user's query is asking about the image, respond exactly: "The provided image is not related to the documents." and do not answer any questions about the image itself.
+- If the image is related to the documents, you must treat the image description as part of the CONTEXT and answer the question about the image using both the documents and the image description.
+- If the user's query is about the documents (and not asking about the image itself), answer the question normally using the document context, even if an unrelated image is present in the context or history."""
+
         prompt = f"""You are a document assistant. Answer ONLY using the information in the CONTEXT below.
 
 STRICT RULES:
@@ -362,16 +372,18 @@ STRICT RULES:
 - If the answer is not in the CONTEXT, respond exactly: "The information is not available in the provided documents."
 - Do not guess, speculate, or fill gaps with plausible-sounding information.
 - Use bullet points or structure only if required to explain the answer; otherwise answer directly.
+{image_rule}
 """
 
-        # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            prompt += f"""
-Previous conversation history:
-{context_text}
-"""
+            prompt += f"\nPrevious conversation history:\n{context_text}\n"
         language_instruction = self._get_language_instruction(language)
+        
+        # Inject image description into CONTEXT
+        if image_description:
+            context = f"{context}\n\n[Image Provided by User]: {image_description}"
+
         prompt += f"""
 CONTEXT:
 {context}
@@ -383,7 +395,6 @@ QUESTION:
 
 Generate ONLY the answer. No preamble, no commentary.
 """
-
         return prompt
     
     def _create_data_prompt(self, user_query: str, sql_context: str, language: Optional[str] = None,
@@ -403,10 +414,7 @@ STRICT RULES:
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            prompt += f"""
-Previous conversation context:
-{context_text}
-"""
+            prompt += f"\nPrevious conversation context:\n{context_text}\n"
 
         language_instruction = self._get_language_instruction(language)
 
@@ -440,10 +448,7 @@ STRICT RULES:
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            prompt += f"""
-Previous conversation context:
-{context_text}
-"""
+            prompt += f"\nPrevious conversation context:\n{context_text}\n"
 
         language_instruction = self._get_language_instruction(language)
 
@@ -481,10 +486,7 @@ Documents available:
         # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
-            prompt += f"""Previous conversation context:
-{context_text}
-
-"""
+            prompt += f"\nPrevious conversation context:\n{context_text}\n\n"
 
         language_instruction = self._get_language_instruction(language)
 
