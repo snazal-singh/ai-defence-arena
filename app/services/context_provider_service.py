@@ -74,12 +74,12 @@ class ContextProviderService:
             total_count = 0
             for chunk in extracted:
                 is_table = chunk.get("content_type") == "table"
-                # if not is_table:
-                #     text_count += 1
-                #     if text_count > 5:
-                #         continue
-                # if total_count >= 15:
-                #     break
+                if not is_table:
+                    text_count += 1
+                    if text_count > 5:
+                        continue
+                if total_count >= 15:
+                    break
                 total_count += 1
                 try:
                     formatted_context += (

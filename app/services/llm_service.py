@@ -66,7 +66,7 @@ from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResu
 from langchain.base_language import BaseLanguageModel
 from langchain.callbacks.base import BaseCallbackHandler
 
-from app.config import Config
+from app.core.config import settings
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -76,14 +76,13 @@ logger = logging.getLogger(__name__)
 # GPU Server configuration (read once at import time)
 # ---------------------------------------------------------------------------
 
-GPU_SERVER_BASE_URL: str = getattr(Config, "GPU_SERVER_BASE_URL", "https://gpu.server.domain")
-GPU_SERVER_API_KEY: str = getattr(Config, "GPU_SERVER_API_KEY", "")
-GPU_SERVER_MODEL: str = getattr(Config, "GPU_SERVER_MODEL", "gpt-oss:20b")
-GPU_SERVER_DEFAULT_MAX_TOKENS: int = getattr(Config, "GPU_SERVER_DEFAULT_MAX_TOKENS", 1000)
-GPU_SERVER_VERIFY_SSL: bool = getattr(Config, "GPU_SERVER_VERIFY_SSL", False)   # set True in prod with valid cert
-GPU_SERVER_CHAT_ENDPOINT: Optional[str] = getattr(Config, "GPU_SERVER_CHAT_ENDPOINT", None)
+GPU_SERVER_BASE_URL: str = settings.GPU_SERVER_BASE_URL
+GPU_SERVER_API_KEY: str = settings.GPU_SERVER_API_KEY
+GPU_SERVER_MODEL: str = settings.GPU_SERVER_MODEL
+GPU_SERVER_DEFAULT_MAX_TOKENS: int = settings.GPU_SERVER_DEFAULT_MAX_TOKENS
+GPU_SERVER_VERIFY_SSL: bool = settings.GPU_SERVER_VERIFY_SSL
 
-CHAT_ENDPOINT = GPU_SERVER_CHAT_ENDPOINT or f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
+CHAT_ENDPOINT = f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
 
 
 # ---------------------------------------------------------------------------
@@ -194,12 +193,6 @@ class GPUServerChatModel(BaseChatModel):
         # {"message": {"role": "assistant", "content": "..."}, ...}
         try:
             content = data["message"]["content"]
-            eval_count = data.get("eval_count", 0)
-            eval_duration_ns = data.get("eval_duration", 0)
-
-            if eval_duration_ns > 0:
-                tok_sec = eval_count / (eval_duration_ns / 1e9)
-                logger.info(f"Generation Speed: {tok_sec:.2f} tok/sec")
         except (KeyError, TypeError) as exc:
             logger.error("Unexpected GPU server response format: %s", data)
             raise ValueError(f"Unexpected response format from GPU server: {data}") from exc

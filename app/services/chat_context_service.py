@@ -310,11 +310,6 @@ Respond with JSON only:
             if len(content) > 150:
                 content = content[:150] + "..."
             
-            # Keep the image description intact in chat context
-            image_cap = msg.get("image_caption")
-            if image_cap:
-                content = f"{content} [Image Description: {image_cap}]"
-            
             context_parts.append(f"{role}: {content}")
             token_count += len(content.split()) * 1.3  # Rough token estimate
         
@@ -362,11 +357,6 @@ Respond with JSON only:
             if len(content) > 200:
                 content = content[:200] + "..."
             
-            # Keep the image description intact in chat context
-            image_cap = msg.get("image_caption")
-            if image_cap:
-                content = f"{content} [Image Description: {image_cap}]"
-            
             context_parts.append(f"{role}: {content}")
             token_count += len(content.split()) * 1.3
         
@@ -395,11 +385,6 @@ Respond with JSON only:
             # Don't truncate as much for clarification context
             if len(content) > 300:
                 content = content[:300] + "..."
-            
-            # Keep the image description intact in chat context
-            image_cap = msg.get("image_caption")
-            if image_cap:
-                content = f"{content} [Image Description: {image_cap}]"
             
             context_parts.append(f"{role}: {content}")
             token_count += len(content.split()) * 1.3

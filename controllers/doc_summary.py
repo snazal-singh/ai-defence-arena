@@ -21,7 +21,7 @@ from summarizer import Summarizer
 
 # Local imports
 from app.services.llm_service import get_fast_llm
-from app.config import Config
+from app.core.config import settings
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -37,12 +37,12 @@ class DocumentSummaryService:
         self.llm = get_fast_llm()
         
         # Default character limit for fallback content
-        self.fallback_char_limit = Config.SUMMARY_FALLBACK_CHAR_LIMIT
+        self.fallback_char_limit = settings.SUMMARY_FALLBACK_CHAR_LIMIT
         # Dynamic summary configuration
-        self.min_sentences = Config.SUMMARY_MIN_SENTENCES
-        self.max_sentences = Config.SUMMARY_MAX_SENTENCES
-        self.extraction_ratio = Config.SUMMARY_EXTRACTION_RATIO
-        self.BASE_USERS_DIR = Config.BASE_USERS_DIR
+        self.min_sentences = settings.SUMMARY_MIN_SENTENCES
+        self.max_sentences = settings.SUMMARY_MAX_SENTENCES
+        self.extraction_ratio = settings.SUMMARY_EXTRACTION_RATIO
+        self.BASE_USERS_DIR = settings.BASE_USERS_DIR
     
     def create_abstractive_summary(self, user_session: str) -> None:
         """
@@ -172,16 +172,8 @@ class DocumentSummaryService:
         # Calculate dynamic sentence count based on content
         sentence_count = self._calculate_dynamic_sentence_count(full_text)
         
-        # Ensure text does not exceed SpaCy's 1,000,000 character limit to prevent memory/E088 errors
-        max_spacy_limit = 950000
-        if len(full_text) > max_spacy_limit:
-            logger.info(f"Text length ({len(full_text)}) exceeds SpaCy limit. Truncating to {max_spacy_limit} characters to prevent memory errors.")
-            full_text_to_summarize = full_text[:max_spacy_limit]
-        else:
-            full_text_to_summarize = full_text
-            
         # Use BERT extractive summarizer model with calculated count
-        most_important_sents = self.bert_model(full_text_to_summarize, num_sentences=sentence_count)
+        most_important_sents = self.bert_model(full_text, num_sentences=sentence_count)
         
         # Save the most important sentences to a file
         with open(summary_path, 'w', encoding='utf8') as file:
@@ -254,9 +246,9 @@ class DocumentSummaryService:
             prompt = self._create_summary_prompt(query, combined_text, language)
             logger.info(f"Approx token count for prompt: {len(prompt.split()) * 1.33}")
             
-            # Create summary with LLM - commenting 250 -251 because of same call repeated.
-            # llm = get_fast_llm()
-            # summary = llm.invoke(prompt)
+            # Create summary with LLM
+            llm = get_fast_llm()
+            summary = llm.invoke(prompt)
             # Create summary
             summary = self.llm.invoke(prompt)
             logger.info(f'Generated summary in {time.time() - start_time:.2f} seconds')

@@ -37,7 +37,7 @@ class CreativeReasoningService:
         self.max_processing_time = 120  # seconds
     
     def process_creative_query_stream(self, user_query: str, user_session: str,
-                                    input_language: str = 'en', output_language: str = 'en',
+                                    input_language: int = 23, output_language: int = 23,
                                     filenames: Optional[list] = None, has_csvxl: bool = False,
                                     chat_context: Optional[Dict[str, Any]] = None,
                                     chat_id: str = None) -> Generator[Dict[str, Any], None, None]:
@@ -182,8 +182,8 @@ class CreativeReasoningService:
     def process_creative_query(self, user_query: str,
                              user_session: str,
                              available_resources: Dict[str, bool],
-                             input_language: str = 'en',
-                             output_language: str = 'en',
+                             input_language: int = 23,
+                             output_language: int = 23,
                              filenames: Optional[list] = None,
                              chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
@@ -430,7 +430,7 @@ Respond with JSON:
                 "Search for additional information related to this topic."
             ]
     
-    def _create_fallback_response(self, user_query: str, output_language: str) -> Dict[str, Any]:
+    def _create_fallback_response(self, user_query: str, output_language: int) -> Dict[str, Any]:
         """Create a fallback response when search fails."""
         language_name = self._get_language_name(output_language)
         
@@ -457,7 +457,7 @@ Respond with JSON:
         }
     
     def _create_error_response(self, user_query: str, error_message: str,
-                             processing_time: float, output_language: str, chat_id: str = None) -> Dict[str, Any]:
+                             processing_time: float, output_language: int, chat_id: str = None) -> Dict[str, Any]:
         """Create an error response."""
         language_name = self._get_language_name(output_language)
         
@@ -486,10 +486,16 @@ Respond with JSON:
             }
         }
     
-    def _get_language_name(self, lang_code: str) -> str:
-        """Get the language display name from an ISO 639-1/3 code."""
-        from utils.translation import ISO_TO_NAME
-        return ISO_TO_NAME.get(str(lang_code).lower(), 'English')
+    def _get_language_name(self, language_code: int) -> str:
+        """Get the language name from its code."""
+        languages = {
+            1: "Hindi", 2: "Gom", 3: "Kannada", 4: "Dogri", 5: "Bodo",
+            6: "Urdu", 7: "Tamil", 8: "Kashmiri", 9: "Assamese", 10: "Bengali",
+            11: "Marathi", 12: "Sindhi", 13: "Maithili", 14: "Punjabi", 15: "Malayalam",
+            16: "Manipuri", 17: "Telugu", 18: "Sanskrit", 19: "Nepali", 20: "Santali",
+            21: "Gujarati", 22: "Odia", 23: "English"
+        }
+        return languages.get(language_code, 'English')
     
     def should_use_creative_mode(self, mode: str, query_complexity: Optional[str] = None) -> bool:
         """Determine if creative mode should be used."""
