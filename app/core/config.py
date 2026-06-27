@@ -43,6 +43,10 @@ class Settings(BaseSettings):
     # Eleven Labs TTS
     ELEVENLABS_API_KEY: str = ""
 
+    # Vexyl STT/TTS (ai4bharat Indic models)
+    VEXYL_TTS_URL: str = "ws://127.0.0.1:8092"
+    VEXYL_STT_URL: str = "ws://127.0.0.1:8091"
+
     # OpenAI / Gemini
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""

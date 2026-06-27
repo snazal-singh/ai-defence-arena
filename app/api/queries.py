@@ -3,7 +3,7 @@ import logging
 import time
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.api.deps import get_current_user, get_current_user_sse
@@ -19,6 +19,7 @@ from app.schemas.query import (
 from app.services.chat_history_manager import get_chat_history_manager
 from app.services.query_service import get_query_service
 from app.services.tts_service import get_tts_service
+from app.services.stt_service import get_stt_service
 
 logger = logging.getLogger(__name__)
 
@@ -207,15 +208,62 @@ def ask_tts(request: Request, body: QueryRequest, user_email: str = Depends(get_
 
 @router.get("/tts-health")
 def tts_health(user_email: str = Depends(get_current_user)):
-    """Check whether the TTS service is reachable and correctly configured."""
+    """Check whether the Vexyl-TTS service is reachable."""
     tts_service = get_tts_service()
     ok = tts_service.test_connection()
     return {
         "status": "healthy" if ok else "degraded",
         "tts_available": ok,
-        "api_configured": bool(tts_service.api_key),
-        "default_voice": tts_service.default_voice_id,
-        "message": "TTS service is ready" if ok else "TTS service has issues",
+        "vexyl_url": tts_service.vexyl_url,
+        "message": "Vexyl-TTS is ready" if ok else "Vexyl-TTS is not reachable",
+    }
+
+
+# ---------------------------------------------------------------------------
+# STT endpoints (Vexyl-STT)
+# ---------------------------------------------------------------------------
+
+@router.post("/stt-transcribe")
+@limiter.limit("20/minute")
+def stt_transcribe(
+    request: Request,
+    audio: UploadFile = File(...),
+    language: str = Query(default="auto"),
+    user_email: str = Depends(get_current_user),
+):
+    """Transcribe an uploaded audio file via Vexyl-STT."""
+    audio_bytes = audio.file.read()
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="Audio file is empty.")
+
+    stt_service = get_stt_service()
+    try:
+        result = stt_service.transcribe_audio_bytes(
+            audio_bytes=audio_bytes,
+            language=language,
+            filename=audio.filename or "audio.wav",
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    except TimeoutError:
+        raise HTTPException(status_code=504, detail="Transcription timed out.")
+    except Exception as e:
+        logger.exception(f"STT unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Transcription failed.")
+
+    return result
+
+
+@router.get("/stt-health")
+def stt_health(user_email: str = Depends(get_current_user)):
+    """Check whether the Vexyl-STT service is reachable."""
+    stt_service = get_stt_service()
+    ok = stt_service.test_connection()
+    return {
+        "status": "healthy" if ok else "degraded",
+        "stt_available": ok,
+        "vexyl_url": stt_service.stt_url,
+        "message": "Vexyl-STT is ready" if ok else "Vexyl-STT is not reachable",
     }
 
 

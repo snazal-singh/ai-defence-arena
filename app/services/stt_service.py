@@ -21,7 +21,7 @@ from typing import Generator, Iterator, Optional
 import requests
 import websockets
 
-from app.config import Config
+from app.core.config import settings as Config
 
 logger = logging.getLogger(__name__)
 
