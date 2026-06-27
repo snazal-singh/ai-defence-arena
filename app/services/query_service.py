@@ -155,7 +155,8 @@ class QueryService:
                     user_query["message"],
                     user_email,
                     user_query["input_language"],
-                    user_query["output_language"]
+                    user_query["output_language"],
+                    original_query=user_query["original_message"]
                 )
             else:
                 # User has selected files/session, use normal processing
@@ -171,7 +172,8 @@ class QueryService:
                     is_trial=False,
                     chat_id=chat_id,
                     image_url=data.get('image_url'),
-                    image_caption=data.get('image_caption')
+                    image_caption=data.get('image_caption'),
+                    original_query=user_query["original_message"]
                 )
 
                 logger.info(f"RESPONSE answer: {response['answer']}")
@@ -233,17 +235,19 @@ class QueryService:
         user_query = data.get('message')
         if not user_query:
             user_query = "Describe and summarize the provided image."
-            
-        input_language = int(data.get('inputLanguage', 23))
-        output_language = int(data.get('outputLanguage', 23))
+
+        original_query = user_query  # preserve original Indic text before translation
+
+        input_language = str(data.get('inputLanguage', 'en')).lower().strip()
+        output_language = str(data.get('outputLanguage', 'en')).lower().strip()
 
         logger.info(f"User query before translation: {user_query}")
-        
-        # Translate input query to English if it is in an Indic language (not English, code 23)
-        if input_language != 23:
+
+        # Translate input query to English if it is not already English
+        if input_language != 'en':
             try:
                 from utils.translation import translate_to_english
-                logger.info(f"Translating input query from language ID {input_language} to English...")
+                logger.info(f"Translating input query from '{input_language}' to English...")
                 
                 # Check for appended image caption (added in queries.py)
                 image_desc_marker = "\n\nImage Description:"
@@ -269,6 +273,7 @@ class QueryService:
         
         return {
             "message": user_query,
+            "original_message": original_query,
             "input_language": input_language,
             "output_language": output_language,
             "context": context,

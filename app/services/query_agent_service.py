@@ -57,7 +57,8 @@ class QueryAgentService:
             logger.info("Creative reasoning service not available")
     
     def process_no_context_query(self, user_query: str, user_email: str,
-                          input_language: int = 23, output_language: int = 23) -> Dict[str, Any]:
+                          input_language: str = 'en', output_language: str = 'en',
+                          original_query: str = None) -> Dict[str, Any]:
         """
         Process a query when no document context is available.
         """
@@ -71,12 +72,13 @@ class QueryAgentService:
         # Generate a response that guides the user to upload files or select a session
         return self._generate_no_context_response(user_query, user_email, available_sessions, language)
         
-    def process_query(self, user_query: str, user_session: str, 
-                    input_language: int = 23, output_language: int = 23,
+    def process_query(self, user_query: str, user_session: str,
+                    input_language: str = 'en', output_language: str = 'en',
                     filenames: Optional[List[str]] = None,
                     has_csvxl: bool = False, mode: str = 'default',
                     is_trial: bool = False, chat_id: str = None,
-                    image_url: str = None, image_caption: str = None) -> Dict[str, Any]:
+                    image_url: str = None, image_caption: str = None,
+                    original_query: str = None) -> Dict[str, Any]:
         """
         Process a user query with support for both standard and creative modes.
         
@@ -148,9 +150,12 @@ class QueryAgentService:
             query_type = "creative"
 
         # Save and get assistant message ID
+        # Use original_query (pre-translation Indic text) if provided, so chat history
+        # shows the user's language rather than the translated English version.
+        stored_user_query = original_query if original_query else user_query
         assistant_message_id = self.chat_history_manager.save_conversation_turn(
             user_session=user_session,
-            user_query=user_query,
+            user_query=stored_user_query,
             assistant_response=assistant_response_text,
             chat_id=chat_id,
             query_type=query_type,
@@ -287,7 +292,7 @@ class QueryAgentService:
     
     def _process_creative_query(self, user_query: str, user_session: str,
                               resources: Dict[str, bool],
-                              input_language: int, output_language: int,
+                              input_language: str, output_language: str,
                               filenames: Optional[List[str]] = None,
                               chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Process query using creative reasoning mode with adaptive search."""
@@ -400,7 +405,10 @@ class QueryAgentService:
         except Exception as e:
             logger.error(f'Error generating summary: {e}')
             return {
-                "answer": "I encountered an error while generating the summary. Please try again later.",
+                "answer": self.response_service._translate_response(
+                    "I encountered an error while generating the summary. Please try again later.",
+                    language,
+                ),
                 "questions": []
             }
             
@@ -417,7 +425,10 @@ class QueryAgentService:
             # If no context found, return a message about no relevant documents
             if not context:
                 return {
-                    "answer": "I couldn't find any relevant information in your documents to answer this question. Could you try rephrasing your query or asking about another topic?",
+                    "answer": self.response_service._translate_response(
+                        "I couldn't find any relevant information in your documents to answer this question. Could you try rephrasing your query or asking about another topic?",
+                        language,
+                    ),
                 }
                 
             # Generate response with chat context
@@ -442,7 +453,10 @@ class QueryAgentService:
         except Exception as e:
             logger.error(f'Error processing document query: {e}')
             return {
-                "answer": f"I encountered an error while processing your document: {str(e)}. Please try a different question or contact support if the issue persists.",
+                "answer": self.response_service._translate_response(
+                    f"I encountered an error while processing your document: {str(e)}. Please try a different question or contact support if the issue persists.",
+                    language,
+                ),
             }
         
     def _process_data_query(self, user_query: str, user_session: str, 
@@ -455,7 +469,10 @@ class QueryAgentService:
         # If no SQL context found, return a message about no relevant data
         if not sql_context:
             return {
-                "answer": "I couldn't find any relevant data in your spreadsheets or CSV files to answer this question. Could you try rephrasing your query or asking about another topic?",
+                "answer": self.response_service._translate_response(
+                    "I couldn't find any relevant data in your spreadsheets or CSV files to answer this question. Could you try rephrasing your query or asking about another topic?",
+                    language,
+                ),
                 "questions": []
             }
             
@@ -480,7 +497,10 @@ class QueryAgentService:
         # If neither context found, return a message about no relevant information
         if not document_context and not sql_context:
             return {
-                "answer": "I couldn't find any relevant information in your documents or data to answer this question. Could you try rephrasing your query or asking about another topic?",
+                "answer": self.response_service._translate_response(
+                    "I couldn't find any relevant information in your documents or data to answer this question. Could you try rephrasing your query or asking about another topic?",
+                    language,
+                ),
                 "questions": []
             }
             
@@ -585,7 +605,10 @@ class QueryAgentService:
         except Exception as e:
             logger.error(f'Error generating no-context response: {e}')
             return {
-                "answer": "I'm here to help you explore your documents. Please select a knowledge container from the left sidebar or upload new documents to get started.",
+                "answer": self.response_service._translate_response(
+                    "I'm here to help you explore your documents. Please select a knowledge container from the left sidebar or upload new documents to get started.",
+                    language,
+                ),
                 "questions": []
             }
     
@@ -656,16 +679,10 @@ class QueryAgentService:
                 "topics": "various"
             }
             
-    def _get_language(self, language_code: int) -> str:
-        """Get the language name from its code."""
-        languages = {
-            1: "Hindi", 2: "Gom", 3: "Kannada", 4: "Dogri", 5: "Bodo",
-            6: "Urdu", 7: "Tamil", 8: "Kashmiri", 9: "Assamese", 10: "Bengali",
-            11: "Marathi", 12: "Sindhi", 13: "Maithili", 14: "Punjabi", 15: "Malayalam",
-            16: "Manipuri", 17: "Telugu", 18: "Sanskrit", 19: "Nepali", 20: "Santali",
-            21: "Gujarati", 22: "Odia", 23: "English"
-        }
-        return languages.get(language_code, 'English')
+    def _get_language(self, lang_code: str) -> str:
+        """Get the language display name from an ISO 639-1/3 code."""
+        from utils.translation import ISO_TO_NAME
+        return ISO_TO_NAME.get(str(lang_code).lower(), 'English')
     
     def get_supported_modes(self) -> Dict[str, Any]:
         """Get information about supported query processing modes."""

@@ -10,9 +10,12 @@ remote machine.  Configure the backend via environment variables:
                              Leave unset when the server runs without auth.
 
 Usage:
-    from utils.translation import translate_to_indic
+    from utils.translation import translate_to_indic, translate_to_english
 
     translated = translate_to_indic("Hello, how are you?", "Hindi")
+    english   = translate_to_english("नमस्ते", "hi")
+
+Language codes are ISO 639-1/639-3 short codes (e.g. "hi", "en", "ml", "kok").
 """
 
 import logging
@@ -24,13 +27,42 @@ import requests
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
+# ISO 639-1/3 code → display name (used for FLORES lookup and logging)
+# ---------------------------------------------------------------------------
+ISO_TO_NAME: dict[str, str] = {
+    "en":  "English",
+    "hi":  "Hindi",
+    "kok": "Konkani",
+    "kn":  "Kannada",
+    "doi": "Dogri",
+    "brx": "Bodo",
+    "ur":  "Urdu",
+    "ta":  "Tamil",
+    "ks":  "Kashmiri",
+    "as":  "Assamese",
+    "bn":  "Bengali",
+    "mr":  "Marathi",
+    "sd":  "Sindhi",
+    "mai": "Maithili",
+    "pa":  "Punjabi",
+    "ml":  "Malayalam",
+    "mni": "Manipuri",
+    "te":  "Telugu",
+    "sa":  "Sanskrit",
+    "ne":  "Nepali",
+    "sat": "Santali",
+    "gu":  "Gujarati",
+    "or":  "Odia",
+}
+
+# ---------------------------------------------------------------------------
 # FLORES-200 language codes — kept here so callers can still inspect them
 # and so we can do a fast local check before hitting the network.
 # ---------------------------------------------------------------------------
 LANGUAGE_TO_FLORES: dict[str, str] = {
     "English":   "eng_Latn",
     "Hindi":     "hin_Deva",
-    "Gom":       "gom_Deva",
+    "Konkani":   "kok_Deva",
     "Kannada":   "kan_Knda",
     "Dogri":     "dgo_Deva",
     "Bodo":      "brx_Deva",
@@ -73,8 +105,10 @@ def translate_to_indic(text: str, language: str) -> str:
     Translate *text* (English) to the target *language* via the remote
     IndicTrans2 inference server.
 
+    *language* accepts either a language name ("Hindi") or an ISO code ("hi").
+
     Returns the original text unchanged if:
-    - *language* is "English",
+    - *language* resolves to "English",
     - *language* is unsupported,
     - TRANSLATION_SERVER_URL is not set,
     - the remote call fails (logs a warning).
@@ -82,7 +116,11 @@ def translate_to_indic(text: str, language: str) -> str:
     if not text or not text.strip():
         return text
 
-    language_key = language.strip().title() if language else "English"
+    # Accept ISO code ("hi") or name ("Hindi")
+    if language and language.lower() in ISO_TO_NAME:
+        language_key = ISO_TO_NAME[language.lower()]
+    else:
+        language_key = language.strip().title() if language else "English"
 
     if language_key == "English":
         return text
@@ -136,62 +174,31 @@ def translate_to_indic(text: str, language: str) -> str:
     return text
 
 
-LANGUAGE_ID_TO_NAME: dict[int, str] = {
-    1: 'Hindi',
-    2: 'Konkani',
-    3: 'Kannada',
-    4: 'Dogri',
-    5: 'Bodo',
-    6: 'Urdu',
-    7: 'Tamil',
-    8: 'Kashmiri',
-    9: 'Assamese',
-    10: 'Bengali',
-    11: 'Marathi',
-    12: 'Sindhi',
-    13: 'Maithili',
-    14: 'Punjabi',
-    15: 'Malayalam',
-    16: 'Manipuri',
-    17: 'Telugu',
-    18: 'Sanskrit',
-    19: 'Nepali',
-    20: 'Santali',
-    21: 'Gujarati',
-    22: 'Odia',
-    23: 'English',
-}
-
-
-def translate_to_english(text: str, language_id: int) -> str:
+def translate_to_english(text: str, lang_code: str) -> str:
     """
     Translate *text* (Indic) to English via the remote IndicTrans2 inference server.
 
+    *lang_code* is an ISO 639-1/3 code (e.g. "hi", "ml", "kok").
+
     Returns the original text unchanged if:
-    - *language_id* maps to "English",
-    - *language_id* is unsupported,
+    - *lang_code* maps to "English",
+    - *lang_code* is unsupported,
     - TRANSLATION_SERVER_URL is not set,
     - the remote call fails (logs a warning).
     """
     if not text or not text.strip():
         return text
 
-    try:
-        lang_id_int = int(language_id)
-    except (ValueError, TypeError):
-        logger.warning("Invalid language_id '%s'; returning original text.", language_id)
-        return text
-
-    language_name = LANGUAGE_ID_TO_NAME.get(lang_id_int, "English")
+    language_name = ISO_TO_NAME.get(str(lang_code).lower(), "English")
 
     if language_name == "English":
         return text
 
     if language_name not in LANGUAGE_TO_FLORES:
         logger.warning(
-            "Language '%s' (ID: %d) is not supported by IndicTrans2; returning original text.",
+            "Language '%s' (code: %s) is not supported by IndicTrans2; returning original text.",
             language_name,
-            lang_id_int,
+            lang_code,
         )
         return text
 
@@ -235,7 +242,6 @@ def translate_to_english(text: str, language_id: int) -> str:
         )
 
     return text
-
 
 
 def _split_into_sentences(text: str) -> list[str]:

@@ -27,63 +27,36 @@ from app.config import Config
 logger = logging.getLogger(__name__)
 
 # ─── Language mapping ──────────────────────────────────────────────────────────
-# Maps Sachet language identifiers (string names + numeric codes) → Vexyl BCP-47
+# Maps ISO 639-1/3 codes → Vexyl BCP-47 locale tags
 _LANG_MAP: dict[str, str] = {
-    # Text names
-    "english": "en-IN",
-    "hindi":   "hi-IN",
-    "malayalam": "ml-IN",
-    "tamil":   "ta-IN",
-    "telugu":  "te-IN",
-    "kannada": "kn-IN",
-    "bengali": "bn-IN",
-    "gujarati":"gu-IN",
-    "marathi": "mr-IN",
-    "punjabi": "pa-IN",
-    "odia":    "or-IN",
-    "assamese":"as-IN",
-    "urdu":    "ur-IN",
-    "nepali":  "ne-IN",
-    "sanskrit":"sa-IN",
-    "konkani": "kok-IN",
-    "bodo":    "brx-IN",
-    "dogri":   "doi-IN",
-    "maithili":"mai-IN",
-    "manipuri":"mni-IN",
-    "santali": "sat-IN",
-    "sindhi":  "sd-IN",
-    
-    # Numeric string keys matching frontend data.js
-    "23": "en-IN",  # English
-    "1":  "hi-IN",  # Hindi
-    "2":  "kok-IN", # Konkani
-    "3":  "kn-IN",  # Kannada
-    "4":  "doi-IN", # Dogri
-    "5":  "brx-IN", # Bodo
-    "6":  "ur-IN",  # Urdu
-    "7":  "ta-IN",  # Tamil
-    "8":  "ks-IN",  # Kashmiri
-    "9":  "as-IN",  # Assamese
-    "10": "bn-IN",  # Bengali
-    "11": "mr-IN",  # Marathi
-    "12": "sd-IN",  # Sindhi
-    "13": "mai-IN", # Maithili
-    "14": "pa-IN",  # Punjabi
-    "15": "ml-IN",  # Malayalam
-    "16": "mni-IN", # Manipuri
-    "17": "te-IN",  # Telugu
-    "18": "sa-IN",  # Sanskrit
-    "19": "ne-IN",  # Nepali
-    "20": "sat-IN", # Santali
-    "21": "gu-IN",  # Gujarati
-    "22": "or-IN",  # Odia
+    "en":  "en-IN",
+    "hi":  "hi-IN",
+    "kok": "kok-IN",
+    "kn":  "kn-IN",
+    "doi": "doi-IN",
+    "brx": "brx-IN",
+    "ur":  "ur-IN",
+    "ta":  "ta-IN",
+    "ks":  "ks-IN",
+    "as":  "as-IN",
+    "bn":  "bn-IN",
+    "mr":  "mr-IN",
+    "sd":  "sd-IN",
+    "mai": "mai-IN",
+    "pa":  "pa-IN",
+    "ml":  "ml-IN",
+    "mni": "mni-IN",
+    "te":  "te-IN",
+    "sa":  "sa-IN",
+    "ne":  "ne-IN",
+    "sat": "sat-IN",
+    "gu":  "gu-IN",
+    "or":  "or-IN",
 }
 
 
-def _to_vexyl_lang(language) -> str:
-    """Normalize a Sachet language specifier to a Vexyl BCP-47 code."""
-    if isinstance(language, int):
-        language = str(language)
+def _to_vexyl_lang(language: str) -> str:
+    """Normalize an ISO 639-1/3 code to a Vexyl BCP-47 locale tag."""
     key = str(language).lower().strip()
     return _LANG_MAP.get(key, "en-IN")
 

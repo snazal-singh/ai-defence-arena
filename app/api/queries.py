@@ -158,8 +158,8 @@ def ask():
             'context': request.form.get('context', False),
             'chatId': request.form.get('chatId', 'default'),
             'sessionId': request.form.get('sessionId'),
-            'inputLanguage': request.form.get('inputLanguage', 23),
-            'outputLanguage': request.form.get('outputLanguage', 23),
+            'inputLanguage': request.form.get('inputLanguage', 'en'),
+            'outputLanguage': request.form.get('outputLanguage', 'en'),
             'filenames': request.form.getlist('filenames'),
             'hasCsvOrXlsx': request.form.get('hasCsvOrXlsx', False),
             'mode': request.form.get('mode', 'default'),
@@ -403,13 +403,7 @@ def ask_tts():
     try:
         tts_service = get_tts_service()
         
-        # Get output language preference
-        output_language = data.get('outputLanguage', 'english')
-        if isinstance(output_language, int):
-            # Convert numeric language codes
-            language_map = {1: 'hindi', 23: 'english'}
-            output_language = language_map.get(output_language, 'english')
-        
+        output_language = str(data.get('outputLanguage', 'en')).lower().strip()
         logger.info(f"Generating TTS for user {user_email}, language: {output_language}")
         
         def generate_audio():
@@ -488,23 +482,40 @@ def synthesize():
     
     try:
         tts_service = get_tts_service()
-        
+
         logger.info(f"Synthesizing text for user {user_email}, language: {language}")
-        
-        def generate_audio():
-            try:
-                for audio_chunk in tts_service.generate_audio_stream(text, language):
-                    yield audio_chunk
-            except Exception as e:
-                logger.error(f"Error during synthesis streaming: {e}")
-                
+
+        # Collect all streamed chunks into one buffer, then fix the WAV header.
+        # generate_audio_stream inflates the WAV size to 0x7f000000 for live
+        # streaming, but the frontend waits for the full blob anyway. Some
+        # browsers fire onerror on size-mismatched WAV files and start the next
+        # sentence prematurely, causing two voices to play simultaneously.
+        parts = []
+        try:
+            for chunk in tts_service.generate_audio_stream(text, language):
+                parts.append(chunk)
+        except Exception as e:
+            logger.error(f"Error during synthesis: {e}")
+            return jsonify({'message': 'Error generating audio response'}), 500
+
+        if not parts:
+            return jsonify({'message': 'No audio generated'}), 500
+
+        audio_data = b''.join(parts)
+
+        if len(audio_data) >= 44:
+            header = bytearray(audio_data[:44])
+            pcm_size = len(audio_data) - 44
+            header[4:8] = (pcm_size + 36).to_bytes(4, 'little')
+            header[40:44] = pcm_size.to_bytes(4, 'little')
+            audio_data = bytes(header) + audio_data[44:]
+
         return Response(
-            generate_audio(),
+            audio_data,
             mimetype='audio/wav',
             headers={
+                'Content-Length': len(audio_data),
                 'Cache-Control': 'no-cache',
-                'X-Accel-Buffering': 'no',
-                'Connection': 'keep-alive',
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Headers': 'Content-Type',
             }

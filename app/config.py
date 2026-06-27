@@ -56,6 +56,7 @@ class BaseConfig:
     GPU_SERVER_MODEL = os.getenv("GPU_SERVER_MODEL")
     GPU_SERVER_DEFAULT_MAX_TOKENS = int(os.getenv("GPU_SERVER_DEFAULT_MAX_TOKENS"))
     GPU_SERVER_VERIFY_SSL = os.getenv("GPU_SERVER_VERIFY_SSL", "false").lower() == "true"
+    GPU_SERVER_CHAT_ENDPOINT = os.getenv("GPU_SERVER_CHAT_ENDPOINT")
 
     # Document Summary
     BASE_USERS_DIR = os.getenv("BASE_USERS_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "users"))

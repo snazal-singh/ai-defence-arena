@@ -9,6 +9,8 @@ __pycache__/
 *.py[cod]
 *.out
 users/*
+.codegraph/
+.understand-anything/
 
 # Python cache/compiled files
 __pycache__/
