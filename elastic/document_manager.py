@@ -1,13 +1,11 @@
 import logging
-from app.config import Config
 from langchain.schema import Document
 from langchain_elasticsearch.vectorstores import ElasticsearchStore
 from langchain_ollama import OllamaEmbeddings
 from .index_manager import ElasticIndexManager
 from .client import ElasticClient
-import logging
 import unicodedata
-from app.config import Config
+from app.core.config import settings
 
 class ElasticDocumentManager:
     def __init__(self, index_name):
@@ -15,8 +13,8 @@ class ElasticDocumentManager:
         self.client = ElasticClient().client
         self.index_manager = ElasticIndexManager()
         self.embeddings = OllamaEmbeddings(
-            model=Config.OLLAMA_EMBEDDING_MODEL,
-            base_url=Config.OLLAMA_BASE_URL,
+            model=settings.OLLAMA_EMBEDDING_MODEL,
+            base_url=settings.OLLAMA_BASE_URL,
         )
 
     def store_documents(self, documents):
@@ -30,7 +28,7 @@ class ElasticDocumentManager:
             # Store documents with embeddings in local Elasticsearch
             vector_store = ElasticsearchStore.from_documents(
                 processed_documents,
-                es_url=Config.ES_BASE_URL,
+                es_url=settings.ES_BASE_URL,
                 index_name=self.index_name,
                 embedding=self.embeddings,
                 vector_query_field="vector"
@@ -81,3 +79,21 @@ class ElasticDocumentManager:
     def delete_documents(self, document_ids):
         # TODO: Implement delete logic
         pass
+
+    def delete_documents_by_filename(self, filename: str) -> int:
+        """Delete all documents in the index whose metadata.source matches the given filename.
+
+        Returns the number of documents deleted.
+        """
+        try:
+            response = self.client.delete_by_query(
+                index=self.index_name,
+                body={"query": {"term": {"metadata.source": filename}}},
+                refresh=True,
+            )
+            deleted = response.get("deleted", 0)
+            logging.info(f"Deleted {deleted} documents with filename '{filename}' from {self.index_name}")
+            return deleted
+        except Exception as e:
+            logging.error(f"Error deleting documents by filename '{filename}': {e}")
+            raise

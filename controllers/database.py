@@ -13,14 +13,14 @@ from datetime import date, datetime, timedelta, timezone
 
 # Third-party imports
 from pymongo import MongoClient
-from app.config import Config
+from app.core.config import settings
 import jwt
 import hashlib
 import hmac
 from bson import ObjectId
 
 # MongoDB configuration
-mongo_url = Config.MONGO_URL
+mongo_url = settings.MONGO_URL
 jwt_secret = "secret"
 client = MongoClient(mongo_url)
 db = client.test
@@ -88,7 +88,7 @@ def is_trial_limit_over(fingerprint):
     Returns:
         bool: True if the user has exceeded the trial limit, False otherwise
     """
-    trial_message_limit = 50
+    trial_message_limit = 10
     condition = {"fingerprint": str(fingerprint)}
     fingerprint_collection = db.fingerprint
     fingerprint_detail = fingerprint_collection.find_one(condition)
@@ -128,14 +128,14 @@ def is_user_limit_over(session_name):
 
     if paid == 0:
         queries = int(user_details.get('queries'))
-        if queries < 50:
+        if queries < 10:
             # Increment the queries count
             result = collection.update_one(
                 condition, 
                 {"$inc": {"queries": 1}}
             )
             logging.info(f"Matched {result.matched_count} document(s) and modified {result.modified_count} document(s).")
-        elif queries >= 50:
+        elif queries >= 10:
            return True
 
     return False
@@ -381,6 +381,32 @@ def delete_session_from_db(email, session_id):
     except Exception as e:
         logging.error(f"Error deleting session {session_id} for user {email}: {e}")
         return False
+
+def remove_file_from_session(session_id: str, filename: str) -> bool:
+    """
+    Remove a filename entry from the file_names array of a session.
+
+    Args:
+        session_id (str): Session identifier
+        filename (str): Filename to remove
+
+    Returns:
+        bool: True if the update was applied, False if no matching session was found
+    """
+    try:
+        result = db.sessions.update_one(
+            {"sessions.session_id": session_id},
+            {"$pull": {"sessions.$.file_names": filename}},
+        )
+        if result.matched_count == 0:
+            logging.warning(f"No session found with session_id: {session_id}")
+            return False
+        logging.info(f"Removed '{filename}' from session {session_id}")
+        return True
+    except Exception as e:
+        logging.error(f"Error removing file '{filename}' from session {session_id}: {e}")
+        return False
+
 
 def get_user_sessions(email):
     """

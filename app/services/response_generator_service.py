@@ -340,49 +340,50 @@ Do not make up information or answer factual questions from general knowledge.
         return prompt
     
     def _create_document_prompt(self, user_question: str, context: str, language: Optional[str] = None,
-                          chat_context: Optional[Dict[str, Any]] = None) -> str:
+                              chat_context: Optional[Dict[str, Any]] = None) -> str:
+        """
+        Generate a prompt for the LLM with intelligent response style detection.
 
-    # Extract image description from question if present
-        image_description = ""
-        if "\n\nImage Description:" in user_question:
-            parts = user_question.split("\n\nImage Description:")
-            user_question = parts[0].strip()
-            image_description = parts[1].strip()
+        Args:
+            user_question (str): User's question
+            context (str): Context for the question
+            language (str, optional): Language for response
+            chat_context (dict, optional): Chat context information
 
+        Returns:
+            str: Generated prompt
+        """
         prompt = f"""You are a document assistant. Answer ONLY using the information in the CONTEXT below.
 
-    STRICT RULES:
-    - Use ONLY information explicitly stated in the CONTEXT. Do not add, infer, or assume anything beyond it.
-    - Do NOT expand abbreviations, acronyms, or short forms unless the full form is explicitly written in the CONTEXT.
-    - Do NOT use any prior knowledge, general knowledge, or external information.
-    - If the answer is not in the CONTEXT, respond exactly: "The information is not available in the provided documents."
-    - Do not guess, speculate, or fill gaps with plausible-sounding information.
-    - Use bullet points or structure only if required to explain the answer; otherwise answer directly.
-    """
+STRICT RULES:
+- Use ONLY information explicitly stated in the CONTEXT. Do not add, infer, or assume anything beyond it.
+- Do NOT expand abbreviations, acronyms, or short forms unless the full form is explicitly written in the CONTEXT.
+- Do NOT use any prior knowledge, general knowledge, or external information.
+- If the answer is not in the CONTEXT, respond exactly: "The information is not available in the provided documents."
+- Do not guess, speculate, or fill gaps with plausible-sounding information.
+- Use bullet points or structure only if required to explain the answer; otherwise answer directly.
+"""
 
+        # Add chat context if available
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
             prompt += f"""
-    Previous conversation history:
-    {context_text}
-    """
+Previous conversation history:
+{context_text}
+"""
         language_instruction = self._get_language_instruction(language)
-        
-        # Inject image description into CONTEXT
-        if image_description:
-            context = f"{context}\n\n[Image Provided by User]: {image_description}"
-
         prompt += f"""
-    CONTEXT:
-    {context}
+CONTEXT:
+{context}
 
-    QUESTION:
-    {user_question}
+QUESTION:
+{user_question}
 
-    {language_instruction}
+{language_instruction}
 
-    Generate ONLY the answer. No preamble, no commentary.
-    """
+Generate ONLY the answer. No preamble, no commentary.
+"""
+
         return prompt
     
     def _create_data_prompt(self, user_query: str, sql_context: str, language: Optional[str] = None,

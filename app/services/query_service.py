@@ -8,7 +8,6 @@ Updated to use the agent-based approach for more efficient and modular processin
 import logging
 import time
 from typing import Dict, Any, Tuple
-import os
 
 from app.services.query_agent_service import get_query_agent_service
 from controllers.database import is_user_limit_over, is_trial_limit_over
@@ -81,19 +80,15 @@ class QueryService:
             
             # Process with query agent
             response = self.query_agent.process_query(
-                    user_query["message"],
-                    session_name,
-                    user_query["input_language"],
-                    user_query["output_language"],
-                    user_query["filenames"],
-                    user_query["hascsvxl"],
-                    user_query["mode"],
-                    is_trial=False,
-                    chat_id=chat_id,
-                    image_url=data.get('image_url'),
-                    image_caption=data.get('image_caption')
-                )
-            
+                user_query["message"],
+                session_name,
+                user_query["input_language"],
+                user_query["output_language"],
+                user_query["filenames"],
+                user_query["hascsvxl"],
+                user_query["mode"],
+                is_trial=True
+            )
         except Exception as e:
             logger.exception(f'Error processing query with agent: {e}')
             return {'message': 'Error generating response'}, 500
@@ -155,8 +150,7 @@ class QueryService:
                     user_query["message"],
                     user_email,
                     user_query["input_language"],
-                    user_query["output_language"],
-                    original_query=user_query["original_message"]
+                    user_query["output_language"]
                 )
             else:
                 # User has selected files/session, use normal processing
@@ -170,13 +164,10 @@ class QueryService:
                     user_query["hascsvxl"],
                     user_query["mode"],
                     is_trial=False,
-                    chat_id=chat_id,
-                    image_url=data.get('image_url'),
-                    image_caption=data.get('image_caption'),
-                    original_query=user_query["original_message"]
+                    chat_id=chat_id
                 )
 
-                logger.info(f"RESPONSE answer: {response['answer']}")
+                logger.info(f"RESPNSE answer: {response['answer']}")
         except Exception as e:
             logger.exception(f'Error processing query with agent: {e}')
             return {'message': 'Error generating response'}, 500
@@ -234,36 +225,10 @@ class QueryService:
         """
         user_query = data.get('message')
         if not user_query:
-            user_query = "Describe and summarize the provided image."
-
-        original_query = user_query  # preserve original Indic text before translation
-
-        input_language = str(data.get('inputLanguage', 'en')).lower().strip()
-        output_language = str(data.get('outputLanguage', 'en')).lower().strip()
-
-        logger.info(f"User query before translation: {user_query}")
-
-        # Translate input query to English if it is not already English
-        if input_language != 'en':
-            try:
-                from utils.translation import translate_to_english
-                logger.info(f"Translating input query from '{input_language}' to English...")
-                
-                # Check for appended image caption (added in queries.py)
-                image_desc_marker = "\n\nImage Description:"
-                if image_desc_marker in user_query:
-                    parts = user_query.split(image_desc_marker, 1)
-                    user_msg_part = parts[0]
-                    image_desc_part = parts[1]
-                    translated_msg = translate_to_english(user_msg_part, input_language)
-                    user_query = f"{translated_msg}{image_desc_marker}{image_desc_part}"
-                else:
-                    user_query = translate_to_english(user_query, input_language)
-                
-                logger.info(f"Translated query: {user_query}")
-            except Exception as e:
-                logger.error(f"Failed to translate user query: {e}")
-
+            raise ValueError("Query message is missing")
+            
+        input_language = int(data.get('inputLanguage', 23))
+        output_language = int(data.get('outputLanguage', 23))
         context = True if data.get('context', False) or data.get('sessionId') else False
         hascsvxl = data.get('hasCsvOrXlsx', False)
         mode = data.get('mode', 'default')
@@ -273,7 +238,6 @@ class QueryService:
         
         return {
             "message": user_query,
-            "original_message": original_query,
             "input_language": input_language,
             "output_language": output_language,
             "context": context,
@@ -283,7 +247,6 @@ class QueryService:
             "chat_id": chat_id,
             "session_id": session_id
         }
-
 
 # Create a singleton instance
 _query_service = None

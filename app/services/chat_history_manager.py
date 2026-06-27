@@ -13,7 +13,7 @@ import json
 from pymongo import MongoClient, IndexModel, ASCENDING, DESCENDING
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
-from app.config import Config
+from app.core.config import settings
 from app.services.llm_service import get_fast_llm
 from app.models.chat_models import ChatSession, ChatMessage, ChatContext, MessageRole, QueryType
 
@@ -47,7 +47,7 @@ class ChatHistoryManager:
         try:
             # Create MongoDB client with timeout settings
             self.client = MongoClient(
-                Config.MONGO_URL,
+                settings.MONGO_URL,
                 serverSelectionTimeoutMS=5000,  # 5 second timeout
                 connectTimeoutMS=5000,
                 socketTimeoutMS=5000,
@@ -68,7 +68,7 @@ class ChatHistoryManager:
             logger.info("MongoDB connection established successfully")
             
         except (ConnectionFailure, ServerSelectionTimeoutError) as e:
-            logger.error(f"Failed to connect to MongoDB at {Config.MONGO_URL}: {e}")
+            logger.error(f"Failed to connect to MongoDB at {settings.MONGO_URL}: {e}")
             logger.warning("Chat history will be disabled")
             self.client = None
             self.db = None
@@ -127,7 +127,7 @@ class ChatHistoryManager:
         if self.client is not None and self.db is not None and self.collection is not None:
             return True
         # Attempt reconnect if previously failed
-        if Config.MONGO_URL:
+        if settings.MONGO_URL:
             logger.info("MongoDB unavailable — attempting reconnect...")
             self._initialize_mongodb()
         return (self.client is not None and 
@@ -205,46 +205,10 @@ class ChatHistoryManager:
         except Exception as e:
             logger.error(f"Error getting all chat names: {e}")
             return {}
-
-    # -------------------------------------------------
-    # NEW – public API used by the /ask endpoint
-    def store_user_message(self,
-                           user_session: str,
-                           chat_id: str,
-                           role: MessageRole,
-                           content: str,
-                           image_caption: Optional[str] = None,
-                           image_url: Optional[str] = None) -> bool:  # NEW param
-        """
-        Store a user message (or system-generated message) in the current chat session.
-        The optional ``image_caption`` is persisted so later queries can reference it.
-        The optional ``image_url`` stores the path to the saved image for chat history display.
-        """
-        try:
-            # Load or create a session
-            session = self._get_or_create_session(user_session, chat_id)
-
-            # Build the ChatMessage object
-            msg = ChatMessage(
-                role=role,
-                content=content,
-                image_caption=image_caption,
-                image_url=image_url,  # NEW
-                timestamp=datetime.utcnow()
-            )
-
-            # Append and apply limits
-            session.add_message(msg)
-            self._apply_session_limits(session)
-            return self._save_session(session)
-        except Exception as e:
-            logger.error(f"Error storing user message: {e}")
-            return False
-
+    
     def save_conversation_turn(self, user_session: str, user_query: str, assistant_response: str,
                               chat_id: str = None, query_type: str = "general",
-                              context_used: bool = False, image_url: str = None,
-                              image_caption: str = None, metadata: Dict = None) -> str:
+                              context_used: bool = False, metadata: Dict = None) -> str:
         """
         Save a complete conversation turn (user query + assistant response).
         
@@ -275,8 +239,6 @@ class ChatHistoryManager:
                 content=user_query,
                 query_type=query_type_enum,
                 token_count=int(user_tokens),
-                image_url=image_url,
-                image_caption=image_caption,
                 metadata=metadata or {}
             )
             

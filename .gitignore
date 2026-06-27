@@ -9,8 +9,6 @@ __pycache__/
 *.py[cod]
 *.out
 users/*
-.codegraph/
-.understand-anything/
 
 # Python cache/compiled files
 __pycache__/
@@ -45,9 +43,6 @@ elasticsearch-*/
 build/
 dist/
 *.egg-info/
-files/
-
-telegram_bot.py
 
 opencode.json
 CLAUDE.md
