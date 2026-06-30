@@ -1,0 +1,1035 @@
+{
+  "nodes": [
+    {
+      "id": "file:app/services/result_synthesis_service.py",
+      "type": "file",
+      "name": "result_synthesis_service.py",
+      "filePath": "app/services/result_synthesis_service.py",
+      "summary": "Synthesizes a final structured answer from multiple search results by formatting them with citations and prompting an LLM to produce a JSON response, with robust parsing/repair logic, retries, and both streaming and non-streaming synthesis paths.",
+      "tags": [
+        "service",
+        "llm",
+        "synthesis",
+        "streaming"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:app/services/result_synthesis_service.py:SynthesisResult",
+      "type": "class",
+      "name": "SynthesisResult",
+      "filePath": "app/services/result_synthesis_service.py",
+      "lineRange": [
+        24,
+        31
+      ],
+      "summary": "Dataclass representing the final synthesized answer, including reasoning steps, confidence level, follow-up questions, synthesis metadata, and answer completeness.",
+      "tags": [
+        "data-model",
+        "result-object"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/result_synthesis_service.py:ResultSynthesisService",
+      "type": "class",
+      "name": "ResultSynthesisService",
+      "filePath": "app/services/result_synthesis_service.py",
+      "lineRange": [
+        33,
+        537
+      ],
+      "summary": "Builds citation-annotated synthesis prompts from SearchResult objects, invokes an LLM (with retry logic) to produce a JSON-structured answer, repairs malformed JSON responses, and supports a streaming variant that yields tokens as they arrive.",
+      "tags": [
+        "service",
+        "llm",
+        "synthesis",
+        "streaming"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/services/result_synthesis_service.py:get_result_synthesis_service",
+      "type": "function",
+      "name": "get_result_synthesis_service",
+      "filePath": "app/services/result_synthesis_service.py",
+      "lineRange": [
+        543,
+        553
+      ],
+      "summary": "Factory/singleton-style accessor that constructs and returns a ResultSynthesisService instance.",
+      "tags": [
+        "factory",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/services/search_execution_service.py",
+      "type": "file",
+      "name": "search_execution_service.py",
+      "filePath": "app/services/search_execution_service.py",
+      "summary": "Executes a planned SearchStrategy by building a dependency-ordered execution plan, running document/SQL/summary/hybrid searches per instruction through the context provider, deduplicating, and ranking the combined results.",
+      "tags": [
+        "service",
+        "search",
+        "orchestration",
+        "execution"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:app/services/search_execution_service.py:SearchResult",
+      "type": "class",
+      "name": "SearchResult",
+      "filePath": "app/services/search_execution_service.py",
+      "lineRange": [
+        19,
+        25
+      ],
+      "summary": "Dataclass representing the outcome of one search instruction's execution: instruction index, success flag, content, metadata, and error message.",
+      "tags": [
+        "data-model",
+        "result-object"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/search_execution_service.py:ExecutionPlan",
+      "type": "class",
+      "name": "ExecutionPlan",
+      "filePath": "app/services/search_execution_service.py",
+      "lineRange": [
+        28,
+        32
+      ],
+      "summary": "Dataclass describing the ordered phases of search instructions to execute, along with total instruction count and estimated duration.",
+      "tags": [
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/search_execution_service.py:SearchExecutionService",
+      "type": "class",
+      "name": "SearchExecutionService",
+      "filePath": "app/services/search_execution_service.py",
+      "lineRange": [
+        34,
+        480
+      ],
+      "summary": "Builds a dependency-aware execution plan from search instructions, dispatches each instruction to the appropriate document/SQL/summary/hybrid search method via the context provider service, and deduplicates and ranks the aggregated results.",
+      "tags": [
+        "service",
+        "search",
+        "orchestration",
+        "execution"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/services/search_execution_service.py:get_search_execution_service",
+      "type": "function",
+      "name": "get_search_execution_service",
+      "filePath": "app/services/search_execution_service.py",
+      "lineRange": [
+        485,
+        495
+      ],
+      "summary": "Factory/singleton-style accessor that constructs and returns a SearchExecutionService instance.",
+      "tags": [
+        "factory",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:controllers/ask.py",
+      "type": "file",
+      "name": "ask.py",
+      "filePath": "controllers/ask.py",
+      "summary": "Provides a lightweight demo question-answering path that checks for a cached previous question, queries the SQL database for relevant data, and asks the standard LLM to produce a response.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "demo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:controllers/ask.py:checkPreviousQn",
+      "type": "function",
+      "name": "checkPreviousQn",
+      "filePath": "controllers/ask.py",
+      "lineRange": [
+        21,
+        39
+      ],
+      "summary": "Reads a session's previously stored question from disk, if present, to support continuation-aware demo responses.",
+      "tags": [
+        "utility",
+        "session"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:controllers/ask.py:get_demo_response",
+      "type": "function",
+      "name": "get_demo_response",
+      "filePath": "controllers/ask.py",
+      "lineRange": [
+        45,
+        92
+      ],
+      "summary": "Generates a demo answer for a user query by querying the database, incorporating the previous question for context, and invoking the standard LLM to compose the final response.",
+      "tags": [
+        "api-handler",
+        "demo"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:controllers/doc_summary.py",
+      "type": "file",
+      "name": "doc_summary.py",
+      "filePath": "controllers/doc_summary.py",
+      "summary": "Implements document summarization for a session's uploaded files: extractive summarization via BERT (Summarizer) to select important sentences, dynamic sentence-count tuning, and LLM-based abstractive summarization across selected or all available folders.",
+      "tags": [
+        "service",
+        "summarization",
+        "llm",
+        "controller"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:controllers/doc_summary.py:DocumentSummaryService",
+      "type": "class",
+      "name": "DocumentSummaryService",
+      "filePath": "controllers/doc_summary.py",
+      "lineRange": [
+        29,
+        507
+      ],
+      "summary": "Manages per-file extractive (BERT-based) summarization plus metadata caching, and provides LLM-driven abstractive summarization that combines important sentences from specified or all available document folders for a session.",
+      "tags": [
+        "service",
+        "summarization",
+        "llm"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:controllers/doc_summary.py:get_summary_service",
+      "type": "function",
+      "name": "get_summary_service",
+      "filePath": "controllers/doc_summary.py",
+      "lineRange": [
+        512,
+        522
+      ],
+      "summary": "Factory/singleton-style accessor that constructs and returns a DocumentSummaryService instance.",
+      "tags": [
+        "factory",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:controllers/doc_summary.py:create_abstractive_summary",
+      "type": "function",
+      "name": "create_abstractive_summary",
+      "filePath": "controllers/doc_summary.py",
+      "lineRange": [
+        525,
+        527
+      ],
+      "summary": "Module-level convenience wrapper delegating to the shared DocumentSummaryService's create_abstractive_summary method.",
+      "tags": [
+        "utility",
+        "delegate"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:controllers/doc_summary.py:summarize_document",
+      "type": "function",
+      "name": "summarize_document",
+      "filePath": "controllers/doc_summary.py",
+      "lineRange": [
+        529,
+        532
+      ],
+      "summary": "Module-level convenience wrapper delegating to the shared DocumentSummaryService's summarize_document method, used by other services as the summary context entry point.",
+      "tags": [
+        "utility",
+        "delegate"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:controllers/sql_db.py",
+      "type": "file",
+      "name": "sql_db.py",
+      "filePath": "controllers/sql_db.py",
+      "summary": "Manages per-session SQLite database creation from uploaded CSV/Excel files, sanitizes identifiers, generates SQL queries from natural language via an LLM SQL chain, executes them safely, and stores generated table summaries.",
+      "tags": [
+        "database",
+        "controller",
+        "llm",
+        "data-pipeline"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:controllers/sql_db.py:sanitize_identifier",
+      "type": "function",
+      "name": "sanitize_identifier",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        45,
+        50
+      ],
+      "summary": "Sanitizes a string into a safe SQL identifier (table/column name) by stripping disallowed characters and truncating to a maximum length.",
+      "tags": [
+        "utility",
+        "validation",
+        "sql"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:controllers/sql_db.py:get_db_engine",
+      "type": "function",
+      "name": "get_db_engine",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        52,
+        84
+      ],
+      "summary": "Creates or connects to a per-session SQLite database engine, verifying connectivity and falling back to engine creation if the database doesn't yet exist.",
+      "tags": [
+        "database",
+        "factory"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:controllers/sql_db.py:process_file",
+      "type": "function",
+      "name": "process_file",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        86,
+        134
+      ],
+      "summary": "Parses an uploaded CSV or Excel file into pandas DataFrame(s) and writes each sheet/table into the session's SQL database under a sanitized table name.",
+      "tags": [
+        "data-pipeline",
+        "sql",
+        "file-processing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:controllers/sql_db.py:create_database_with_tables",
+      "type": "function",
+      "name": "create_database_with_tables",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        136,
+        166
+      ],
+      "summary": "Creates a new session database and ingests a batch of uploaded files into it, persisting table metadata to a JSON file for later lookup.",
+      "tags": [
+        "database",
+        "data-pipeline"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:controllers/sql_db.py:add_tables_to_existing_db",
+      "type": "function",
+      "name": "add_tables_to_existing_db",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        168,
+        203
+      ],
+      "summary": "Adds new tables from additional uploaded files to an already-existing session database, updating the persisted table metadata.",
+      "tags": [
+        "database",
+        "data-pipeline"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:controllers/sql_db.py:execute_safe_query",
+      "type": "function",
+      "name": "execute_safe_query",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        205,
+        223
+      ],
+      "summary": "Executes a SQL query against the engine with parameter binding, attempting an automatic LIMIT/quoting repair pass if the first execution fails.",
+      "tags": [
+        "database",
+        "sql",
+        "error-handling"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:controllers/sql_db.py:clean_sql_query",
+      "type": "function",
+      "name": "clean_sql_query",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        225,
+        247
+      ],
+      "summary": "Strips LLM-generated SQL output of markdown fences and other formatting noise to extract a clean, executable SQL statement.",
+      "tags": [
+        "utility",
+        "sql",
+        "sanitization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:controllers/sql_db.py:generate_sql_query",
+      "type": "function",
+      "name": "generate_sql_query",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        262,
+        290
+      ],
+      "summary": "Uses a LangChain SQL query chain backed by the standard LLM to translate a natural-language question into a SQL query against the session database, then cleans the raw output.",
+      "tags": [
+        "llm",
+        "sql",
+        "nl-to-sql"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:controllers/sql_db.py:query_database",
+      "type": "function",
+      "name": "query_database",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        292,
+        307
+      ],
+      "summary": "End-to-end helper that resolves the session's DB engine, generates a SQL query from a natural-language question, executes it safely, and returns the results.",
+      "tags": [
+        "database",
+        "sql",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:controllers/sql_db.py:store_table_info",
+      "type": "function",
+      "name": "store_table_info",
+      "filePath": "controllers/sql_db.py",
+      "lineRange": [
+        309,
+        388
+      ],
+      "summary": "Generates and persists descriptive summaries for each table in a session's database (sampling rows via SQL queries), writing the combined summary text and metadata to disk for later use as data context.",
+      "tags": [
+        "database",
+        "summarization",
+        "metadata"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:app/services/result_synthesis_service.py",
+      "target": "class:app/services/result_synthesis_service.py:SynthesisResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/result_synthesis_service.py",
+      "target": "class:app/services/result_synthesis_service.py:ResultSynthesisService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/result_synthesis_service.py",
+      "target": "function:app/services/result_synthesis_service.py:get_result_synthesis_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/result_synthesis_service.py",
+      "target": "class:app/services/result_synthesis_service.py:SynthesisResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/result_synthesis_service.py",
+      "target": "class:app/services/result_synthesis_service.py:ResultSynthesisService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/result_synthesis_service.py",
+      "target": "function:app/services/result_synthesis_service.py:get_result_synthesis_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/result_synthesis_service.py",
+      "target": "file:app/services/search_execution_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/result_synthesis_service.py",
+      "target": "file:app/services/reasoning_strategy_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/result_synthesis_service.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/result_synthesis_service.py:ResultSynthesisService",
+      "target": "function:app/services/llm_service.py:get_comprehensive_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/result_synthesis_service.py:ResultSynthesisService",
+      "target": "function:app/services/llm_service.py:get_streaming_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/result_synthesis_service.py:ResultSynthesisService",
+      "target": "class:app/services/search_execution_service.py:SearchResult",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:app/services/result_synthesis_service.py:ResultSynthesisService",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchStrategy",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "class:app/services/search_execution_service.py:SearchResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "class:app/services/search_execution_service.py:ExecutionPlan",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "class:app/services/search_execution_service.py:SearchExecutionService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "function:app/services/search_execution_service.py:get_search_execution_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "class:app/services/search_execution_service.py:SearchResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "class:app/services/search_execution_service.py:ExecutionPlan",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "class:app/services/search_execution_service.py:SearchExecutionService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "function:app/services/search_execution_service.py:get_search_execution_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "file:app/services/reasoning_strategy_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/search_execution_service.py",
+      "target": "file:app/services/context_provider_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/search_execution_service.py:SearchExecutionService",
+      "target": "function:app/services/context_provider_service.py:get_context_provider_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/search_execution_service.py:SearchExecutionService",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchInstruction",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:controllers/ask.py",
+      "target": "function:controllers/ask.py:checkPreviousQn",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/ask.py",
+      "target": "function:controllers/ask.py:get_demo_response",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/ask.py",
+      "target": "function:controllers/ask.py:checkPreviousQn",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/ask.py",
+      "target": "function:controllers/ask.py:get_demo_response",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/ask.py",
+      "target": "file:controllers/sql_db.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:controllers/ask.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:controllers/ask.py:get_demo_response",
+      "target": "function:controllers/sql_db.py:query_database",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/ask.py:get_demo_response",
+      "target": "function:controllers/ask.py:checkPreviousQn",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/ask.py:get_demo_response",
+      "target": "function:app/services/llm_service.py:get_standard_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "class:controllers/doc_summary.py:DocumentSummaryService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "function:controllers/doc_summary.py:get_summary_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "function:controllers/doc_summary.py:create_abstractive_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "function:controllers/doc_summary.py:summarize_document",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "class:controllers/doc_summary.py:DocumentSummaryService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "function:controllers/doc_summary.py:get_summary_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "function:controllers/doc_summary.py:create_abstractive_summary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "function:controllers/doc_summary.py:summarize_document",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:controllers/doc_summary.py",
+      "target": "file:app/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:controllers/doc_summary.py:DocumentSummaryService",
+      "target": "function:app/services/llm_service.py:get_fast_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/doc_summary.py:create_abstractive_summary",
+      "target": "function:controllers/doc_summary.py:get_summary_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/doc_summary.py:summarize_document",
+      "target": "function:controllers/doc_summary.py:get_summary_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:sanitize_identifier",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:get_db_engine",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:process_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:create_database_with_tables",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:add_tables_to_existing_db",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:execute_safe_query",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:clean_sql_query",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:generate_sql_query",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:query_database",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:store_table_info",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:sanitize_identifier",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:get_db_engine",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:process_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:create_database_with_tables",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:add_tables_to_existing_db",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:execute_safe_query",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:clean_sql_query",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:generate_sql_query",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:query_database",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "function:controllers/sql_db.py:store_table_info",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "file:app/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:controllers/sql_db.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:controllers/sql_db.py:get_db_engine",
+      "target": "function:controllers/sql_db.py:sanitize_identifier",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:process_file",
+      "target": "function:controllers/sql_db.py:sanitize_identifier",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:create_database_with_tables",
+      "target": "function:controllers/sql_db.py:get_db_engine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:create_database_with_tables",
+      "target": "function:controllers/sql_db.py:process_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:add_tables_to_existing_db",
+      "target": "function:controllers/sql_db.py:get_db_engine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:add_tables_to_existing_db",
+      "target": "function:controllers/sql_db.py:process_file",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:generate_sql_query",
+      "target": "function:controllers/sql_db.py:clean_sql_query",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:generate_sql_query",
+      "target": "function:app/services/llm_service.py:get_standard_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:query_database",
+      "target": "function:controllers/sql_db.py:get_db_engine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:query_database",
+      "target": "function:controllers/sql_db.py:generate_sql_query",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:query_database",
+      "target": "function:controllers/sql_db.py:execute_safe_query",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:store_table_info",
+      "target": "function:controllers/sql_db.py:sanitize_identifier",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:store_table_info",
+      "target": "function:controllers/sql_db.py:get_db_engine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:controllers/sql_db.py:store_table_info",
+      "target": "function:controllers/sql_db.py:execute_safe_query",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

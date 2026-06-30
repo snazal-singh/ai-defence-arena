@@ -1,0 +1,1592 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "louvain",
+  "totalFiles": 56,
+  "totalBatches": 9,
+  "exportsByPath": {
+    ".understand-anything/.understandignore": [],
+    "app/__init__.py": [
+      "create_app",
+      "register_error_handlers"
+    ],
+    "app/api/__init__.py": [
+      "register_blueprints"
+    ],
+    "app/api/accounts.py": [
+      "update_payment",
+      "check_payment_status",
+      "login"
+    ],
+    "app/api/auth.py": [
+      "healthcheck"
+    ],
+    "app/api/documents.py": [
+      "free_trial",
+      "upload",
+      "add_upload",
+      "fetch_file",
+      "update_timestamp",
+      "rename_container_route",
+      "get_containers",
+      "delete_container_route"
+    ],
+    "app/api/queries.py": [
+      "get_limiter",
+      "serve_file",
+      "get_image_caption",
+      "trial_ask",
+      "ask",
+      "ask_stream",
+      "ask_tts",
+      "synthesize",
+      "tts_health",
+      "stt_transcribe",
+      "stt_health",
+      "toggle_note",
+      "list_notes",
+      "get_chat_history",
+      "list_chats",
+      "rename_chat",
+      "get_chat_history_stats",
+      "clear_chat_history",
+      "clear_all_chats",
+      "demo",
+      "analyze_chat_context"
+    ],
+    "app/config.py": [
+      "BaseConfig",
+      "DevelopmentConfig",
+      "TestingConfig",
+      "ProductionConfig",
+      "ConfigFactory"
+    ],
+    "app/extensions/__init__.py": [
+      "get_real_ip",
+      "register_extensions",
+      "get_or_create_eventloop"
+    ],
+    "app/models/chat_models.py": [
+      "QueryType",
+      "MessageRole",
+      "ChatMessage",
+      "ChatSession",
+      "ChatContext"
+    ],
+    "app/services/account_service.py": [
+      "AccountService",
+      "get_account_service"
+    ],
+    "app/services/adaptive_search_service.py": [
+      "AdaptiveSearchResult",
+      "AdaptiveSearchService",
+      "get_adaptive_search_service"
+    ],
+    "app/services/auth_service.py": [
+      "AuthService",
+      "get_auth_service"
+    ],
+    "app/services/chat_context_service.py": [
+      "ChatContextService",
+      "get_chat_context_service"
+    ],
+    "app/services/chat_history_manager.py": [
+      "ChatHistoryManager",
+      "get_chat_history_manager"
+    ],
+    "app/services/context_provider_service.py": [
+      "ContextProviderService",
+      "get_context_provider_service"
+    ],
+    "app/services/creative_reasoning_service.py": [
+      "CreativeReasoningService",
+      "get_creative_reasoning_service"
+    ],
+    "app/services/document_service.py": [
+      "classify_files",
+      "process_document_files",
+      "process_data_files",
+      "process_urls",
+      "DocumentService",
+      "get_document_service"
+    ],
+    "app/services/file_storage_service.py": [
+      "FileStorageService",
+      "get_file_storage_service"
+    ],
+    "app/services/llm_service.py": [
+      "GPUServerChatModel",
+      "LLMType",
+      "_make_llm",
+      "get_fast_llm",
+      "get_standard_llm",
+      "get_comprehensive_llm",
+      "get_creative_llm",
+      "get_code_llm",
+      "get_streaming_llm"
+    ],
+    "app/services/query_agent_service.py": [
+      "QueryAgentService",
+      "get_query_agent_service"
+    ],
+    "app/services/query_intent_service.py": [
+      "QueryIntent",
+      "QueryIntentService",
+      "get_query_intent_service"
+    ],
+    "app/services/query_service.py": [
+      "QueryService",
+      "get_query_service"
+    ],
+    "app/services/reasoning_strategy_service.py": [
+      "SearchType",
+      "SearchPriority",
+      "SearchInstruction",
+      "SearchStrategy",
+      "ReasoningStrategyService",
+      "get_reasoning_strategy_service"
+    ],
+    "app/services/response_generator_service.py": [
+      "ResponseGeneratorService",
+      "get_response_generator_service"
+    ],
+    "app/services/result_evaluation_service.py": [
+      "EvaluationResult",
+      "ResultEvaluationService",
+      "get_result_evaluation_service"
+    ],
+    "app/services/result_synthesis_service.py": [
+      "SynthesisResult",
+      "ResultSynthesisService",
+      "get_result_synthesis_service"
+    ],
+    "app/services/search_execution_service.py": [
+      "SearchResult",
+      "ExecutionPlan",
+      "SearchExecutionService",
+      "get_search_execution_service"
+    ],
+    "app/services/stt_service.py": [
+      "_to_vexyl_lang",
+      "_ws_to_http",
+      "STTService",
+      "_async_stream_stt",
+      "get_stt_service"
+    ],
+    "app/services/tts_service.py": [
+      "_to_vexyl_lang",
+      "_ws_to_http",
+      "_clean_text_for_tts",
+      "_async_generate_audio_stream",
+      "_run_async_generator_to_queue",
+      "TTSService",
+      "get_tts_service"
+    ],
+    "app/services/url_content_service.py": [
+      "UrlContentService",
+      "get_url_content_service"
+    ],
+    "controllers/ask.py": [
+      "checkPreviousQn",
+      "get_demo_response"
+    ],
+    "controllers/database.py": [
+      "check_trial_status",
+      "create_fingerprint_entry",
+      "is_trial_limit_over",
+      "is_user_limit_over",
+      "upgrade_account",
+      "get_account_status",
+      "sha512",
+      "salt_hash_password",
+      "validate_user",
+      "create_session",
+      "add_files_to_session",
+      "rename_session",
+      "update_session_timestamp",
+      "delete_session_from_db",
+      "get_user_sessions"
+    ],
+    "controllers/delete_session.py": [
+      "delete_directory",
+      "delete_elastic_index",
+      "delete_chat_history",
+      "delete_session",
+      "delete_session_legacy",
+      "delete_session_original"
+    ],
+    "controllers/doc_summary.py": [
+      "DocumentSummaryService",
+      "get_summary_service",
+      "create_abstractive_summary",
+      "summarize_document"
+    ],
+    "controllers/sql_db.py": [
+      "sanitize_identifier",
+      "get_db_engine",
+      "process_file",
+      "create_database_with_tables",
+      "add_tables_to_existing_db",
+      "execute_safe_query",
+      "clean_sql_query",
+      "generate_sql_query",
+      "query_database",
+      "store_table_info"
+    ],
+    "controllers/upload.py": [
+      "process_file_content",
+      "get_hierarchical_chunks",
+      "process_single_file",
+      "store_vector"
+    ],
+    "elastic/client.py": [
+      "ElasticClient"
+    ],
+    "elastic/document_manager.py": [
+      "ElasticDocumentManager"
+    ],
+    "elastic/index_manager.py": [
+      "ElasticIndexManager"
+    ],
+    "elastic/retriever.py": [
+      "ElasticRetriever"
+    ],
+    "load_test.py": [
+      "RequestResult",
+      "send_ask_request",
+      "compute_stats",
+      "print_header",
+      "print_results_table",
+      "print_summary",
+      "export_csv",
+      "run_load_test",
+      "main"
+    ],
+    "run.py": [],
+    "sample_data/generate_samples.py": [
+      "generate_object_id",
+      "generate_sample"
+    ],
+    "utils/__init__.py": [],
+    "utils/extractText.py": [
+      "_table_rows_to_markdown",
+      "_make_table_id",
+      "clean_filename",
+      "clean_text",
+      "detect_file_type",
+      "extract_txt",
+      "extract_pdf",
+      "_docx_paragraph_in_table",
+      "_docx_table_to_markdown",
+      "_docx_table_page_map",
+      "extract_docx",
+      "extract_pptx",
+      "extract_xlsx",
+      "extract_content_from_file",
+      "get_text_from_files",
+      "extract_from_path",
+      "main"
+    ],
+    "utils/guardrails.py": [
+      "InputSanitizer",
+      "MaliciousPatternChecker",
+      "LLMClassifier",
+      "SecurityPipeline",
+      "create_sanitizer",
+      "create_pattern_checker",
+      "create_llm_classifier",
+      "input_guardrail_pipeline",
+      "create_custom_pipeline"
+    ],
+    "utils/translation.py": [
+      "_headers",
+      "translate_to_indic",
+      "translate_to_english",
+      "_split_into_sentences"
+    ]
+  },
+  "batches": [
+    {
+      "batchIndex": 1,
+      "files": [
+        {
+          "path": "app/services/adaptive_search_service.py",
+          "language": "python",
+          "sizeLines": 335,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/context_provider_service.py",
+          "language": "python",
+          "sizeLines": 432,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/creative_reasoning_service.py",
+          "language": "python",
+          "sizeLines": 535,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/llm_service.py",
+          "language": "python",
+          "sizeLines": 334,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/reasoning_strategy_service.py",
+          "language": "python",
+          "sizeLines": 319,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/result_evaluation_service.py",
+          "language": "python",
+          "sizeLines": 212,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/result_synthesis_service.py",
+          "language": "python",
+          "sizeLines": 552,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/search_execution_service.py",
+          "language": "python",
+          "sizeLines": 494,
+          "fileCategory": "code"
+        },
+        {
+          "path": "controllers/ask.py",
+          "language": "python",
+          "sizeLines": 91,
+          "fileCategory": "code"
+        },
+        {
+          "path": "controllers/doc_summary.py",
+          "language": "python",
+          "sizeLines": 531,
+          "fileCategory": "code"
+        },
+        {
+          "path": "controllers/sql_db.py",
+          "language": "python",
+          "sizeLines": 387,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/services/adaptive_search_service.py": [
+          "app/services/context_provider_service.py",
+          "app/services/result_evaluation_service.py"
+        ],
+        "app/services/context_provider_service.py": [
+          "controllers/doc_summary.py",
+          "controllers/sql_db.py",
+          "elastic/retriever.py",
+          "utils/extractText.py"
+        ],
+        "app/services/creative_reasoning_service.py": [
+          "app/services/adaptive_search_service.py",
+          "app/services/context_provider_service.py",
+          "app/services/llm_service.py",
+          "app/services/result_synthesis_service.py"
+        ],
+        "app/services/llm_service.py": [
+          "app/config.py"
+        ],
+        "app/services/reasoning_strategy_service.py": [
+          "app/services/llm_service.py"
+        ],
+        "app/services/result_evaluation_service.py": [
+          "app/services/llm_service.py"
+        ],
+        "app/services/result_synthesis_service.py": [
+          "app/services/llm_service.py",
+          "app/services/reasoning_strategy_service.py",
+          "app/services/search_execution_service.py"
+        ],
+        "app/services/search_execution_service.py": [
+          "app/services/context_provider_service.py",
+          "app/services/reasoning_strategy_service.py"
+        ],
+        "controllers/ask.py": [
+          "app/services/llm_service.py",
+          "controllers/sql_db.py"
+        ],
+        "controllers/doc_summary.py": [
+          "app/config.py",
+          "app/services/llm_service.py"
+        ],
+        "controllers/sql_db.py": [
+          "app/config.py",
+          "app/services/llm_service.py"
+        ]
+      },
+      "neighborMap": {
+        "app/services/context_provider_service.py": [
+          {
+            "path": "elastic/retriever.py",
+            "batchIndex": 5,
+            "symbols": [
+              "ElasticRetriever"
+            ]
+          },
+          {
+            "path": "utils/extractText.py",
+            "batchIndex": 3,
+            "symbols": [
+              "_table_rows_to_markdown",
+              "_make_table_id",
+              "clean_filename",
+              "clean_text",
+              "detect_file_type",
+              "extract_txt",
+              "extract_pdf",
+              "_docx_paragraph_in_table",
+              "_docx_table_to_markdown",
+              "_docx_table_page_map",
+              "extract_docx",
+              "extract_pptx",
+              "extract_xlsx",
+              "extract_content_from_file",
+              "get_text_from_files",
+              "extract_from_path",
+              "main"
+            ]
+          },
+          {
+            "path": "app/services/query_agent_service.py",
+            "batchIndex": 6,
+            "symbols": [
+              "QueryAgentService",
+              "get_query_agent_service"
+            ]
+          }
+        ],
+        "app/services/llm_service.py": [
+          {
+            "path": "app/config.py",
+            "batchIndex": 5,
+            "symbols": [
+              "BaseConfig",
+              "DevelopmentConfig",
+              "TestingConfig",
+              "ProductionConfig",
+              "ConfigFactory"
+            ]
+          },
+          {
+            "path": "app/services/chat_context_service.py",
+            "batchIndex": 6,
+            "symbols": [
+              "ChatContextService",
+              "get_chat_context_service"
+            ]
+          },
+          {
+            "path": "app/services/chat_history_manager.py",
+            "batchIndex": 2,
+            "symbols": [
+              "ChatHistoryManager",
+              "get_chat_history_manager"
+            ]
+          },
+          {
+            "path": "app/services/query_intent_service.py",
+            "batchIndex": 6,
+            "symbols": [
+              "QueryIntent",
+              "QueryIntentService",
+              "get_query_intent_service"
+            ]
+          },
+          {
+            "path": "app/services/response_generator_service.py",
+            "batchIndex": 6,
+            "symbols": [
+              "ResponseGeneratorService",
+              "get_response_generator_service"
+            ]
+          },
+          {
+            "path": "elastic/retriever.py",
+            "batchIndex": 5,
+            "symbols": [
+              "ElasticRetriever"
+            ]
+          },
+          {
+            "path": "utils/guardrails.py",
+            "batchIndex": 4,
+            "symbols": [
+              "InputSanitizer",
+              "MaliciousPatternChecker",
+              "LLMClassifier",
+              "SecurityPipeline",
+              "create_sanitizer",
+              "create_pattern_checker",
+              "create_llm_classifier",
+              "input_guardrail_pipeline",
+              "create_custom_pipeline"
+            ]
+          }
+        ],
+        "controllers/ask.py": [
+          {
+            "path": "app/services/query_service.py",
+            "batchIndex": 4,
+            "symbols": [
+              "QueryService",
+              "get_query_service"
+            ]
+          }
+        ],
+        "controllers/doc_summary.py": [
+          {
+            "path": "app/config.py",
+            "batchIndex": 5,
+            "symbols": [
+              "BaseConfig",
+              "DevelopmentConfig",
+              "TestingConfig",
+              "ProductionConfig",
+              "ConfigFactory"
+            ]
+          },
+          {
+            "path": "app/services/document_service.py",
+            "batchIndex": 3,
+            "symbols": [
+              "classify_files",
+              "process_document_files",
+              "process_data_files",
+              "process_urls",
+              "DocumentService",
+              "get_document_service"
+            ]
+          }
+        ],
+        "controllers/sql_db.py": [
+          {
+            "path": "app/config.py",
+            "batchIndex": 5,
+            "symbols": [
+              "BaseConfig",
+              "DevelopmentConfig",
+              "TestingConfig",
+              "ProductionConfig",
+              "ConfigFactory"
+            ]
+          },
+          {
+            "path": "app/services/document_service.py",
+            "batchIndex": 3,
+            "symbols": [
+              "classify_files",
+              "process_document_files",
+              "process_data_files",
+              "process_urls",
+              "DocumentService",
+              "get_document_service"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 2,
+      "files": [
+        {
+          "path": "app/api/auth.py",
+          "language": "python",
+          "sizeLines": 35,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/api/documents.py",
+          "language": "python",
+          "sizeLines": 358,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/api/queries.py",
+          "language": "python",
+          "sizeLines": 1091,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/models/chat_models.py",
+          "language": "python",
+          "sizeLines": 309,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/auth_service.py",
+          "language": "python",
+          "sizeLines": 100,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/chat_history_manager.py",
+          "language": "python",
+          "sizeLines": 880,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/stt_service.py",
+          "language": "python",
+          "sizeLines": 392,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/tts_service.py",
+          "language": "python",
+          "sizeLines": 386,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/api/auth.py": [
+          "app/services/auth_service.py"
+        ],
+        "app/api/documents.py": [
+          "app/services/auth_service.py",
+          "app/services/document_service.py"
+        ],
+        "app/api/queries.py": [
+          "app/models/chat_models.py",
+          "app/services/auth_service.py",
+          "app/services/chat_history_manager.py",
+          "app/services/query_service.py",
+          "app/services/stt_service.py",
+          "app/services/tts_service.py"
+        ],
+        "app/models/chat_models.py": [],
+        "app/services/auth_service.py": [],
+        "app/services/chat_history_manager.py": [
+          "app/config.py",
+          "app/models/chat_models.py",
+          "app/services/llm_service.py"
+        ],
+        "app/services/stt_service.py": [
+          "app/config.py"
+        ],
+        "app/services/tts_service.py": [
+          "app/config.py"
+        ]
+      },
+      "neighborMap": {
+        "app/api/documents.py": [
+          {
+            "path": "app/services/document_service.py",
+            "batchIndex": 3,
+            "symbols": [
+              "classify_files",
+              "process_document_files",
+              "process_data_files",
+              "process_urls",
+              "DocumentService",
+              "get_document_service"
+            ]
+          }
+        ],
+        "app/api/queries.py": [
+          {
+            "path": "app/services/query_service.py",
+            "batchIndex": 4,
+            "symbols": [
+              "QueryService",
+              "get_query_service"
+            ]
+          }
+        ],
+        "app/services/chat_history_manager.py": [
+          {
+            "path": "app/config.py",
+            "batchIndex": 5,
+            "symbols": [
+              "BaseConfig",
+              "DevelopmentConfig",
+              "TestingConfig",
+              "ProductionConfig",
+              "ConfigFactory"
+            ]
+          },
+          {
+            "path": "app/services/llm_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "GPUServerChatModel",
+              "LLMType",
+              "_make_llm",
+              "get_fast_llm",
+              "get_standard_llm",
+              "get_comprehensive_llm",
+              "get_creative_llm",
+              "get_code_llm",
+              "get_streaming_llm"
+            ]
+          },
+          {
+            "path": "app/services/query_agent_service.py",
+            "batchIndex": 6,
+            "symbols": [
+              "QueryAgentService",
+              "get_query_agent_service"
+            ]
+          },
+          {
+            "path": "controllers/delete_session.py",
+            "batchIndex": 3,
+            "symbols": [
+              "delete_directory",
+              "delete_elastic_index",
+              "delete_chat_history",
+              "delete_session",
+              "delete_session_legacy",
+              "delete_session_original"
+            ]
+          }
+        ],
+        "app/services/stt_service.py": [
+          {
+            "path": "app/config.py",
+            "batchIndex": 5,
+            "symbols": [
+              "BaseConfig",
+              "DevelopmentConfig",
+              "TestingConfig",
+              "ProductionConfig",
+              "ConfigFactory"
+            ]
+          }
+        ],
+        "app/services/tts_service.py": [
+          {
+            "path": "app/config.py",
+            "batchIndex": 5,
+            "symbols": [
+              "BaseConfig",
+              "DevelopmentConfig",
+              "TestingConfig",
+              "ProductionConfig",
+              "ConfigFactory"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 3,
+      "files": [
+        {
+          "path": "app/services/document_service.py",
+          "language": "python",
+          "sizeLines": 439,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/file_storage_service.py",
+          "language": "python",
+          "sizeLines": 168,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/url_content_service.py",
+          "language": "python",
+          "sizeLines": 611,
+          "fileCategory": "code"
+        },
+        {
+          "path": "controllers/delete_session.py",
+          "language": "python",
+          "sizeLines": 168,
+          "fileCategory": "code"
+        },
+        {
+          "path": "controllers/upload.py",
+          "language": "python",
+          "sizeLines": 248,
+          "fileCategory": "code"
+        },
+        {
+          "path": "utils/extractText.py",
+          "language": "python",
+          "sizeLines": 707,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/services/document_service.py": [
+          "app/services/file_storage_service.py",
+          "app/services/url_content_service.py",
+          "controllers/database.py",
+          "controllers/delete_session.py",
+          "controllers/doc_summary.py",
+          "controllers/sql_db.py",
+          "controllers/upload.py",
+          "utils/extractText.py"
+        ],
+        "app/services/file_storage_service.py": [],
+        "app/services/url_content_service.py": [],
+        "controllers/delete_session.py": [
+          "app/services/chat_history_manager.py",
+          "elastic/client.py"
+        ],
+        "controllers/upload.py": [
+          "elastic/document_manager.py",
+          "utils/extractText.py"
+        ],
+        "utils/extractText.py": []
+      },
+      "neighborMap": {
+        "app/services/document_service.py": [
+          {
+            "path": "controllers/database.py",
+            "batchIndex": 4,
+            "symbols": [
+              "check_trial_status",
+              "create_fingerprint_entry",
+              "is_trial_limit_over",
+              "is_user_limit_over",
+              "upgrade_account",
+              "get_account_status",
+              "sha512",
+              "salt_hash_password",
+              "validate_user",
+              "create_session",
+              "add_files_to_session",
+              "rename_session",
+              "update_session_timestamp",
+              "delete_session_from_db",
+              "get_user_sessions"
+            ]
+          },
+          {
+            "path": "controllers/doc_summary.py",
+            "batchIndex": 1,
+            "symbols": [
+              "DocumentSummaryService",
+              "get_summary_service",
+              "create_abstractive_summary",
+              "summarize_document"
+            ]
+          },
+          {
+            "path": "controllers/sql_db.py",
+            "batchIndex": 1,
+            "symbols": [
+              "sanitize_identifier",
+              "get_db_engine",
+              "process_file",
+              "create_database_with_tables",
+              "add_tables_to_existing_db",
+              "execute_safe_query",
+              "clean_sql_query",
+              "generate_sql_query",
+              "query_database",
+              "store_table_info"
+            ]
+          },
+          {
+            "path": "app/api/documents.py",
+            "batchIndex": 2,
+            "symbols": [
+              "free_trial",
+              "upload",
+              "add_upload",
+              "fetch_file",
+              "update_timestamp",
+              "rename_container_route",
+              "get_containers",
+              "delete_container_route"
+            ]
+          }
+        ],
+        "controllers/delete_session.py": [
+          {
+            "path": "app/services/chat_history_manager.py",
+            "batchIndex": 2,
+            "symbols": [
+              "ChatHistoryManager",
+              "get_chat_history_manager"
+            ]
+          },
+          {
+            "path": "elastic/client.py",
+            "batchIndex": 5,
+            "symbols": [
+              "ElasticClient"
+            ]
+          }
+        ],
+        "controllers/upload.py": [
+          {
+            "path": "elastic/document_manager.py",
+            "batchIndex": 5,
+            "symbols": [
+              "ElasticDocumentManager"
+            ]
+          }
+        ],
+        "utils/extractText.py": [
+          {
+            "path": "app/services/context_provider_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "ContextProviderService",
+              "get_context_provider_service"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 4,
+      "files": [
+        {
+          "path": "app/api/accounts.py",
+          "language": "python",
+          "sizeLines": 95,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/account_service.py",
+          "language": "python",
+          "sizeLines": 138,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/query_service.py",
+          "language": "python",
+          "sizeLines": 296,
+          "fileCategory": "code"
+        },
+        {
+          "path": "controllers/database.py",
+          "language": "python",
+          "sizeLines": 405,
+          "fileCategory": "code"
+        },
+        {
+          "path": "utils/guardrails.py",
+          "language": "python",
+          "sizeLines": 404,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/api/accounts.py": [
+          "app/services/account_service.py"
+        ],
+        "app/services/account_service.py": [
+          "controllers/database.py"
+        ],
+        "app/services/query_service.py": [
+          "app/services/query_agent_service.py",
+          "controllers/ask.py",
+          "controllers/database.py",
+          "utils/guardrails.py"
+        ],
+        "controllers/database.py": [
+          "app/config.py"
+        ],
+        "utils/guardrails.py": [
+          "app/services/llm_service.py"
+        ]
+      },
+      "neighborMap": {
+        "app/services/query_service.py": [
+          {
+            "path": "app/services/query_agent_service.py",
+            "batchIndex": 6,
+            "symbols": [
+              "QueryAgentService",
+              "get_query_agent_service"
+            ]
+          },
+          {
+            "path": "controllers/ask.py",
+            "batchIndex": 1,
+            "symbols": [
+              "checkPreviousQn",
+              "get_demo_response"
+            ]
+          },
+          {
+            "path": "app/api/queries.py",
+            "batchIndex": 2,
+            "symbols": [
+              "get_limiter",
+              "serve_file",
+              "get_image_caption",
+              "trial_ask",
+              "ask",
+              "ask_stream",
+              "ask_tts",
+              "synthesize",
+              "tts_health",
+              "stt_transcribe",
+              "stt_health",
+              "toggle_note",
+              "list_notes",
+              "get_chat_history",
+              "list_chats",
+              "rename_chat",
+              "get_chat_history_stats",
+              "clear_chat_history",
+              "clear_all_chats",
+              "demo",
+              "analyze_chat_context"
+            ]
+          }
+        ],
+        "controllers/database.py": [
+          {
+            "path": "app/config.py",
+            "batchIndex": 5,
+            "symbols": [
+              "BaseConfig",
+              "DevelopmentConfig",
+              "TestingConfig",
+              "ProductionConfig",
+              "ConfigFactory"
+            ]
+          },
+          {
+            "path": "app/services/document_service.py",
+            "batchIndex": 3,
+            "symbols": [
+              "classify_files",
+              "process_document_files",
+              "process_data_files",
+              "process_urls",
+              "DocumentService",
+              "get_document_service"
+            ]
+          }
+        ],
+        "utils/guardrails.py": [
+          {
+            "path": "app/services/llm_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "GPUServerChatModel",
+              "LLMType",
+              "_make_llm",
+              "get_fast_llm",
+              "get_standard_llm",
+              "get_comprehensive_llm",
+              "get_creative_llm",
+              "get_code_llm",
+              "get_streaming_llm"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 5,
+      "files": [
+        {
+          "path": "app/config.py",
+          "language": "python",
+          "sizeLines": 149,
+          "fileCategory": "code"
+        },
+        {
+          "path": "elastic/client.py",
+          "language": "python",
+          "sizeLines": 33,
+          "fileCategory": "code"
+        },
+        {
+          "path": "elastic/document_manager.py",
+          "language": "python",
+          "sizeLines": 82,
+          "fileCategory": "code"
+        },
+        {
+          "path": "elastic/index_manager.py",
+          "language": "python",
+          "sizeLines": 111,
+          "fileCategory": "code"
+        },
+        {
+          "path": "elastic/retriever.py",
+          "language": "python",
+          "sizeLines": 188,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/config.py": [],
+        "elastic/client.py": [
+          "app/config.py"
+        ],
+        "elastic/document_manager.py": [
+          "app/config.py",
+          "elastic/client.py",
+          "elastic/index_manager.py"
+        ],
+        "elastic/index_manager.py": [
+          "elastic/client.py"
+        ],
+        "elastic/retriever.py": [
+          "app/config.py",
+          "app/services/llm_service.py",
+          "elastic/client.py",
+          "elastic/index_manager.py"
+        ]
+      },
+      "neighborMap": {
+        "app/config.py": [
+          {
+            "path": "app/__init__.py",
+            "batchIndex": 7,
+            "symbols": [
+              "create_app",
+              "register_error_handlers"
+            ]
+          },
+          {
+            "path": "app/services/chat_history_manager.py",
+            "batchIndex": 2,
+            "symbols": [
+              "ChatHistoryManager",
+              "get_chat_history_manager"
+            ]
+          },
+          {
+            "path": "app/services/llm_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "GPUServerChatModel",
+              "LLMType",
+              "_make_llm",
+              "get_fast_llm",
+              "get_standard_llm",
+              "get_comprehensive_llm",
+              "get_creative_llm",
+              "get_code_llm",
+              "get_streaming_llm"
+            ]
+          },
+          {
+            "path": "app/services/stt_service.py",
+            "batchIndex": 2,
+            "symbols": [
+              "_to_vexyl_lang",
+              "_ws_to_http",
+              "STTService",
+              "_async_stream_stt",
+              "get_stt_service"
+            ]
+          },
+          {
+            "path": "app/services/tts_service.py",
+            "batchIndex": 2,
+            "symbols": [
+              "_to_vexyl_lang",
+              "_ws_to_http",
+              "_clean_text_for_tts",
+              "_async_generate_audio_stream",
+              "_run_async_generator_to_queue",
+              "TTSService",
+              "get_tts_service"
+            ]
+          },
+          {
+            "path": "controllers/database.py",
+            "batchIndex": 4,
+            "symbols": [
+              "check_trial_status",
+              "create_fingerprint_entry",
+              "is_trial_limit_over",
+              "is_user_limit_over",
+              "upgrade_account",
+              "get_account_status",
+              "sha512",
+              "salt_hash_password",
+              "validate_user",
+              "create_session",
+              "add_files_to_session",
+              "rename_session",
+              "update_session_timestamp",
+              "delete_session_from_db",
+              "get_user_sessions"
+            ]
+          },
+          {
+            "path": "controllers/doc_summary.py",
+            "batchIndex": 1,
+            "symbols": [
+              "DocumentSummaryService",
+              "get_summary_service",
+              "create_abstractive_summary",
+              "summarize_document"
+            ]
+          },
+          {
+            "path": "controllers/sql_db.py",
+            "batchIndex": 1,
+            "symbols": [
+              "sanitize_identifier",
+              "get_db_engine",
+              "process_file",
+              "create_database_with_tables",
+              "add_tables_to_existing_db",
+              "execute_safe_query",
+              "clean_sql_query",
+              "generate_sql_query",
+              "query_database",
+              "store_table_info"
+            ]
+          }
+        ],
+        "elastic/client.py": [
+          {
+            "path": "controllers/delete_session.py",
+            "batchIndex": 3,
+            "symbols": [
+              "delete_directory",
+              "delete_elastic_index",
+              "delete_chat_history",
+              "delete_session",
+              "delete_session_legacy",
+              "delete_session_original"
+            ]
+          }
+        ],
+        "elastic/document_manager.py": [
+          {
+            "path": "controllers/upload.py",
+            "batchIndex": 3,
+            "symbols": [
+              "process_file_content",
+              "get_hierarchical_chunks",
+              "process_single_file",
+              "store_vector"
+            ]
+          }
+        ],
+        "elastic/retriever.py": [
+          {
+            "path": "app/services/llm_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "GPUServerChatModel",
+              "LLMType",
+              "_make_llm",
+              "get_fast_llm",
+              "get_standard_llm",
+              "get_comprehensive_llm",
+              "get_creative_llm",
+              "get_code_llm",
+              "get_streaming_llm"
+            ]
+          },
+          {
+            "path": "app/services/context_provider_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "ContextProviderService",
+              "get_context_provider_service"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 6,
+      "files": [
+        {
+          "path": "app/services/chat_context_service.py",
+          "language": "python",
+          "sizeLines": 436,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/query_agent_service.py",
+          "language": "python",
+          "sizeLines": 710,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/query_intent_service.py",
+          "language": "python",
+          "sizeLines": 235,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/services/response_generator_service.py",
+          "language": "python",
+          "sizeLines": 672,
+          "fileCategory": "code"
+        },
+        {
+          "path": "utils/translation.py",
+          "language": "python",
+          "sizeLines": 246,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/services/chat_context_service.py": [
+          "app/services/llm_service.py"
+        ],
+        "app/services/query_agent_service.py": [
+          "app/services/chat_context_service.py",
+          "app/services/chat_history_manager.py",
+          "app/services/context_provider_service.py",
+          "app/services/query_intent_service.py",
+          "app/services/response_generator_service.py"
+        ],
+        "app/services/query_intent_service.py": [
+          "app/services/llm_service.py"
+        ],
+        "app/services/response_generator_service.py": [
+          "app/services/llm_service.py",
+          "utils/translation.py"
+        ],
+        "utils/translation.py": []
+      },
+      "neighborMap": {
+        "app/services/chat_context_service.py": [
+          {
+            "path": "app/services/llm_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "GPUServerChatModel",
+              "LLMType",
+              "_make_llm",
+              "get_fast_llm",
+              "get_standard_llm",
+              "get_comprehensive_llm",
+              "get_creative_llm",
+              "get_code_llm",
+              "get_streaming_llm"
+            ]
+          }
+        ],
+        "app/services/query_agent_service.py": [
+          {
+            "path": "app/services/chat_history_manager.py",
+            "batchIndex": 2,
+            "symbols": [
+              "ChatHistoryManager",
+              "get_chat_history_manager"
+            ]
+          },
+          {
+            "path": "app/services/context_provider_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "ContextProviderService",
+              "get_context_provider_service"
+            ]
+          },
+          {
+            "path": "app/services/query_service.py",
+            "batchIndex": 4,
+            "symbols": [
+              "QueryService",
+              "get_query_service"
+            ]
+          }
+        ],
+        "app/services/query_intent_service.py": [
+          {
+            "path": "app/services/llm_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "GPUServerChatModel",
+              "LLMType",
+              "_make_llm",
+              "get_fast_llm",
+              "get_standard_llm",
+              "get_comprehensive_llm",
+              "get_creative_llm",
+              "get_code_llm",
+              "get_streaming_llm"
+            ]
+          }
+        ],
+        "app/services/response_generator_service.py": [
+          {
+            "path": "app/services/llm_service.py",
+            "batchIndex": 1,
+            "symbols": [
+              "GPUServerChatModel",
+              "LLMType",
+              "_make_llm",
+              "get_fast_llm",
+              "get_standard_llm",
+              "get_comprehensive_llm",
+              "get_creative_llm",
+              "get_code_llm",
+              "get_streaming_llm"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 7,
+      "files": [
+        {
+          "path": "app/__init__.py",
+          "language": "python",
+          "sizeLines": 90,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/api/__init__.py",
+          "language": "python",
+          "sizeLines": 25,
+          "fileCategory": "code"
+        },
+        {
+          "path": "app/extensions/__init__.py",
+          "language": "python",
+          "sizeLines": 63,
+          "fileCategory": "code"
+        },
+        {
+          "path": "run.py",
+          "language": "python",
+          "sizeLines": 18,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "app/__init__.py": [
+          "app/api/__init__.py",
+          "app/config.py",
+          "app/extensions/__init__.py"
+        ],
+        "app/api/__init__.py": [],
+        "app/extensions/__init__.py": [],
+        "run.py": [
+          "app/__init__.py"
+        ]
+      },
+      "neighborMap": {
+        "app/__init__.py": [
+          {
+            "path": "app/config.py",
+            "batchIndex": 5,
+            "symbols": [
+              "BaseConfig",
+              "DevelopmentConfig",
+              "TestingConfig",
+              "ProductionConfig",
+              "ConfigFactory"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "batchIndex": 8,
+      "files": [
+        {
+          "path": ".env.example",
+          "language": "config",
+          "sizeLines": 26,
+          "fileCategory": "config"
+        },
+        {
+          "path": "api-documentation.md",
+          "language": "markdown",
+          "sizeLines": 701,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "readme.md",
+          "language": "markdown",
+          "sizeLines": 278,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "requirements.txt",
+          "language": "txt",
+          "sizeLines": 45,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "results.csv",
+          "language": "csv",
+          "sizeLines": 170,
+          "fileCategory": "data"
+        }
+      ],
+      "batchImportData": {
+        ".env.example": [],
+        "api-documentation.md": [],
+        "readme.md": [],
+        "requirements.txt": [],
+        "results.csv": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 9,
+      "files": [
+        {
+          "path": ".understand-anything/.understandignore",
+          "language": "unknown",
+          "sizeLines": 46,
+          "fileCategory": "code"
+        },
+        {
+          "path": ".understand-anything/config.json",
+          "language": "json",
+          "sizeLines": 1,
+          "fileCategory": "config"
+        },
+        {
+          "path": "docs/sachet_agent_backend_docs.md",
+          "language": "markdown",
+          "sizeLines": 965,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "load_test.py",
+          "language": "python",
+          "sizeLines": 570,
+          "fileCategory": "code"
+        },
+        {
+          "path": "sample_data/generate_samples.py",
+          "language": "python",
+          "sizeLines": 84,
+          "fileCategory": "code"
+        },
+        {
+          "path": "sample_data/sample_alerts.json",
+          "language": "json",
+          "sizeLines": 8701,
+          "fileCategory": "config"
+        },
+        {
+          "path": "utils/__init__.py",
+          "language": "python",
+          "sizeLines": 0,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        ".understand-anything/.understandignore": [],
+        ".understand-anything/config.json": [],
+        "docs/sachet_agent_backend_docs.md": [],
+        "load_test.py": [],
+        "sample_data/generate_samples.py": [],
+        "sample_data/sample_alerts.json": [],
+        "utils/__init__.py": []
+      },
+      "neighborMap": {}
+    }
+  ]
+}

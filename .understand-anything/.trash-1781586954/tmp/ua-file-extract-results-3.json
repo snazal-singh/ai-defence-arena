@@ -1,0 +1,3744 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "app/services/document_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 440,
+      "nonEmptyLines": 361,
+      "functions": [
+        {
+          "name": "classify_files",
+          "startLine": 28,
+          "endLine": 56,
+          "params": [
+            "file_list"
+          ]
+        },
+        {
+          "name": "process_document_files",
+          "startLine": 58,
+          "endLine": 105,
+          "params": [
+            "doc_files",
+            "user_session",
+            "is_new_container"
+          ]
+        },
+        {
+          "name": "process_data_files",
+          "startLine": 107,
+          "endLine": 154,
+          "params": [
+            "data_files",
+            "user_session",
+            "is_new_container"
+          ]
+        },
+        {
+          "name": "process_urls",
+          "startLine": 156,
+          "endLine": 225,
+          "params": [
+            "urls",
+            "user_session",
+            "is_new_container"
+          ]
+        },
+        {
+          "name": "get_document_service",
+          "startLine": 435,
+          "endLine": 440,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "DocumentService",
+          "startLine": 227,
+          "endLine": 430,
+          "methods": [
+            "__init__",
+            "process_files_and_urls",
+            "fetch_file_path",
+            "delete_container",
+            "rename_container",
+            "update_container_timestamp",
+            "fetch_user_sessions"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "classify_files",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "process_document_files",
+          "line": 58,
+          "isDefault": false
+        },
+        {
+          "name": "process_data_files",
+          "line": 107,
+          "isDefault": false
+        },
+        {
+          "name": "process_urls",
+          "line": 156,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentService",
+          "line": 227,
+          "isDefault": false
+        },
+        {
+          "name": "get_document_service",
+          "line": 435,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "classify_files",
+          "callee": "unsupported_files.append",
+          "lineNumber": 44
+        },
+        {
+          "caller": "classify_files",
+          "callee": "os.path.splitext(file.filename)[1].lower",
+          "lineNumber": 47
+        },
+        {
+          "caller": "classify_files",
+          "callee": "os.path.splitext",
+          "lineNumber": 47
+        },
+        {
+          "caller": "classify_files",
+          "callee": "document_files.append",
+          "lineNumber": 50
+        },
+        {
+          "caller": "classify_files",
+          "callee": "data_files.append",
+          "lineNumber": 52
+        },
+        {
+          "caller": "classify_files",
+          "callee": "unsupported_files.append",
+          "lineNumber": 54
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "logger.info",
+          "lineNumber": 69
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "len",
+          "lineNumber": 69
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "get_text_from_files",
+          "lineNumber": 72
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "len",
+          "lineNumber": 78
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "os.path.join",
+          "lineNumber": 82
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "os.makedirs",
+          "lineNumber": 83
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "store_vector",
+          "lineNumber": 85
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "threading.Thread(target=create_abstractive_summary, args=(user_session,)).start",
+          "lineNumber": 87
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "threading.Thread",
+          "lineNumber": 87
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "sum",
+          "lineNumber": 89
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "info.get",
+          "lineNumber": 89
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "len",
+          "lineNumber": 93
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "logger.error",
+          "lineNumber": 99
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "str",
+          "lineNumber": 102
+        },
+        {
+          "caller": "process_document_files",
+          "callee": "len",
+          "lineNumber": 103
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "logger.info",
+          "lineNumber": 118
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "len",
+          "lineNumber": 118
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "create_database_with_tables",
+          "lineNumber": 122
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "add_tables_to_existing_db",
+          "lineNumber": 124
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "len",
+          "lineNumber": 130
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "threading.Thread(target=store_table_info, args=(user_session, file.filename)).start",
+          "lineNumber": 136
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "threading.Thread",
+          "lineNumber": 136
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "len",
+          "lineNumber": 142
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "len",
+          "lineNumber": 143
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "logger.error",
+          "lineNumber": 148
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "str",
+          "lineNumber": 151
+        },
+        {
+          "caller": "process_data_files",
+          "callee": "len",
+          "lineNumber": 152
+        },
+        {
+          "caller": "process_urls",
+          "callee": "logger.info",
+          "lineNumber": 172
+        },
+        {
+          "caller": "process_urls",
+          "callee": "len",
+          "lineNumber": 172
+        },
+        {
+          "caller": "process_urls",
+          "callee": "get_url_content_service",
+          "lineNumber": 175
+        },
+        {
+          "caller": "process_urls",
+          "callee": "url_service.process_urls",
+          "lineNumber": 178
+        },
+        {
+          "caller": "process_urls",
+          "callee": "len",
+          "lineNumber": 184
+        },
+        {
+          "caller": "process_urls",
+          "callee": "result.get",
+          "lineNumber": 185
+        },
+        {
+          "caller": "process_urls",
+          "callee": "os.path.join",
+          "lineNumber": 190
+        },
+        {
+          "caller": "process_urls",
+          "callee": "os.makedirs",
+          "lineNumber": 191
+        },
+        {
+          "caller": "process_urls",
+          "callee": "url_file_infos.append",
+          "lineNumber": 197
+        },
+        {
+          "caller": "process_urls",
+          "callee": "hash",
+          "lineNumber": 198
+        },
+        {
+          "caller": "process_urls",
+          "callee": "detail.get",
+          "lineNumber": 201
+        },
+        {
+          "caller": "process_urls",
+          "callee": "detail.get",
+          "lineNumber": 202
+        },
+        {
+          "caller": "process_urls",
+          "callee": "store_vector",
+          "lineNumber": 206
+        },
+        {
+          "caller": "process_urls",
+          "callee": "threading.Thread(target=create_abstractive_summary, args=(user_session,)).start",
+          "lineNumber": 209
+        },
+        {
+          "caller": "process_urls",
+          "callee": "threading.Thread",
+          "lineNumber": 209
+        },
+        {
+          "caller": "process_urls",
+          "callee": "logger.error",
+          "lineNumber": 219
+        },
+        {
+          "caller": "process_urls",
+          "callee": "str",
+          "lineNumber": 222
+        },
+        {
+          "caller": "process_urls",
+          "callee": "len",
+          "lineNumber": 223
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 231
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "time.time",
+          "lineNumber": 248
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "logger.info",
+          "lineNumber": 249
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "get_file_storage_service",
+          "lineNumber": 252
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "file_storage_service.save_files",
+          "lineNumber": 253
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "files.getlist",
+          "lineNumber": 256
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "logger.info",
+          "lineNumber": 266
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "len",
+          "lineNumber": 266
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "len",
+          "lineNumber": 266
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "enumerate",
+          "lineNumber": 267
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "logger.info",
+          "lineNumber": 268
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "enumerate",
+          "lineNumber": 269
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "logger.info",
+          "lineNumber": 270
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "classify_files",
+          "lineNumber": 273
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "logger.info",
+          "lineNumber": 275
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "len",
+          "lineNumber": 275
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "len",
+          "lineNumber": 275
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "len",
+          "lineNumber": 275
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "logger.warning",
+          "lineNumber": 280
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "logger.info",
+          "lineNumber": 299
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "delete_session",
+          "lineNumber": 300
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "logger.warning",
+          "lineNumber": 302
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "process_data_files",
+          "lineNumber": 305
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "process_document_files",
+          "lineNumber": 308
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "data_result.get",
+          "lineNumber": 309
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "process_urls",
+          "lineNumber": 312
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "data_result.get",
+          "lineNumber": 313
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "doc_result.get",
+          "lineNumber": 313
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "logger.info",
+          "lineNumber": 316
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "data_result.get",
+          "lineNumber": 320
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "doc_result.get",
+          "lineNumber": 320
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "url_result.get",
+          "lineNumber": 321
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "url_result.get",
+          "lineNumber": 322
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "url_result.get",
+          "lineNumber": 325
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "all_details.append",
+          "lineNumber": 329
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "time.time",
+          "lineNumber": 347
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "create_session",
+          "lineNumber": 352
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "add_files_to_session",
+          "lineNumber": 354
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "error_messages.append",
+          "lineNumber": 361
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "data_result.get",
+          "lineNumber": 361
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "error_messages.append",
+          "lineNumber": 363
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "doc_result.get",
+          "lineNumber": 363
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "error_messages.append",
+          "lineNumber": 365
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "url_result.get",
+          "lineNumber": 365
+        },
+        {
+          "caller": "process_files_and_urls",
+          "callee": "\"; \".join",
+          "lineNumber": 369
+        },
+        {
+          "caller": "fetch_file_path",
+          "callee": "get_file_storage_service",
+          "lineNumber": 380
+        },
+        {
+          "caller": "fetch_file_path",
+          "callee": "file_service.file_exists",
+          "lineNumber": 382
+        },
+        {
+          "caller": "fetch_file_path",
+          "callee": "logger.info",
+          "lineNumber": 384
+        },
+        {
+          "caller": "fetch_file_path",
+          "callee": "file_service.get_file_path",
+          "lineNumber": 386
+        },
+        {
+          "caller": "fetch_file_path",
+          "callee": "logger.error",
+          "lineNumber": 388
+        },
+        {
+          "caller": "delete_container",
+          "callee": "logger.info",
+          "lineNumber": 394
+        },
+        {
+          "caller": "delete_container",
+          "callee": "delete_session",
+          "lineNumber": 395
+        },
+        {
+          "caller": "delete_container",
+          "callee": "delete_session_from_db",
+          "lineNumber": 396
+        },
+        {
+          "caller": "delete_container",
+          "callee": "logger.error",
+          "lineNumber": 399
+        },
+        {
+          "caller": "rename_container",
+          "callee": "logger.info",
+          "lineNumber": 405
+        },
+        {
+          "caller": "rename_container",
+          "callee": "rename_session",
+          "lineNumber": 406
+        },
+        {
+          "caller": "rename_container",
+          "callee": "logger.error",
+          "lineNumber": 409
+        },
+        {
+          "caller": "update_container_timestamp",
+          "callee": "logger.info",
+          "lineNumber": 415
+        },
+        {
+          "caller": "update_container_timestamp",
+          "callee": "update_session_timestamp",
+          "lineNumber": 416
+        },
+        {
+          "caller": "update_container_timestamp",
+          "callee": "logger.error",
+          "lineNumber": 419
+        },
+        {
+          "caller": "fetch_user_sessions",
+          "callee": "logger.info",
+          "lineNumber": 425
+        },
+        {
+          "caller": "fetch_user_sessions",
+          "callee": "get_user_sessions",
+          "lineNumber": 426
+        },
+        {
+          "caller": "fetch_user_sessions",
+          "callee": "logger.error",
+          "lineNumber": 429
+        },
+        {
+          "caller": "get_document_service",
+          "callee": "DocumentService",
+          "lineNumber": 439
+        }
+      ],
+      "metrics": {
+        "importCount": 8,
+        "exportCount": 6,
+        "functionCount": 5,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "app/services/file_storage_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 169,
+      "nonEmptyLines": 143,
+      "functions": [
+        {
+          "name": "get_file_storage_service",
+          "startLine": 164,
+          "endLine": 169,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "FileStorageService",
+          "startLine": 11,
+          "endLine": 159,
+          "methods": [
+            "__init__",
+            "clean_filename",
+            "get_session_directory",
+            "save_single_file",
+            "save_files",
+            "get_file_path",
+            "file_exists",
+            "list_files",
+            "delete_file",
+            "delete_session"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "FileStorageService",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "get_file_storage_service",
+          "line": 164,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "Path",
+          "lineNumber": 14
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.base_upload_dir.mkdir",
+          "lineNumber": 15
+        },
+        {
+          "caller": "clean_filename",
+          "callee": "filename.split",
+          "lineNumber": 24
+        },
+        {
+          "caller": "clean_filename",
+          "callee": "filename.split",
+          "lineNumber": 26
+        },
+        {
+          "caller": "clean_filename",
+          "callee": "secure_filename",
+          "lineNumber": 29
+        },
+        {
+          "caller": "get_session_directory",
+          "callee": "session_dir.mkdir",
+          "lineNumber": 35
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "self.clean_filename",
+          "lineNumber": 45
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "self.get_session_directory",
+          "lineNumber": 50
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "original_name.rsplit",
+          "lineNumber": 56
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "file_path.exists",
+          "lineNumber": 58
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "len",
+          "lineNumber": 59
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "file.save",
+          "lineNumber": 67
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "str",
+          "lineNumber": 67
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "logger.info",
+          "lineNumber": 69
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "str",
+          "lineNumber": 74
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "file_path.stat",
+          "lineNumber": 75
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "logger.exception",
+          "lineNumber": 79
+        },
+        {
+          "caller": "save_single_file",
+          "callee": "str",
+          "lineNumber": 80
+        },
+        {
+          "caller": "save_files",
+          "callee": "files.getlist",
+          "lineNumber": 87
+        },
+        {
+          "caller": "save_files",
+          "callee": "self.save_single_file",
+          "lineNumber": 89
+        },
+        {
+          "caller": "save_files",
+          "callee": "results.append",
+          "lineNumber": 91
+        },
+        {
+          "caller": "save_files",
+          "callee": "errors.append",
+          "lineNumber": 93
+        },
+        {
+          "caller": "save_files",
+          "callee": "len",
+          "lineNumber": 96
+        },
+        {
+          "caller": "save_files",
+          "callee": "len",
+          "lineNumber": 96
+        },
+        {
+          "caller": "save_files",
+          "callee": "len",
+          "lineNumber": 99
+        },
+        {
+          "caller": "save_files",
+          "callee": "len",
+          "lineNumber": 100
+        },
+        {
+          "caller": "get_file_path",
+          "callee": "self.get_session_directory",
+          "lineNumber": 105
+        },
+        {
+          "caller": "get_file_path",
+          "callee": "self.clean_filename",
+          "lineNumber": 106
+        },
+        {
+          "caller": "file_exists",
+          "callee": "self.get_file_path",
+          "lineNumber": 111
+        },
+        {
+          "caller": "file_exists",
+          "callee": "logger.info",
+          "lineNumber": 112
+        },
+        {
+          "caller": "file_exists",
+          "callee": "file_path.exists",
+          "lineNumber": 113
+        },
+        {
+          "caller": "file_exists",
+          "callee": "file_path.is_file",
+          "lineNumber": 113
+        },
+        {
+          "caller": "list_files",
+          "callee": "self.get_session_directory",
+          "lineNumber": 118
+        },
+        {
+          "caller": "list_files",
+          "callee": "session_dir.exists",
+          "lineNumber": 119
+        },
+        {
+          "caller": "list_files",
+          "callee": "session_dir.iterdir",
+          "lineNumber": 123
+        },
+        {
+          "caller": "list_files",
+          "callee": "file_path.is_file",
+          "lineNumber": 124
+        },
+        {
+          "caller": "list_files",
+          "callee": "files.append",
+          "lineNumber": 125
+        },
+        {
+          "caller": "list_files",
+          "callee": "file_path.stat",
+          "lineNumber": 127
+        },
+        {
+          "caller": "list_files",
+          "callee": "file_path.stat",
+          "lineNumber": 128
+        },
+        {
+          "caller": "list_files",
+          "callee": "logger.exception",
+          "lineNumber": 132
+        },
+        {
+          "caller": "delete_file",
+          "callee": "self.get_file_path",
+          "lineNumber": 138
+        },
+        {
+          "caller": "delete_file",
+          "callee": "file_path.exists",
+          "lineNumber": 139
+        },
+        {
+          "caller": "delete_file",
+          "callee": "file_path.unlink",
+          "lineNumber": 140
+        },
+        {
+          "caller": "delete_file",
+          "callee": "logger.info",
+          "lineNumber": 141
+        },
+        {
+          "caller": "delete_file",
+          "callee": "logger.exception",
+          "lineNumber": 145
+        },
+        {
+          "caller": "delete_session",
+          "callee": "self.get_session_directory",
+          "lineNumber": 151
+        },
+        {
+          "caller": "delete_session",
+          "callee": "session_dir.exists",
+          "lineNumber": 152
+        },
+        {
+          "caller": "delete_session",
+          "callee": "shutil.rmtree",
+          "lineNumber": 153
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logger.info",
+          "lineNumber": 154
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logger.exception",
+          "lineNumber": 158
+        },
+        {
+          "caller": "get_file_storage_service",
+          "callee": "FileStorageService",
+          "lineNumber": 168
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "app/services/url_content_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 612,
+      "nonEmptyLines": 502,
+      "functions": [
+        {
+          "name": "get_url_content_service",
+          "startLine": 607,
+          "endLine": 612,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "UrlContentService",
+          "startLine": 36,
+          "endLine": 602,
+          "methods": [
+            "__init__",
+            "process_urls",
+            "_normalize_url",
+            "_is_youtube_url",
+            "_extract_youtube_video_id",
+            "_process_youtube_url",
+            "_get_youtube_metadata",
+            "_fallback_youtube_scraping",
+            "_format_youtube_content",
+            "_process_web_url",
+            "_try_static_scrape",
+            "_try_dynamic_scrape",
+            "_get_webdriver",
+            "_cleanup_driver",
+            "_extract_web_content",
+            "_create_documents_from_content",
+            "__del__"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "UrlContentService",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "get_url_content_service",
+          "line": 607,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 47
+        },
+        {
+          "caller": "process_urls",
+          "callee": "logger.info",
+          "lineNumber": 69
+        },
+        {
+          "caller": "process_urls",
+          "callee": "len",
+          "lineNumber": 69
+        },
+        {
+          "caller": "process_urls",
+          "callee": "enumerate",
+          "lineNumber": 75
+        },
+        {
+          "caller": "process_urls",
+          "callee": "self._normalize_url",
+          "lineNumber": 78
+        },
+        {
+          "caller": "process_urls",
+          "callee": "url_details.append",
+          "lineNumber": 80
+        },
+        {
+          "caller": "process_urls",
+          "callee": "self._is_youtube_url",
+          "lineNumber": 88
+        },
+        {
+          "caller": "process_urls",
+          "callee": "self._process_youtube_url",
+          "lineNumber": 89
+        },
+        {
+          "caller": "process_urls",
+          "callee": "self._process_web_url",
+          "lineNumber": 91
+        },
+        {
+          "caller": "process_urls",
+          "callee": "self._create_documents_from_content",
+          "lineNumber": 95
+        },
+        {
+          "caller": "process_urls",
+          "callee": "result.get",
+          "lineNumber": 99
+        },
+        {
+          "caller": "process_urls",
+          "callee": "url_documents.extend",
+          "lineNumber": 102
+        },
+        {
+          "caller": "process_urls",
+          "callee": "url_details.append",
+          "lineNumber": 105
+        },
+        {
+          "caller": "process_urls",
+          "callee": "len",
+          "lineNumber": 109
+        },
+        {
+          "caller": "process_urls",
+          "callee": "len",
+          "lineNumber": 110
+        },
+        {
+          "caller": "process_urls",
+          "callee": "result.get",
+          "lineNumber": 111
+        },
+        {
+          "caller": "process_urls",
+          "callee": "url_details.append",
+          "lineNumber": 114
+        },
+        {
+          "caller": "process_urls",
+          "callee": "logger.error",
+          "lineNumber": 121
+        },
+        {
+          "caller": "process_urls",
+          "callee": "url_details.append",
+          "lineNumber": 122
+        },
+        {
+          "caller": "process_urls",
+          "callee": "str",
+          "lineNumber": 125
+        },
+        {
+          "caller": "process_urls",
+          "callee": "self._cleanup_driver",
+          "lineNumber": 129
+        },
+        {
+          "caller": "process_urls",
+          "callee": "len",
+          "lineNumber": 133
+        },
+        {
+          "caller": "_normalize_url",
+          "callee": "isinstance",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_normalize_url",
+          "callee": "url.strip",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_normalize_url",
+          "callee": "url.startswith",
+          "lineNumber": 155
+        },
+        {
+          "caller": "_normalize_url",
+          "callee": "urlparse",
+          "lineNumber": 160
+        },
+        {
+          "caller": "_is_youtube_url",
+          "callee": "urlparse",
+          "lineNumber": 178
+        },
+        {
+          "caller": "_is_youtube_url",
+          "callee": "parsed.netloc.lower",
+          "lineNumber": 180
+        },
+        {
+          "caller": "_extract_youtube_video_id",
+          "callee": "re.search",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_extract_youtube_video_id",
+          "callee": "match.group",
+          "lineNumber": 210
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "self._extract_youtube_video_id",
+          "lineNumber": 233
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "YouTubeTranscriptApi.get_transcript",
+          "lineNumber": 242
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "' '.join",
+          "lineNumber": 243
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "logger.warning",
+          "lineNumber": 245
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "self._fallback_youtube_scraping",
+          "lineNumber": 247
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "self._get_youtube_metadata",
+          "lineNumber": 250
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "self._format_youtube_content",
+          "lineNumber": 253
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "metadata.get",
+          "lineNumber": 258
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "len",
+          "lineNumber": 263
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "logger.error",
+          "lineNumber": 269
+        },
+        {
+          "caller": "_process_youtube_url",
+          "callee": "str",
+          "lineNumber": 272
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "requests.get",
+          "lineNumber": 287
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "BeautifulSoup",
+          "lineNumber": 288
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "soup.find",
+          "lineNumber": 293
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "title_tag.get",
+          "lineNumber": 295
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "soup.find",
+          "lineNumber": 298
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "desc_tag.get",
+          "lineNumber": 300
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "soup.find",
+          "lineNumber": 303
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "duration_tag.get",
+          "lineNumber": 305
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "soup.find",
+          "lineNumber": 308
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "channel_tag.get",
+          "lineNumber": 310
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "soup.find",
+          "lineNumber": 313
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "views_tag.get",
+          "lineNumber": 315
+        },
+        {
+          "caller": "_get_youtube_metadata",
+          "callee": "logger.warning",
+          "lineNumber": 320
+        },
+        {
+          "caller": "_fallback_youtube_scraping",
+          "callee": "self._get_youtube_metadata",
+          "lineNumber": 335
+        },
+        {
+          "caller": "_fallback_youtube_scraping",
+          "callee": "metadata.get",
+          "lineNumber": 338
+        },
+        {
+          "caller": "_fallback_youtube_scraping",
+          "callee": "metadata.get",
+          "lineNumber": 340
+        },
+        {
+          "caller": "_fallback_youtube_scraping",
+          "callee": "metadata.get",
+          "lineNumber": 345
+        },
+        {
+          "caller": "_fallback_youtube_scraping",
+          "callee": "logger.error",
+          "lineNumber": 351
+        },
+        {
+          "caller": "_fallback_youtube_scraping",
+          "callee": "str",
+          "lineNumber": 354
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "content_parts.append",
+          "lineNumber": 371
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "metadata.get",
+          "lineNumber": 372
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "content_parts.append",
+          "lineNumber": 373
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "metadata.get",
+          "lineNumber": 374
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "content_parts.append",
+          "lineNumber": 375
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "metadata.get",
+          "lineNumber": 376
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "content_parts.append",
+          "lineNumber": 377
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "metadata.get",
+          "lineNumber": 378
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "content_parts.append",
+          "lineNumber": 379
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "content_parts.append",
+          "lineNumber": 381
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "content_parts.append",
+          "lineNumber": 382
+        },
+        {
+          "caller": "_format_youtube_content",
+          "callee": "\"\\n\".join",
+          "lineNumber": 384
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "self._try_static_scrape",
+          "lineNumber": 399
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "len",
+          "lineNumber": 403
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "soup.get_text",
+          "lineNumber": 403
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "self._try_dynamic_scrape",
+          "lineNumber": 404
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "self._extract_web_content",
+          "lineNumber": 414
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "len",
+          "lineNumber": 416
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "content.strip",
+          "lineNumber": 416
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "len",
+          "lineNumber": 423
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "len",
+          "lineNumber": 434
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "logger.error",
+          "lineNumber": 439
+        },
+        {
+          "caller": "_process_web_url",
+          "callee": "str",
+          "lineNumber": 442
+        },
+        {
+          "caller": "_try_static_scrape",
+          "callee": "requests.get",
+          "lineNumber": 448
+        },
+        {
+          "caller": "_try_static_scrape",
+          "callee": "response.raise_for_status",
+          "lineNumber": 449
+        },
+        {
+          "caller": "_try_static_scrape",
+          "callee": "BeautifulSoup",
+          "lineNumber": 450
+        },
+        {
+          "caller": "_try_static_scrape",
+          "callee": "logger.debug",
+          "lineNumber": 452
+        },
+        {
+          "caller": "_try_dynamic_scrape",
+          "callee": "self._get_webdriver",
+          "lineNumber": 458
+        },
+        {
+          "caller": "_try_dynamic_scrape",
+          "callee": "driver.get",
+          "lineNumber": 462
+        },
+        {
+          "caller": "_try_dynamic_scrape",
+          "callee": "time.sleep",
+          "lineNumber": 465
+        },
+        {
+          "caller": "_try_dynamic_scrape",
+          "callee": "BeautifulSoup",
+          "lineNumber": 467
+        },
+        {
+          "caller": "_try_dynamic_scrape",
+          "callee": "logger.debug",
+          "lineNumber": 470
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "Options",
+          "lineNumber": 477
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "chrome_options.add_argument",
+          "lineNumber": 478
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "chrome_options.add_argument",
+          "lineNumber": 479
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "chrome_options.add_argument",
+          "lineNumber": 480
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "chrome_options.add_argument",
+          "lineNumber": 481
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "chrome_options.add_argument",
+          "lineNumber": 482
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "chrome_options.add_argument",
+          "lineNumber": 483
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "chrome_options.add_argument",
+          "lineNumber": 484
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "chrome_options.add_experimental_option",
+          "lineNumber": 485
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "chrome_options.add_experimental_option",
+          "lineNumber": 486
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "webdriver.Chrome",
+          "lineNumber": 488
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "Service",
+          "lineNumber": 489
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "ChromeDriverManager().install",
+          "lineNumber": 489
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "ChromeDriverManager",
+          "lineNumber": 489
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "self.driver.execute_script",
+          "lineNumber": 492
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "self.driver.implicitly_wait",
+          "lineNumber": 493
+        },
+        {
+          "caller": "_get_webdriver",
+          "callee": "logger.warning",
+          "lineNumber": 496
+        },
+        {
+          "caller": "_cleanup_driver",
+          "callee": "self.driver.quit",
+          "lineNumber": 505
+        },
+        {
+          "caller": "_cleanup_driver",
+          "callee": "logger.warning",
+          "lineNumber": 508
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "soup.title.string.strip",
+          "lineNumber": 524
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "soup",
+          "lineNumber": 527
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "element.decompose",
+          "lineNumber": 528
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "soup.select_one",
+          "lineNumber": 539
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "main_content.get_text",
+          "lineNumber": 545
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "soup.get_text",
+          "lineNumber": 547
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "text_content.split",
+          "lineNumber": 550
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "line.strip",
+          "lineNumber": 554
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "len",
+          "lineNumber": 555
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "line.lower",
+          "lineNumber": 556
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "line.startswith",
+          "lineNumber": 557
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "len",
+          "lineNumber": 558
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "line.split",
+          "lineNumber": 558
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "cleaned_lines.append",
+          "lineNumber": 559
+        },
+        {
+          "caller": "_extract_web_content",
+          "callee": "'\\n'.join",
+          "lineNumber": 561
+        },
+        {
+          "caller": "_create_documents_from_content",
+          "callee": "Document",
+          "lineNumber": 585
+        },
+        {
+          "caller": "_create_documents_from_content",
+          "callee": "hash",
+          "lineNumber": 589
+        },
+        {
+          "caller": "_create_documents_from_content",
+          "callee": "metadata.get",
+          "lineNumber": 593
+        },
+        {
+          "caller": "__del__",
+          "callee": "self._cleanup_driver",
+          "lineNumber": 602
+        },
+        {
+          "caller": "get_url_content_service",
+          "callee": "UrlContentService",
+          "lineNumber": 611
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "controllers/delete_session.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 169,
+      "nonEmptyLines": 139,
+      "functions": [
+        {
+          "name": "delete_directory",
+          "startLine": 19,
+          "endLine": 32,
+          "params": [
+            "directory"
+          ]
+        },
+        {
+          "name": "delete_elastic_index",
+          "startLine": 34,
+          "endLine": 50,
+          "params": [
+            "index_name"
+          ]
+        },
+        {
+          "name": "delete_chat_history",
+          "startLine": 52,
+          "endLine": 75,
+          "params": [
+            "user_session"
+          ]
+        },
+        {
+          "name": "delete_session",
+          "startLine": 77,
+          "endLine": 136,
+          "params": [
+            "user_session"
+          ]
+        },
+        {
+          "name": "delete_session_legacy",
+          "startLine": 139,
+          "endLine": 154,
+          "params": [
+            "user_session"
+          ]
+        },
+        {
+          "name": "delete_session_original",
+          "startLine": 158,
+          "endLine": 160,
+          "params": [
+            "user_session"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "delete_directory",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "delete_elastic_index",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "delete_chat_history",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "delete_session",
+          "line": 77,
+          "isDefault": false
+        },
+        {
+          "name": "delete_session_legacy",
+          "line": 139,
+          "isDefault": false
+        },
+        {
+          "name": "delete_session_original",
+          "line": 158,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "delete_directory",
+          "callee": "os.path.exists",
+          "lineNumber": 27
+        },
+        {
+          "caller": "delete_directory",
+          "callee": "shutil.rmtree",
+          "lineNumber": 29
+        },
+        {
+          "caller": "delete_directory",
+          "callee": "logging.info",
+          "lineNumber": 30
+        },
+        {
+          "caller": "delete_directory",
+          "callee": "logging.warning",
+          "lineNumber": 32
+        },
+        {
+          "caller": "delete_elastic_index",
+          "callee": "ElasticClient().client.indices.exists",
+          "lineNumber": 43
+        },
+        {
+          "caller": "delete_elastic_index",
+          "callee": "ElasticClient",
+          "lineNumber": 43
+        },
+        {
+          "caller": "delete_elastic_index",
+          "callee": "ElasticClient().client.indices.delete",
+          "lineNumber": 45
+        },
+        {
+          "caller": "delete_elastic_index",
+          "callee": "ElasticClient",
+          "lineNumber": 45
+        },
+        {
+          "caller": "delete_elastic_index",
+          "callee": "logging.info",
+          "lineNumber": 46
+        },
+        {
+          "caller": "delete_elastic_index",
+          "callee": "logging.warning",
+          "lineNumber": 48
+        },
+        {
+          "caller": "delete_elastic_index",
+          "callee": "logging.error",
+          "lineNumber": 50
+        },
+        {
+          "caller": "delete_chat_history",
+          "callee": "get_chat_history_manager",
+          "lineNumber": 63
+        },
+        {
+          "caller": "delete_chat_history",
+          "callee": "chat_manager.delete_session",
+          "lineNumber": 64
+        },
+        {
+          "caller": "delete_chat_history",
+          "callee": "logging.info",
+          "lineNumber": 67
+        },
+        {
+          "caller": "delete_chat_history",
+          "callee": "logging.warning",
+          "lineNumber": 69
+        },
+        {
+          "caller": "delete_chat_history",
+          "callee": "logging.error",
+          "lineNumber": 74
+        },
+        {
+          "caller": "delete_session",
+          "callee": "os.path.join",
+          "lineNumber": 97
+        },
+        {
+          "caller": "delete_session",
+          "callee": "delete_directory",
+          "lineNumber": 101
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logging.error",
+          "lineNumber": 104
+        },
+        {
+          "caller": "delete_session",
+          "callee": "delete_elastic_index",
+          "lineNumber": 108
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logging.error",
+          "lineNumber": 111
+        },
+        {
+          "caller": "delete_session",
+          "callee": "delete_chat_history",
+          "lineNumber": 115
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logging.error",
+          "lineNumber": 117
+        },
+        {
+          "caller": "delete_session",
+          "callee": "all",
+          "lineNumber": 120
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logging.info",
+          "lineNumber": 127
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logging.warning",
+          "lineNumber": 129
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logging.error",
+          "lineNumber": 134
+        },
+        {
+          "caller": "delete_session",
+          "callee": "str",
+          "lineNumber": 135
+        },
+        {
+          "caller": "delete_session_legacy",
+          "callee": "delete_session",
+          "lineNumber": 148
+        },
+        {
+          "caller": "delete_session_legacy",
+          "callee": "logging.warning",
+          "lineNumber": 152
+        },
+        {
+          "caller": "delete_session_legacy",
+          "callee": "logging.error",
+          "lineNumber": 154
+        },
+        {
+          "caller": "delete_session_original",
+          "callee": "delete_session_legacy",
+          "lineNumber": 160
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "controllers/upload.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 249,
+      "nonEmptyLines": 200,
+      "functions": [
+        {
+          "name": "process_file_content",
+          "startLine": 24,
+          "endLine": 76,
+          "params": [
+            "pages",
+            "user_session",
+            "folder_name",
+            "filename"
+          ]
+        },
+        {
+          "name": "get_hierarchical_chunks",
+          "startLine": 79,
+          "endLine": 157,
+          "params": [
+            "pages",
+            "filename"
+          ]
+        },
+        {
+          "name": "process_single_file",
+          "startLine": 160,
+          "endLine": 198,
+          "params": [
+            "raw_text",
+            "user_session",
+            "filename"
+          ]
+        },
+        {
+          "name": "store_vector",
+          "startLine": 201,
+          "endLine": 249,
+          "params": [
+            "raw_text_list",
+            "user_session",
+            "new_container",
+            "file_info_list"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "process_file_content",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "get_hierarchical_chunks",
+          "line": 79,
+          "isDefault": false
+        },
+        {
+          "name": "process_single_file",
+          "line": 160,
+          "isDefault": false
+        },
+        {
+          "name": "store_vector",
+          "line": 201,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "process_file_content",
+          "callee": "clean_filename",
+          "lineNumber": 38
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "os.path.join",
+          "lineNumber": 41
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "os.makedirs",
+          "lineNumber": 42
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "len",
+          "lineNumber": 46
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "full_text.replace",
+          "lineNumber": 50
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "os.path.join",
+          "lineNumber": 53
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "open",
+          "lineNumber": 54
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "file.write",
+          "lineNumber": 55
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "os.path.getmtime",
+          "lineNumber": 61
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "os.path.getsize",
+          "lineNumber": 62
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "os.path.join",
+          "lineNumber": 65
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "open",
+          "lineNumber": 66
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "json.dump",
+          "lineNumber": 67
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "get_hierarchical_chunks",
+          "lineNumber": 70
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "os.path.join",
+          "lineNumber": 71
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "open",
+          "lineNumber": 72
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "enumerate",
+          "lineNumber": 73
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "file.write",
+          "lineNumber": 74
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "file.write",
+          "lineNumber": 75
+        },
+        {
+          "caller": "process_file_content",
+          "callee": "chunk.page_content.strip",
+          "lineNumber": 75
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "MarkdownHeaderTextSplitter",
+          "lineNumber": 100
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "RecursiveCharacterTextSplitter",
+          "lineNumber": 102
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "page.metadata.get",
+          "lineNumber": 112
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "page.metadata.get",
+          "lineNumber": 113
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "page.metadata.get",
+          "lineNumber": 114
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "page.metadata.get",
+          "lineNumber": 122
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "page.metadata.get",
+          "lineNumber": 123
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "final_chunks.append",
+          "lineNumber": 128
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "Document",
+          "lineNumber": 128
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "markdown_splitter.split_text",
+          "lineNumber": 132
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "text_splitter.split_text",
+          "lineNumber": 135
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "\" > \".join",
+          "lineNumber": 142
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "doc.metadata.get",
+          "lineNumber": 143
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "range",
+          "lineNumber": 144
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "final_chunks.append",
+          "lineNumber": 151
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "Document",
+          "lineNumber": 151
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "chunk.replace",
+          "lineNumber": 152
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "logging.info",
+          "lineNumber": 156
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "len",
+          "lineNumber": 156
+        },
+        {
+          "caller": "get_hierarchical_chunks",
+          "callee": "len",
+          "lineNumber": 156
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "clean_filename",
+          "lineNumber": 173
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "os.path.splitext",
+          "lineNumber": 176
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "secure_filename",
+          "lineNumber": 178
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "process_file_content",
+          "lineNumber": 181
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "os.path.join",
+          "lineNumber": 184
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "os.path.exists",
+          "lineNumber": 185
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "os.makedirs",
+          "lineNumber": 186
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "ElasticDocumentManager",
+          "lineNumber": 189
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "doc_manager.store_documents",
+          "lineNumber": 190
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "len",
+          "lineNumber": 195
+        },
+        {
+          "caller": "process_single_file",
+          "callee": "len",
+          "lineNumber": 196
+        },
+        {
+          "caller": "store_vector",
+          "callee": "enumerate",
+          "lineNumber": 217
+        },
+        {
+          "caller": "store_vector",
+          "callee": "process_single_file",
+          "lineNumber": 227
+        },
+        {
+          "caller": "store_vector",
+          "callee": "file_results.append",
+          "lineNumber": 228
+        },
+        {
+          "caller": "store_vector",
+          "callee": "logging.info",
+          "lineNumber": 231
+        },
+        {
+          "caller": "store_vector",
+          "callee": "logging.error",
+          "lineNumber": 235
+        },
+        {
+          "caller": "store_vector",
+          "callee": "file_results.append",
+          "lineNumber": 236
+        },
+        {
+          "caller": "store_vector",
+          "callee": "locals",
+          "lineNumber": 237
+        },
+        {
+          "caller": "store_vector",
+          "callee": "str",
+          "lineNumber": 239
+        },
+        {
+          "caller": "store_vector",
+          "callee": "sum",
+          "lineNumber": 242
+        },
+        {
+          "caller": "store_vector",
+          "callee": "r.get",
+          "lineNumber": 242
+        },
+        {
+          "caller": "store_vector",
+          "callee": "sum",
+          "lineNumber": 243
+        },
+        {
+          "caller": "store_vector",
+          "callee": "r.get",
+          "lineNumber": 243
+        },
+        {
+          "caller": "store_vector",
+          "callee": "r.get",
+          "lineNumber": 243
+        },
+        {
+          "caller": "store_vector",
+          "callee": "sum",
+          "lineNumber": 244
+        },
+        {
+          "caller": "store_vector",
+          "callee": "r.get",
+          "lineNumber": 244
+        },
+        {
+          "caller": "store_vector",
+          "callee": "r.get",
+          "lineNumber": 244
+        },
+        {
+          "caller": "store_vector",
+          "callee": "logging.info",
+          "lineNumber": 246
+        },
+        {
+          "caller": "store_vector",
+          "callee": "len",
+          "lineNumber": 246
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "utils/extractText.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 708,
+      "nonEmptyLines": 589,
+      "functions": [
+        {
+          "name": "_table_rows_to_markdown",
+          "startLine": 30,
+          "endLine": 50,
+          "params": [
+            "rows"
+          ]
+        },
+        {
+          "name": "_make_table_id",
+          "startLine": 53,
+          "endLine": 56,
+          "params": [
+            "filename",
+            "page",
+            "table_index"
+          ]
+        },
+        {
+          "name": "clean_filename",
+          "startLine": 59,
+          "endLine": 70,
+          "params": [
+            "filename"
+          ]
+        },
+        {
+          "name": "clean_text",
+          "startLine": 72,
+          "endLine": 116,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "detect_file_type",
+          "startLine": 118,
+          "endLine": 136,
+          "params": [
+            "file_path",
+            "filename"
+          ]
+        },
+        {
+          "name": "extract_txt",
+          "startLine": 138,
+          "endLine": 161,
+          "params": [
+            "file_path",
+            "filename"
+          ]
+        },
+        {
+          "name": "extract_pdf",
+          "startLine": 163,
+          "endLine": 232,
+          "params": [
+            "file_path",
+            "filename"
+          ]
+        },
+        {
+          "name": "_docx_paragraph_in_table",
+          "startLine": 234,
+          "endLine": 242,
+          "params": [
+            "paragraph"
+          ]
+        },
+        {
+          "name": "_docx_table_to_markdown",
+          "startLine": 245,
+          "endLine": 251,
+          "params": [
+            "table"
+          ]
+        },
+        {
+          "name": "_docx_table_page_map",
+          "startLine": 254,
+          "endLine": 272,
+          "params": [
+            "doc"
+          ]
+        },
+        {
+          "name": "extract_docx",
+          "startLine": 275,
+          "endLine": 376,
+          "params": [
+            "file_path",
+            "filename"
+          ]
+        },
+        {
+          "name": "extract_pptx",
+          "startLine": 378,
+          "endLine": 453,
+          "params": [
+            "file_path",
+            "filename"
+          ]
+        },
+        {
+          "name": "extract_xlsx",
+          "startLine": 455,
+          "endLine": 513,
+          "params": [
+            "file_path",
+            "filename"
+          ]
+        },
+        {
+          "name": "extract_content_from_file",
+          "startLine": 515,
+          "endLine": 589,
+          "params": [
+            "user_session",
+            "filename"
+          ]
+        },
+        {
+          "name": "get_text_from_files",
+          "startLine": 591,
+          "endLine": 654,
+          "params": [
+            "files",
+            "user_session"
+          ]
+        },
+        {
+          "name": "extract_from_path",
+          "startLine": 657,
+          "endLine": 662,
+          "params": [
+            "file_path"
+          ]
+        },
+        {
+          "name": "main",
+          "startLine": 664,
+          "endLine": 705,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_table_rows_to_markdown",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "_make_table_id",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "clean_filename",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "clean_text",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "detect_file_type",
+          "line": 118,
+          "isDefault": false
+        },
+        {
+          "name": "extract_txt",
+          "line": 138,
+          "isDefault": false
+        },
+        {
+          "name": "extract_pdf",
+          "line": 163,
+          "isDefault": false
+        },
+        {
+          "name": "_docx_paragraph_in_table",
+          "line": 234,
+          "isDefault": false
+        },
+        {
+          "name": "_docx_table_to_markdown",
+          "line": 245,
+          "isDefault": false
+        },
+        {
+          "name": "_docx_table_page_map",
+          "line": 254,
+          "isDefault": false
+        },
+        {
+          "name": "extract_docx",
+          "line": 275,
+          "isDefault": false
+        },
+        {
+          "name": "extract_pptx",
+          "line": 378,
+          "isDefault": false
+        },
+        {
+          "name": "extract_xlsx",
+          "line": 455,
+          "isDefault": false
+        },
+        {
+          "name": "extract_content_from_file",
+          "line": 515,
+          "isDefault": false
+        },
+        {
+          "name": "get_text_from_files",
+          "line": 591,
+          "isDefault": false
+        },
+        {
+          "name": "extract_from_path",
+          "line": 657,
+          "isDefault": false
+        },
+        {
+          "name": "main",
+          "line": 664,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "str(cell or \"\").strip().replace(\"\\n\", \" \").replace",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "str(cell or \"\").strip().replace",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "str(cell or \"\").strip",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "str",
+          "lineNumber": 37
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "max",
+          "lineNumber": 42
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "len",
+          "lineNumber": 42
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "len",
+          "lineNumber": 45
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "\" | \".join",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "\" | \".join",
+          "lineNumber": 48
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "\" | \".join",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_table_rows_to_markdown",
+          "callee": "\"\\n\".join",
+          "lineNumber": 50
+        },
+        {
+          "caller": "_make_table_id",
+          "callee": "re.sub",
+          "lineNumber": 55
+        },
+        {
+          "caller": "clean_filename",
+          "callee": "filename.split",
+          "lineNumber": 66
+        },
+        {
+          "caller": "clean_filename",
+          "callee": "filename.split",
+          "lineNumber": 68
+        },
+        {
+          "caller": "clean_text",
+          "callee": "unicodedata.normalize",
+          "lineNumber": 78
+        },
+        {
+          "caller": "clean_text",
+          "callee": "replacements.items",
+          "lineNumber": 89
+        },
+        {
+          "caller": "clean_text",
+          "callee": "text.replace",
+          "lineNumber": 90
+        },
+        {
+          "caller": "clean_text",
+          "callee": "\"\".join",
+          "lineNumber": 93
+        },
+        {
+          "caller": "clean_text",
+          "callee": "unicodedata.category",
+          "lineNumber": 95
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 99
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 100
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 101
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 102
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 103
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 104
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 107
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 108
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 111
+        },
+        {
+          "caller": "clean_text",
+          "callee": "re.sub",
+          "lineNumber": 114
+        },
+        {
+          "caller": "clean_text",
+          "callee": "text.strip",
+          "lineNumber": 116
+        },
+        {
+          "caller": "detect_file_type",
+          "callee": "mimetypes.guess_type",
+          "lineNumber": 121
+        },
+        {
+          "caller": "detect_file_type",
+          "callee": "os.path.splitext(filename or file_path)[1].lower",
+          "lineNumber": 126
+        },
+        {
+          "caller": "detect_file_type",
+          "callee": "os.path.splitext",
+          "lineNumber": 126
+        },
+        {
+          "caller": "detect_file_type",
+          "callee": "ext_mime_map.get",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_read_file",
+          "callee": "open",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_read_file",
+          "callee": "file.read",
+          "lineNumber": 142
+        },
+        {
+          "caller": "extract_txt",
+          "callee": "asyncio.get_event_loop().run_in_executor",
+          "lineNumber": 144
+        },
+        {
+          "caller": "extract_txt",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 144
+        },
+        {
+          "caller": "extract_txt",
+          "callee": "clean_text",
+          "lineNumber": 145
+        },
+        {
+          "caller": "extract_txt",
+          "callee": "cleaned_content.strip",
+          "lineNumber": 147
+        },
+        {
+          "caller": "extract_txt",
+          "callee": "Document",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_extract",
+          "callee": "fitz.open",
+          "lineNumber": 172
+        },
+        {
+          "caller": "_extract",
+          "callee": "enumerate",
+          "lineNumber": 175
+        },
+        {
+          "caller": "_extract",
+          "callee": "page.find_tables",
+          "lineNumber": 184
+        },
+        {
+          "caller": "_extract",
+          "callee": "enumerate",
+          "lineNumber": 185
+        },
+        {
+          "caller": "_extract",
+          "callee": "table.extract",
+          "lineNumber": 186
+        },
+        {
+          "caller": "_extract",
+          "callee": "_table_rows_to_markdown",
+          "lineNumber": 187
+        },
+        {
+          "caller": "_extract",
+          "callee": "result.append",
+          "lineNumber": 189
+        },
+        {
+          "caller": "_extract",
+          "callee": "Document",
+          "lineNumber": 189
+        },
+        {
+          "caller": "_extract",
+          "callee": "_make_table_id",
+          "lineNumber": 194
+        },
+        {
+          "caller": "_extract",
+          "callee": "page.get_text",
+          "lineNumber": 202
+        },
+        {
+          "caller": "_extract",
+          "callee": "text.strip",
+          "lineNumber": 203
+        },
+        {
+          "caller": "_extract",
+          "callee": "result.append",
+          "lineNumber": 204
+        },
+        {
+          "caller": "_extract",
+          "callee": "pdf.close",
+          "lineNumber": 210
+        },
+        {
+          "caller": "extract_pdf",
+          "callee": "asyncio.get_event_loop().run_in_executor",
+          "lineNumber": 212
+        },
+        {
+          "caller": "extract_pdf",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 212
+        },
+        {
+          "caller": "extract_pdf",
+          "callee": "isinstance",
+          "lineNumber": 216
+        },
+        {
+          "caller": "extract_pdf",
+          "callee": "documents.append",
+          "lineNumber": 218
+        },
+        {
+          "caller": "extract_pdf",
+          "callee": "clean_text",
+          "lineNumber": 220
+        },
+        {
+          "caller": "extract_pdf",
+          "callee": "cleaned.strip",
+          "lineNumber": 221
+        },
+        {
+          "caller": "extract_pdf",
+          "callee": "documents.append",
+          "lineNumber": 222
+        },
+        {
+          "caller": "extract_pdf",
+          "callee": "Document",
+          "lineNumber": 222
+        },
+        {
+          "caller": "_docx_paragraph_in_table",
+          "callee": "paragraph._element.getparent",
+          "lineNumber": 236
+        },
+        {
+          "caller": "_docx_paragraph_in_table",
+          "callee": "parent.tag.split",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_docx_paragraph_in_table",
+          "callee": "parent.getparent",
+          "lineNumber": 241
+        },
+        {
+          "caller": "_docx_table_to_markdown",
+          "callee": "cell.text.strip().replace",
+          "lineNumber": 248
+        },
+        {
+          "caller": "_docx_table_to_markdown",
+          "callee": "cell.text.strip",
+          "lineNumber": 248
+        },
+        {
+          "caller": "_docx_table_to_markdown",
+          "callee": "_table_rows_to_markdown",
+          "lineNumber": 251
+        },
+        {
+          "caller": "_docx_table_page_map",
+          "callee": "child.tag.split",
+          "lineNumber": 262
+        },
+        {
+          "caller": "_docx_table_page_map",
+          "callee": "child.iter",
+          "lineNumber": 268
+        },
+        {
+          "caller": "_docx_table_page_map",
+          "callee": "br.get",
+          "lineNumber": 269
+        },
+        {
+          "caller": "_extract",
+          "callee": "DocxDocument",
+          "lineNumber": 284
+        },
+        {
+          "caller": "_extract",
+          "callee": "_docx_table_page_map",
+          "lineNumber": 288
+        },
+        {
+          "caller": "_extract",
+          "callee": "_docx_paragraph_in_table",
+          "lineNumber": 295
+        },
+        {
+          "caller": "_extract",
+          "callee": "paragraph.text.strip",
+          "lineNumber": 299
+        },
+        {
+          "caller": "_extract",
+          "callee": "paragraph._element.xpath",
+          "lineNumber": 302
+        },
+        {
+          "caller": "_extract",
+          "callee": "result.append",
+          "lineNumber": 307
+        },
+        {
+          "caller": "_extract",
+          "callee": "\"\\n\\n\".join",
+          "lineNumber": 308
+        },
+        {
+          "caller": "_extract",
+          "callee": "style[-1].isdigit",
+          "lineNumber": 319
+        },
+        {
+          "caller": "_extract",
+          "callee": "current_page_content.append",
+          "lineNumber": 320
+        },
+        {
+          "caller": "_extract",
+          "callee": "int",
+          "lineNumber": 320
+        },
+        {
+          "caller": "_extract",
+          "callee": "formatted.append",
+          "lineNumber": 325
+        },
+        {
+          "caller": "_extract",
+          "callee": "formatted.append",
+          "lineNumber": 327
+        },
+        {
+          "caller": "_extract",
+          "callee": "formatted.append",
+          "lineNumber": 329
+        },
+        {
+          "caller": "_extract",
+          "callee": "current_page_content.append",
+          "lineNumber": 330
+        },
+        {
+          "caller": "_extract",
+          "callee": "\"\".join",
+          "lineNumber": 330
+        },
+        {
+          "caller": "_extract",
+          "callee": "result.append",
+          "lineNumber": 333
+        },
+        {
+          "caller": "_extract",
+          "callee": "\"\\n\\n\".join",
+          "lineNumber": 334
+        },
+        {
+          "caller": "_extract",
+          "callee": "enumerate",
+          "lineNumber": 339
+        },
+        {
+          "caller": "_extract",
+          "callee": "_docx_table_to_markdown",
+          "lineNumber": 340
+        },
+        {
+          "caller": "_extract",
+          "callee": "table_page_map.get",
+          "lineNumber": 342
+        },
+        {
+          "caller": "_extract",
+          "callee": "result.append",
+          "lineNumber": 343
+        },
+        {
+          "caller": "_extract",
+          "callee": "Document",
+          "lineNumber": 343
+        },
+        {
+          "caller": "_extract",
+          "callee": "_make_table_id",
+          "lineNumber": 350
+        },
+        {
+          "caller": "extract_docx",
+          "callee": "asyncio.get_event_loop().run_in_executor",
+          "lineNumber": 357
+        },
+        {
+          "caller": "extract_docx",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 357
+        },
+        {
+          "caller": "extract_docx",
+          "callee": "isinstance",
+          "lineNumber": 361
+        },
+        {
+          "caller": "extract_docx",
+          "callee": "documents.append",
+          "lineNumber": 362
+        },
+        {
+          "caller": "extract_docx",
+          "callee": "clean_text",
+          "lineNumber": 364
+        },
+        {
+          "caller": "extract_docx",
+          "callee": "cleaned.strip",
+          "lineNumber": 365
+        },
+        {
+          "caller": "extract_docx",
+          "callee": "documents.append",
+          "lineNumber": 366
+        },
+        {
+          "caller": "extract_docx",
+          "callee": "Document",
+          "lineNumber": 366
+        },
+        {
+          "caller": "_extract",
+          "callee": "Presentation",
+          "lineNumber": 383
+        },
+        {
+          "caller": "_extract",
+          "callee": "enumerate",
+          "lineNumber": 386
+        },
+        {
+          "caller": "_extract",
+          "callee": "slide.shapes.title.text.strip",
+          "lineNumber": 397
+        },
+        {
+          "caller": "_extract",
+          "callee": "text_parts.append",
+          "lineNumber": 398
+        },
+        {
+          "caller": "_extract",
+          "callee": "slide.shapes.title.text.strip",
+          "lineNumber": 398
+        },
+        {
+          "caller": "_extract",
+          "callee": "cell.text.strip().replace",
+          "lineNumber": 404
+        },
+        {
+          "caller": "_extract",
+          "callee": "cell.text.strip",
+          "lineNumber": 404
+        },
+        {
+          "caller": "_extract",
+          "callee": "_table_rows_to_markdown",
+          "lineNumber": 407
+        },
+        {
+          "caller": "_extract",
+          "callee": "result.append",
+          "lineNumber": 409
+        },
+        {
+          "caller": "_extract",
+          "callee": "Document",
+          "lineNumber": 409
+        },
+        {
+          "caller": "_extract",
+          "callee": "_make_table_id",
+          "lineNumber": 414
+        },
+        {
+          "caller": "_extract",
+          "callee": "hasattr",
+          "lineNumber": 424
+        },
+        {
+          "caller": "_extract",
+          "callee": "shape.text.strip",
+          "lineNumber": 424
+        },
+        {
+          "caller": "_extract",
+          "callee": "text_parts.append",
+          "lineNumber": 425
+        },
+        {
+          "caller": "_extract",
+          "callee": "shape.text.strip",
+          "lineNumber": 425
+        },
+        {
+          "caller": "_extract",
+          "callee": "result.append",
+          "lineNumber": 427
+        },
+        {
+          "caller": "_extract",
+          "callee": "\"\\n\\n\".join",
+          "lineNumber": 428
+        },
+        {
+          "caller": "extract_pptx",
+          "callee": "asyncio.get_event_loop().run_in_executor",
+          "lineNumber": 434
+        },
+        {
+          "caller": "extract_pptx",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 434
+        },
+        {
+          "caller": "extract_pptx",
+          "callee": "isinstance",
+          "lineNumber": 438
+        },
+        {
+          "caller": "extract_pptx",
+          "callee": "documents.append",
+          "lineNumber": 439
+        },
+        {
+          "caller": "extract_pptx",
+          "callee": "clean_text",
+          "lineNumber": 441
+        },
+        {
+          "caller": "extract_pptx",
+          "callee": "cleaned.strip",
+          "lineNumber": 442
+        },
+        {
+          "caller": "extract_pptx",
+          "callee": "documents.append",
+          "lineNumber": 443
+        },
+        {
+          "caller": "extract_pptx",
+          "callee": "Document",
+          "lineNumber": 443
+        },
+        {
+          "caller": "_extract",
+          "callee": "load_workbook",
+          "lineNumber": 458
+        },
+        {
+          "caller": "_extract",
+          "callee": "enumerate",
+          "lineNumber": 461
+        },
+        {
+          "caller": "_extract",
+          "callee": "content.append",
+          "lineNumber": 464
+        },
+        {
+          "caller": "_extract",
+          "callee": "min",
+          "lineNumber": 466
+        },
+        {
+          "caller": "_extract",
+          "callee": "min",
+          "lineNumber": 467
+        },
+        {
+          "caller": "_extract",
+          "callee": "content.append",
+          "lineNumber": 470
+        },
+        {
+          "caller": "_extract",
+          "callee": "range",
+          "lineNumber": 474
+        },
+        {
+          "caller": "_extract",
+          "callee": "ws.cell",
+          "lineNumber": 475
+        },
+        {
+          "caller": "_extract",
+          "callee": "headers.append",
+          "lineNumber": 476
+        },
+        {
+          "caller": "_extract",
+          "callee": "str",
+          "lineNumber": 476
+        },
+        {
+          "caller": "_extract",
+          "callee": "content.append",
+          "lineNumber": 478
+        },
+        {
+          "caller": "_extract",
+          "callee": "\" | \".join",
+          "lineNumber": 478
+        },
+        {
+          "caller": "_extract",
+          "callee": "content.append",
+          "lineNumber": 479
+        },
+        {
+          "caller": "_extract",
+          "callee": "\" | \".join",
+          "lineNumber": 479
+        },
+        {
+          "caller": "_extract",
+          "callee": "len",
+          "lineNumber": 479
+        },
+        {
+          "caller": "_extract",
+          "callee": "range",
+          "lineNumber": 482
+        },
+        {
+          "caller": "_extract",
+          "callee": "range",
+          "lineNumber": 484
+        },
+        {
+          "caller": "_extract",
+          "callee": "ws.cell",
+          "lineNumber": 485
+        },
+        {
+          "caller": "_extract",
+          "callee": "row_data.append",
+          "lineNumber": 486
+        },
+        {
+          "caller": "_extract",
+          "callee": "str",
+          "lineNumber": 486
+        },
+        {
+          "caller": "_extract",
+          "callee": "content.append",
+          "lineNumber": 487
+        },
+        {
+          "caller": "_extract",
+          "callee": "\" | \".join",
+          "lineNumber": 487
+        },
+        {
+          "caller": "_extract",
+          "callee": "sheets_data.append",
+          "lineNumber": 489
+        },
+        {
+          "caller": "_extract",
+          "callee": "\"\\n\".join",
+          "lineNumber": 490
+        },
+        {
+          "caller": "extract_xlsx",
+          "callee": "asyncio.get_event_loop().run_in_executor",
+          "lineNumber": 496
+        },
+        {
+          "caller": "extract_xlsx",
+          "callee": "asyncio.get_event_loop",
+          "lineNumber": 496
+        },
+        {
+          "caller": "extract_xlsx",
+          "callee": "clean_text",
+          "lineNumber": 500
+        },
+        {
+          "caller": "extract_xlsx",
+          "callee": "cleaned_content.strip",
+          "lineNumber": 501
+        },
+        {
+          "caller": "extract_xlsx",
+          "callee": "Document",
+          "lineNumber": 502
+        },
+        {
+          "caller": "extract_xlsx",
+          "callee": "documents.append",
+          "lineNumber": 511
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "clean_filename",
+          "lineNumber": 530
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "logger.info",
+          "lineNumber": 532
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "os.path.exists",
+          "lineNumber": 535
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "os.path.getsize",
+          "lineNumber": 535
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "logger.info",
+          "lineNumber": 536
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "logger.info",
+          "lineNumber": 542
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "detect_file_type",
+          "lineNumber": 545
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "extract_txt",
+          "lineNumber": 550
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "extract_pdf",
+          "lineNumber": 552
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "extract_docx",
+          "lineNumber": 554
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "extract_pptx",
+          "lineNumber": 556
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "extract_xlsx",
+          "lineNumber": 558
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "extract_txt",
+          "lineNumber": 561
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "sum",
+          "lineNumber": 570
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "len",
+          "lineNumber": 570
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "len",
+          "lineNumber": 577
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "logger.error",
+          "lineNumber": 584
+        },
+        {
+          "caller": "extract_content_from_file",
+          "callee": "str",
+          "lineNumber": 587
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "extract_content_from_file",
+          "lineNumber": 614
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "logger.info",
+          "lineNumber": 617
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "len",
+          "lineNumber": 617
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "all_documents.extend",
+          "lineNumber": 619
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "len",
+          "lineNumber": 625
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "result[\"metadata\"].get",
+          "lineNumber": 626
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "result[\"metadata\"].get",
+          "lineNumber": 630
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "file_infos.append",
+          "lineNumber": 632
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "logger.error",
+          "lineNumber": 635
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "file_infos.append",
+          "lineNumber": 636
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "str",
+          "lineNumber": 639
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "os.path.exists",
+          "lineNumber": 643
+        },
+        {
+          "caller": "_async_extract",
+          "callee": "os.unlink",
+          "lineNumber": 644
+        },
+        {
+          "caller": "get_text_from_files",
+          "callee": "asyncio.new_event_loop",
+          "lineNumber": 649
+        },
+        {
+          "caller": "get_text_from_files",
+          "callee": "asyncio.set_event_loop",
+          "lineNumber": 650
+        },
+        {
+          "caller": "get_text_from_files",
+          "callee": "loop.run_until_complete",
+          "lineNumber": 652
+        },
+        {
+          "caller": "get_text_from_files",
+          "callee": "_async_extract",
+          "lineNumber": 652
+        },
+        {
+          "caller": "get_text_from_files",
+          "callee": "loop.close",
+          "lineNumber": 654
+        },
+        {
+          "caller": "extract_from_path",
+          "callee": "os.path.exists",
+          "lineNumber": 659
+        },
+        {
+          "caller": "extract_from_path",
+          "callee": "extract_content_from_file",
+          "lineNumber": 662
+        },
+        {
+          "caller": "main",
+          "callee": "argparse.ArgumentParser",
+          "lineNumber": 669
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 670
+        },
+        {
+          "caller": "main",
+          "callee": "parser.add_argument",
+          "lineNumber": 671
+        },
+        {
+          "caller": "main",
+          "callee": "parser.parse_args",
+          "lineNumber": 673
+        },
+        {
+          "caller": "main",
+          "callee": "parser.print_help",
+          "lineNumber": 676
+        },
+        {
+          "caller": "main",
+          "callee": "sys.exit",
+          "lineNumber": 677
+        },
+        {
+          "caller": "_extract",
+          "callee": "extract_from_path",
+          "lineNumber": 680
+        },
+        {
+          "caller": "_extract",
+          "callee": "print",
+          "lineNumber": 684
+        },
+        {
+          "caller": "_extract",
+          "callee": "print",
+          "lineNumber": 685
+        },
+        {
+          "caller": "_extract",
+          "callee": "len",
+          "lineNumber": 685
+        },
+        {
+          "caller": "_extract",
+          "callee": "print",
+          "lineNumber": 686
+        },
+        {
+          "caller": "_extract",
+          "callee": "print",
+          "lineNumber": 687
+        },
+        {
+          "caller": "_extract",
+          "callee": "open",
+          "lineNumber": 690
+        },
+        {
+          "caller": "_extract",
+          "callee": "f.write",
+          "lineNumber": 692
+        },
+        {
+          "caller": "_extract",
+          "callee": "f.write",
+          "lineNumber": 693
+        },
+        {
+          "caller": "_extract",
+          "callee": "f.write",
+          "lineNumber": 694
+        },
+        {
+          "caller": "_extract",
+          "callee": "print",
+          "lineNumber": 695
+        },
+        {
+          "caller": "_extract",
+          "callee": "print",
+          "lineNumber": 697
+        },
+        {
+          "caller": "_extract",
+          "callee": "print",
+          "lineNumber": 700
+        },
+        {
+          "caller": "_extract",
+          "callee": "len",
+          "lineNumber": 700
+        },
+        {
+          "caller": "_extract",
+          "callee": "print",
+          "lineNumber": 702
+        },
+        {
+          "caller": "_extract",
+          "callee": "sys.exit",
+          "lineNumber": 703
+        },
+        {
+          "caller": "main",
+          "callee": "asyncio.run",
+          "lineNumber": 705
+        },
+        {
+          "caller": "main",
+          "callee": "_extract",
+          "lineNumber": 705
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 17,
+        "functionCount": 17,
+        "classCount": 0
+      }
+    }
+  ]
+}

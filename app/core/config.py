@@ -62,6 +62,7 @@ class Settings(BaseSettings):
     GPU_SERVER_BASE_URL: str = ""
     GPU_SERVER_API_KEY: str = ""
     GPU_SERVER_MODEL: str = "llama3.1:8b"
+    GPU_SERVER_CHAT_ENDPOINT: str = ""
     GPU_SERVER_DEFAULT_MAX_TOKENS: int = 8000
     GPU_SERVER_VERIFY_SSL: bool = False
 
@@ -69,6 +70,11 @@ class Settings(BaseSettings):
     GEMMA_SERVER_BASE_URL: str = ""
     GEMMA4_API_KEY: str = ""
     GEMMA4_MODEL: str = "gemma4:26b"
+
+    # NuMarkdown
+    NUMARKDOWN_API_URL: str = ""
+    NUMARKDOWN_MODEL: str = ""
+    NUMARKDOWN_API_KEY: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

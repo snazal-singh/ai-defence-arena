@@ -1,0 +1,562 @@
+[
+  {
+    "source": "file:app/services/result_synthesis_service.py",
+    "target": "file:app/services/search_execution_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/result_synthesis_service.py",
+    "target": "file:app/services/reasoning_strategy_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/result_synthesis_service.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/search_execution_service.py",
+    "target": "file:app/services/reasoning_strategy_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/search_execution_service.py",
+    "target": "file:app/services/context_provider_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/ask.py",
+    "target": "file:controllers/sql_db.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/ask.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/doc_summary.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/doc_summary.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/sql_db.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/sql_db.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/adaptive_search_service.py",
+    "target": "file:app/services/result_evaluation_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/adaptive_search_service.py",
+    "target": "file:app/services/context_provider_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/context_provider_service.py",
+    "target": "file:elastic/retriever.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/context_provider_service.py",
+    "target": "file:controllers/sql_db.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/context_provider_service.py",
+    "target": "file:controllers/doc_summary.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/context_provider_service.py",
+    "target": "file:utils/extractText.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/creative_reasoning_service.py",
+    "target": "file:app/services/adaptive_search_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/creative_reasoning_service.py",
+    "target": "file:app/services/result_synthesis_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/creative_reasoning_service.py",
+    "target": "file:app/services/context_provider_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/creative_reasoning_service.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/llm_service.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/reasoning_strategy_service.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/result_evaluation_service.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/chat_history_manager.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/chat_history_manager.py",
+    "target": "file:app/models/chat_models.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/chat_history_manager.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/stt_service.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/tts_service.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/auth.py",
+    "target": "file:app/services/auth_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/documents.py",
+    "target": "file:app/services/auth_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/documents.py",
+    "target": "file:app/services/document_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/queries.py",
+    "target": "file:app/models/chat_models.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/queries.py",
+    "target": "file:app/services/auth_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/queries.py",
+    "target": "file:app/services/chat_history_manager.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/queries.py",
+    "target": "file:app/services/query_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/queries.py",
+    "target": "file:app/services/stt_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/queries.py",
+    "target": "file:app/services/tts_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/document_service.py",
+    "target": "file:app/services/file_storage_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/document_service.py",
+    "target": "file:app/services/url_content_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/document_service.py",
+    "target": "file:controllers/database.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/document_service.py",
+    "target": "file:controllers/delete_session.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/document_service.py",
+    "target": "file:controllers/doc_summary.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/document_service.py",
+    "target": "file:controllers/sql_db.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/document_service.py",
+    "target": "file:controllers/upload.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/document_service.py",
+    "target": "file:utils/extractText.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/delete_session.py",
+    "target": "file:app/services/chat_history_manager.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/delete_session.py",
+    "target": "file:elastic/client.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/upload.py",
+    "target": "file:elastic/document_manager.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/upload.py",
+    "target": "file:utils/extractText.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/api/accounts.py",
+    "target": "file:app/services/account_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/account_service.py",
+    "target": "file:controllers/database.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_service.py",
+    "target": "file:app/services/query_agent_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_service.py",
+    "target": "file:controllers/ask.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_service.py",
+    "target": "file:controllers/database.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_service.py",
+    "target": "file:utils/guardrails.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:controllers/database.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:utils/guardrails.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:elastic/client.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:elastic/document_manager.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:elastic/document_manager.py",
+    "target": "file:elastic/client.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:elastic/document_manager.py",
+    "target": "file:elastic/index_manager.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:elastic/index_manager.py",
+    "target": "file:elastic/client.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:elastic/retriever.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:elastic/retriever.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:elastic/retriever.py",
+    "target": "file:elastic/client.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:elastic/retriever.py",
+    "target": "file:elastic/index_manager.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/chat_context_service.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_agent_service.py",
+    "target": "file:app/services/chat_context_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_agent_service.py",
+    "target": "file:app/services/chat_history_manager.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_agent_service.py",
+    "target": "file:app/services/context_provider_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_agent_service.py",
+    "target": "file:app/services/query_intent_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_agent_service.py",
+    "target": "file:app/services/response_generator_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/query_intent_service.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/response_generator_service.py",
+    "target": "file:app/services/llm_service.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/services/response_generator_service.py",
+    "target": "file:utils/translation.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/__init__.py",
+    "target": "file:app/api/__init__.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/__init__.py",
+    "target": "file:app/config.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:app/__init__.py",
+    "target": "file:app/extensions/__init__.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  },
+  {
+    "source": "file:run.py",
+    "target": "file:app/__init__.py",
+    "type": "imports",
+    "direction": "forward",
+    "weight": 0.7
+  }
+]

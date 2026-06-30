@@ -1,0 +1,371 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 4,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "app/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 91,
+      "nonEmptyLines": 69,
+      "functions": [
+        {
+          "name": "create_app",
+          "startLine": 16,
+          "endLine": 58,
+          "params": [
+            "config_name"
+          ]
+        },
+        {
+          "name": "register_error_handlers",
+          "startLine": 60,
+          "endLine": 91,
+          "params": [
+            "app"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "create_app",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "register_error_handlers",
+          "line": 60,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create_app",
+          "callee": "logging.basicConfig",
+          "lineNumber": 27
+        },
+        {
+          "caller": "create_app",
+          "callee": "logging.getLogger",
+          "lineNumber": 31
+        },
+        {
+          "caller": "create_app",
+          "callee": "logger.info",
+          "lineNumber": 32
+        },
+        {
+          "caller": "create_app",
+          "callee": "Flask",
+          "lineNumber": 35
+        },
+        {
+          "caller": "create_app",
+          "callee": "ConfigFactory.get_config",
+          "lineNumber": 38
+        },
+        {
+          "caller": "create_app",
+          "callee": "app.config.from_object",
+          "lineNumber": 39
+        },
+        {
+          "caller": "create_app",
+          "callee": "CORS",
+          "lineNumber": 42
+        },
+        {
+          "caller": "create_app",
+          "callee": "register_extensions",
+          "lineNumber": 45
+        },
+        {
+          "caller": "create_app",
+          "callee": "register_blueprints",
+          "lineNumber": 48
+        },
+        {
+          "caller": "create_app",
+          "callee": "register_error_handlers",
+          "lineNumber": 51
+        },
+        {
+          "caller": "register_error_handlers",
+          "callee": "app.errorhandler",
+          "lineNumber": 69
+        },
+        {
+          "caller": "bad_request",
+          "callee": "jsonify",
+          "lineNumber": 71
+        },
+        {
+          "caller": "bad_request",
+          "callee": "str",
+          "lineNumber": 71
+        },
+        {
+          "caller": "register_error_handlers",
+          "callee": "app.errorhandler",
+          "lineNumber": 73
+        },
+        {
+          "caller": "unauthorized",
+          "callee": "jsonify",
+          "lineNumber": 75
+        },
+        {
+          "caller": "unauthorized",
+          "callee": "str",
+          "lineNumber": 75
+        },
+        {
+          "caller": "register_error_handlers",
+          "callee": "app.errorhandler",
+          "lineNumber": 77
+        },
+        {
+          "caller": "forbidden",
+          "callee": "jsonify",
+          "lineNumber": 79
+        },
+        {
+          "caller": "forbidden",
+          "callee": "str",
+          "lineNumber": 79
+        },
+        {
+          "caller": "register_error_handlers",
+          "callee": "app.errorhandler",
+          "lineNumber": 81
+        },
+        {
+          "caller": "not_found",
+          "callee": "jsonify",
+          "lineNumber": 83
+        },
+        {
+          "caller": "not_found",
+          "callee": "str",
+          "lineNumber": 83
+        },
+        {
+          "caller": "register_error_handlers",
+          "callee": "app.errorhandler",
+          "lineNumber": 85
+        },
+        {
+          "caller": "rate_limit_exceeded",
+          "callee": "jsonify",
+          "lineNumber": 87
+        },
+        {
+          "caller": "rate_limit_exceeded",
+          "callee": "str",
+          "lineNumber": 87
+        },
+        {
+          "caller": "register_error_handlers",
+          "callee": "app.errorhandler",
+          "lineNumber": 89
+        },
+        {
+          "caller": "internal_server_error",
+          "callee": "jsonify",
+          "lineNumber": 91
+        },
+        {
+          "caller": "internal_server_error",
+          "callee": "str",
+          "lineNumber": 91
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/api/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 21,
+      "functions": [
+        {
+          "name": "register_blueprints",
+          "startLine": 7,
+          "endLine": 26,
+          "params": [
+            "app"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "register_blueprints",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "register_blueprints",
+          "callee": "app.register_blueprint",
+          "lineNumber": 21
+        },
+        {
+          "caller": "register_blueprints",
+          "callee": "app.register_blueprint",
+          "lineNumber": 22
+        },
+        {
+          "caller": "register_blueprints",
+          "callee": "app.register_blueprint",
+          "lineNumber": 23
+        },
+        {
+          "caller": "register_blueprints",
+          "callee": "app.register_blueprint",
+          "lineNumber": 24
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/extensions/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 64,
+      "nonEmptyLines": 53,
+      "functions": [
+        {
+          "name": "get_real_ip",
+          "startLine": 10,
+          "endLine": 28,
+          "params": []
+        },
+        {
+          "name": "register_extensions",
+          "startLine": 30,
+          "endLine": 50,
+          "params": [
+            "app"
+          ]
+        },
+        {
+          "name": "get_or_create_eventloop",
+          "startLine": 52,
+          "endLine": 64,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_real_ip",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "register_extensions",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "get_or_create_eventloop",
+          "line": 52,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_real_ip",
+          "callee": "request.headers.get",
+          "lineNumber": 17
+        },
+        {
+          "caller": "get_real_ip",
+          "callee": "forwarded_for.split(',')[0].strip",
+          "lineNumber": 20
+        },
+        {
+          "caller": "get_real_ip",
+          "callee": "forwarded_for.split",
+          "lineNumber": 20
+        },
+        {
+          "caller": "get_real_ip",
+          "callee": "request.headers.get",
+          "lineNumber": 23
+        },
+        {
+          "caller": "register_extensions",
+          "callee": "Limiter",
+          "lineNumber": 38
+        },
+        {
+          "caller": "register_extensions",
+          "callee": "app.config.get",
+          "lineNumber": 41
+        },
+        {
+          "caller": "register_extensions",
+          "callee": "app.config.get",
+          "lineNumber": 42
+        },
+        {
+          "caller": "register_extensions",
+          "callee": "app.config.get",
+          "lineNumber": 43
+        },
+        {
+          "caller": "register_extensions",
+          "callee": "get_or_create_eventloop",
+          "lineNumber": 48
+        },
+        {
+          "caller": "get_or_create_eventloop",
+          "callee": "asyncio.get_running_loop",
+          "lineNumber": 60
+        },
+        {
+          "caller": "get_or_create_eventloop",
+          "callee": "asyncio.new_event_loop",
+          "lineNumber": 62
+        },
+        {
+          "caller": "get_or_create_eventloop",
+          "callee": "asyncio.set_event_loop",
+          "lineNumber": 63
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "run.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 15,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

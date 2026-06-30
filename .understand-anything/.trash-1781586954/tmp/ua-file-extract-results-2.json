@@ -1,0 +1,6277 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 8,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "app/api/auth.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 26,
+      "functions": [
+        {
+          "name": "healthcheck",
+          "startLine": 23,
+          "endLine": 30,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "healthcheck",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "healthcheck",
+          "callee": "jsonify",
+          "lineNumber": 30
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/api/documents.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 359,
+      "nonEmptyLines": 306,
+      "functions": [
+        {
+          "name": "free_trial",
+          "startLine": 30,
+          "endLine": 88,
+          "params": []
+        },
+        {
+          "name": "upload",
+          "startLine": 95,
+          "endLine": 146,
+          "params": []
+        },
+        {
+          "name": "add_upload",
+          "startLine": 149,
+          "endLine": 200,
+          "params": []
+        },
+        {
+          "name": "fetch_file",
+          "startLine": 203,
+          "endLine": 250,
+          "params": [
+            "session_id",
+            "filename"
+          ]
+        },
+        {
+          "name": "update_timestamp",
+          "startLine": 253,
+          "endLine": 278,
+          "params": []
+        },
+        {
+          "name": "rename_container_route",
+          "startLine": 281,
+          "endLine": 309,
+          "params": []
+        },
+        {
+          "name": "get_containers",
+          "startLine": 312,
+          "endLine": 331,
+          "params": []
+        },
+        {
+          "name": "delete_container_route",
+          "startLine": 334,
+          "endLine": 359,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "free_trial",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "upload",
+          "line": 94,
+          "isDefault": false
+        },
+        {
+          "name": "add_upload",
+          "line": 148,
+          "isDefault": false
+        },
+        {
+          "name": "fetch_file",
+          "line": 202,
+          "isDefault": false
+        },
+        {
+          "name": "update_timestamp",
+          "line": 252,
+          "isDefault": false
+        },
+        {
+          "name": "rename_container_route",
+          "line": 280,
+          "isDefault": false
+        },
+        {
+          "name": "get_containers",
+          "line": 311,
+          "isDefault": false
+        },
+        {
+          "name": "delete_container_route",
+          "line": 333,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "free_trial",
+          "callee": "request.form.get",
+          "lineNumber": 50
+        },
+        {
+          "caller": "free_trial",
+          "callee": "jsonify",
+          "lineNumber": 52
+        },
+        {
+          "caller": "free_trial",
+          "callee": "request.form.get",
+          "lineNumber": 57
+        },
+        {
+          "caller": "free_trial",
+          "callee": "json.loads",
+          "lineNumber": 59
+        },
+        {
+          "caller": "free_trial",
+          "callee": "isinstance",
+          "lineNumber": 60
+        },
+        {
+          "caller": "free_trial",
+          "callee": "jsonify",
+          "lineNumber": 61
+        },
+        {
+          "caller": "free_trial",
+          "callee": "jsonify",
+          "lineNumber": 63
+        },
+        {
+          "caller": "free_trial",
+          "callee": "isinstance",
+          "lineNumber": 69
+        },
+        {
+          "caller": "free_trial",
+          "callee": "url.strip",
+          "lineNumber": 69
+        },
+        {
+          "caller": "free_trial",
+          "callee": "url.strip",
+          "lineNumber": 71
+        },
+        {
+          "caller": "free_trial",
+          "callee": "url.startswith",
+          "lineNumber": 72
+        },
+        {
+          "caller": "free_trial",
+          "callee": "valid_urls.append",
+          "lineNumber": 74
+        },
+        {
+          "caller": "free_trial",
+          "callee": "document_service.process_files_and_urls",
+          "lineNumber": 78
+        },
+        {
+          "caller": "free_trial",
+          "callee": "result.get",
+          "lineNumber": 82
+        },
+        {
+          "caller": "free_trial",
+          "callee": "jsonify",
+          "lineNumber": 83
+        },
+        {
+          "caller": "free_trial",
+          "callee": "result.get",
+          "lineNumber": 83
+        },
+        {
+          "caller": "free_trial",
+          "callee": "jsonify",
+          "lineNumber": 85
+        },
+        {
+          "caller": "free_trial",
+          "callee": "logger.exception",
+          "lineNumber": 87
+        },
+        {
+          "caller": "free_trial",
+          "callee": "jsonify",
+          "lineNumber": 88
+        },
+        {
+          "caller": "free_trial",
+          "callee": "str",
+          "lineNumber": 88
+        },
+        {
+          "caller": "upload",
+          "callee": "request.form.get",
+          "lineNumber": 99
+        },
+        {
+          "caller": "upload",
+          "callee": "jsonify",
+          "lineNumber": 101
+        },
+        {
+          "caller": "upload",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 103
+        },
+        {
+          "caller": "upload",
+          "callee": "request.form.get",
+          "lineNumber": 104
+        },
+        {
+          "caller": "upload",
+          "callee": "str",
+          "lineNumber": 105
+        },
+        {
+          "caller": "upload",
+          "callee": "session_id.lower",
+          "lineNumber": 105
+        },
+        {
+          "caller": "upload",
+          "callee": "jsonify",
+          "lineNumber": 107
+        },
+        {
+          "caller": "upload",
+          "callee": "jsonify",
+          "lineNumber": 109
+        },
+        {
+          "caller": "upload",
+          "callee": "logger.exception",
+          "lineNumber": 111
+        },
+        {
+          "caller": "upload",
+          "callee": "jsonify",
+          "lineNumber": 112
+        },
+        {
+          "caller": "upload",
+          "callee": "request.form.get",
+          "lineNumber": 117
+        },
+        {
+          "caller": "upload",
+          "callee": "json.loads",
+          "lineNumber": 119
+        },
+        {
+          "caller": "upload",
+          "callee": "isinstance",
+          "lineNumber": 120
+        },
+        {
+          "caller": "upload",
+          "callee": "jsonify",
+          "lineNumber": 121
+        },
+        {
+          "caller": "upload",
+          "callee": "jsonify",
+          "lineNumber": 123
+        },
+        {
+          "caller": "upload",
+          "callee": "isinstance",
+          "lineNumber": 129
+        },
+        {
+          "caller": "upload",
+          "callee": "url.strip",
+          "lineNumber": 129
+        },
+        {
+          "caller": "upload",
+          "callee": "url.strip",
+          "lineNumber": 131
+        },
+        {
+          "caller": "upload",
+          "callee": "url.startswith",
+          "lineNumber": 132
+        },
+        {
+          "caller": "upload",
+          "callee": "valid_urls.append",
+          "lineNumber": 134
+        },
+        {
+          "caller": "upload",
+          "callee": "document_service.process_files_and_urls",
+          "lineNumber": 138
+        },
+        {
+          "caller": "upload",
+          "callee": "result.get",
+          "lineNumber": 143
+        },
+        {
+          "caller": "upload",
+          "callee": "jsonify",
+          "lineNumber": 144
+        },
+        {
+          "caller": "upload",
+          "callee": "result.get",
+          "lineNumber": 144
+        },
+        {
+          "caller": "upload",
+          "callee": "jsonify",
+          "lineNumber": 146
+        },
+        {
+          "caller": "add_upload",
+          "callee": "request.form.get",
+          "lineNumber": 153
+        },
+        {
+          "caller": "add_upload",
+          "callee": "jsonify",
+          "lineNumber": 155
+        },
+        {
+          "caller": "add_upload",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 157
+        },
+        {
+          "caller": "add_upload",
+          "callee": "request.form.get",
+          "lineNumber": 158
+        },
+        {
+          "caller": "add_upload",
+          "callee": "str",
+          "lineNumber": 159
+        },
+        {
+          "caller": "add_upload",
+          "callee": "session_id.lower",
+          "lineNumber": 159
+        },
+        {
+          "caller": "add_upload",
+          "callee": "jsonify",
+          "lineNumber": 161
+        },
+        {
+          "caller": "add_upload",
+          "callee": "jsonify",
+          "lineNumber": 163
+        },
+        {
+          "caller": "add_upload",
+          "callee": "logger.exception",
+          "lineNumber": 165
+        },
+        {
+          "caller": "add_upload",
+          "callee": "jsonify",
+          "lineNumber": 166
+        },
+        {
+          "caller": "add_upload",
+          "callee": "request.form.get",
+          "lineNumber": 171
+        },
+        {
+          "caller": "add_upload",
+          "callee": "json.loads",
+          "lineNumber": 173
+        },
+        {
+          "caller": "add_upload",
+          "callee": "isinstance",
+          "lineNumber": 174
+        },
+        {
+          "caller": "add_upload",
+          "callee": "jsonify",
+          "lineNumber": 175
+        },
+        {
+          "caller": "add_upload",
+          "callee": "jsonify",
+          "lineNumber": 177
+        },
+        {
+          "caller": "add_upload",
+          "callee": "isinstance",
+          "lineNumber": 183
+        },
+        {
+          "caller": "add_upload",
+          "callee": "url.strip",
+          "lineNumber": 183
+        },
+        {
+          "caller": "add_upload",
+          "callee": "url.strip",
+          "lineNumber": 185
+        },
+        {
+          "caller": "add_upload",
+          "callee": "url.startswith",
+          "lineNumber": 186
+        },
+        {
+          "caller": "add_upload",
+          "callee": "valid_urls.append",
+          "lineNumber": 188
+        },
+        {
+          "caller": "add_upload",
+          "callee": "document_service.process_files_and_urls",
+          "lineNumber": 192
+        },
+        {
+          "caller": "add_upload",
+          "callee": "result.get",
+          "lineNumber": 197
+        },
+        {
+          "caller": "add_upload",
+          "callee": "jsonify",
+          "lineNumber": 198
+        },
+        {
+          "caller": "add_upload",
+          "callee": "result.get",
+          "lineNumber": 198
+        },
+        {
+          "caller": "add_upload",
+          "callee": "jsonify",
+          "lineNumber": 200
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "request.headers.get",
+          "lineNumber": 207
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "request.args.get",
+          "lineNumber": 210
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "jsonify",
+          "lineNumber": 213
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 215
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "str",
+          "lineNumber": 216
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "session_id.lower",
+          "lineNumber": 216
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "jsonify",
+          "lineNumber": 219
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "jsonify",
+          "lineNumber": 221
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "logger.exception",
+          "lineNumber": 223
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "jsonify",
+          "lineNumber": 224
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "document_service.fetch_file_path",
+          "lineNumber": 228
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "jsonify",
+          "lineNumber": 231
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "mimetypes.guess_type",
+          "lineNumber": 234
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "str",
+          "lineNumber": 234
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "logger.info",
+          "lineNumber": 238
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "send_file",
+          "lineNumber": 241
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "str",
+          "lineNumber": 242
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "logger.exception",
+          "lineNumber": 249
+        },
+        {
+          "caller": "fetch_file",
+          "callee": "jsonify",
+          "lineNumber": 250
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "request.get_json",
+          "lineNumber": 257
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "data.get",
+          "lineNumber": 258
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "jsonify",
+          "lineNumber": 260
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 262
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "data.get",
+          "lineNumber": 263
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "str",
+          "lineNumber": 264
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "session_id.lower",
+          "lineNumber": 264
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "jsonify",
+          "lineNumber": 266
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "jsonify",
+          "lineNumber": 268
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "logger.exception",
+          "lineNumber": 270
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "jsonify",
+          "lineNumber": 271
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "document_service.update_container_timestamp",
+          "lineNumber": 274
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "jsonify",
+          "lineNumber": 276
+        },
+        {
+          "caller": "update_timestamp",
+          "callee": "jsonify",
+          "lineNumber": 278
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "request.get_json",
+          "lineNumber": 285
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "data.get",
+          "lineNumber": 286
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "jsonify",
+          "lineNumber": 288
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 290
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "data.get",
+          "lineNumber": 291
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "data.get",
+          "lineNumber": 292
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "new_name.strip",
+          "lineNumber": 294
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "jsonify",
+          "lineNumber": 295
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "jsonify",
+          "lineNumber": 297
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "jsonify",
+          "lineNumber": 299
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "logger.exception",
+          "lineNumber": 301
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "jsonify",
+          "lineNumber": 302
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "document_service.rename_container",
+          "lineNumber": 305
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "new_name.strip",
+          "lineNumber": 305
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "jsonify",
+          "lineNumber": 307
+        },
+        {
+          "caller": "rename_container_route",
+          "callee": "jsonify",
+          "lineNumber": 309
+        },
+        {
+          "caller": "get_containers",
+          "callee": "request.headers.get(\"Authorization\").split",
+          "lineNumber": 316
+        },
+        {
+          "caller": "get_containers",
+          "callee": "request.headers.get",
+          "lineNumber": 316
+        },
+        {
+          "caller": "get_containers",
+          "callee": "jsonify",
+          "lineNumber": 318
+        },
+        {
+          "caller": "get_containers",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 320
+        },
+        {
+          "caller": "get_containers",
+          "callee": "jsonify",
+          "lineNumber": 322
+        },
+        {
+          "caller": "get_containers",
+          "callee": "jsonify",
+          "lineNumber": 324
+        },
+        {
+          "caller": "get_containers",
+          "callee": "logger.exception",
+          "lineNumber": 326
+        },
+        {
+          "caller": "get_containers",
+          "callee": "jsonify",
+          "lineNumber": 327
+        },
+        {
+          "caller": "get_containers",
+          "callee": "document_service.fetch_user_sessions",
+          "lineNumber": 330
+        },
+        {
+          "caller": "get_containers",
+          "callee": "jsonify",
+          "lineNumber": 331
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "request.get_json",
+          "lineNumber": 338
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "data.get",
+          "lineNumber": 339
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "jsonify",
+          "lineNumber": 341
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 343
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "data.get",
+          "lineNumber": 344
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "str",
+          "lineNumber": 345
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "session_id.lower",
+          "lineNumber": 345
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "jsonify",
+          "lineNumber": 347
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "jsonify",
+          "lineNumber": 349
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "logger.exception",
+          "lineNumber": 351
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "jsonify",
+          "lineNumber": 352
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "document_service.delete_container",
+          "lineNumber": 355
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "jsonify",
+          "lineNumber": 357
+        },
+        {
+          "caller": "delete_container_route",
+          "callee": "jsonify",
+          "lineNumber": 359
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 8,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/api/queries.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1092,
+      "nonEmptyLines": 894,
+      "functions": [
+        {
+          "name": "get_limiter",
+          "startLine": 34,
+          "endLine": 35,
+          "params": []
+        },
+        {
+          "name": "serve_file",
+          "startLine": 38,
+          "endLine": 40,
+          "params": [
+            "filepath"
+          ]
+        },
+        {
+          "name": "get_image_caption",
+          "startLine": 53,
+          "endLine": 87,
+          "params": [
+            "image_path"
+          ]
+        },
+        {
+          "name": "trial_ask",
+          "startLine": 95,
+          "endLine": 125,
+          "params": []
+        },
+        {
+          "name": "ask",
+          "startLine": 132,
+          "endLine": 233,
+          "params": []
+        },
+        {
+          "name": "ask_stream",
+          "startLine": 236,
+          "endLine": 319,
+          "params": []
+        },
+        {
+          "name": "ask_tts",
+          "startLine": 322,
+          "endLine": 446,
+          "params": []
+        },
+        {
+          "name": "synthesize",
+          "startLine": 449,
+          "endLine": 517,
+          "params": []
+        },
+        {
+          "name": "tts_health",
+          "startLine": 520,
+          "endLine": 550,
+          "params": []
+        },
+        {
+          "name": "stt_transcribe",
+          "startLine": 558,
+          "endLine": 611,
+          "params": []
+        },
+        {
+          "name": "stt_health",
+          "startLine": 615,
+          "endLine": 644,
+          "params": []
+        },
+        {
+          "name": "toggle_note",
+          "startLine": 652,
+          "endLine": 696,
+          "params": []
+        },
+        {
+          "name": "list_notes",
+          "startLine": 699,
+          "endLine": 726,
+          "params": []
+        },
+        {
+          "name": "get_chat_history",
+          "startLine": 733,
+          "endLine": 823,
+          "params": []
+        },
+        {
+          "name": "list_chats",
+          "startLine": 826,
+          "endLine": 853,
+          "params": []
+        },
+        {
+          "name": "rename_chat",
+          "startLine": 856,
+          "endLine": 905,
+          "params": []
+        },
+        {
+          "name": "get_chat_history_stats",
+          "startLine": 908,
+          "endLine": 938,
+          "params": []
+        },
+        {
+          "name": "clear_chat_history",
+          "startLine": 941,
+          "endLine": 987,
+          "params": []
+        },
+        {
+          "name": "clear_all_chats",
+          "startLine": 990,
+          "endLine": 1025,
+          "params": []
+        },
+        {
+          "name": "demo",
+          "startLine": 1032,
+          "endLine": 1039,
+          "params": []
+        },
+        {
+          "name": "analyze_chat_context",
+          "startLine": 1046,
+          "endLine": 1092,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_limiter",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "serve_file",
+          "line": 37,
+          "isDefault": false
+        },
+        {
+          "name": "get_image_caption",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "trial_ask",
+          "line": 94,
+          "isDefault": false
+        },
+        {
+          "name": "ask",
+          "line": 131,
+          "isDefault": false
+        },
+        {
+          "name": "ask_stream",
+          "line": 235,
+          "isDefault": false
+        },
+        {
+          "name": "ask_tts",
+          "line": 321,
+          "isDefault": false
+        },
+        {
+          "name": "synthesize",
+          "line": 448,
+          "isDefault": false
+        },
+        {
+          "name": "tts_health",
+          "line": 519,
+          "isDefault": false
+        },
+        {
+          "name": "stt_transcribe",
+          "line": 557,
+          "isDefault": false
+        },
+        {
+          "name": "stt_health",
+          "line": 614,
+          "isDefault": false
+        },
+        {
+          "name": "toggle_note",
+          "line": 651,
+          "isDefault": false
+        },
+        {
+          "name": "list_notes",
+          "line": 698,
+          "isDefault": false
+        },
+        {
+          "name": "get_chat_history",
+          "line": 732,
+          "isDefault": false
+        },
+        {
+          "name": "list_chats",
+          "line": 825,
+          "isDefault": false
+        },
+        {
+          "name": "rename_chat",
+          "line": 855,
+          "isDefault": false
+        },
+        {
+          "name": "get_chat_history_stats",
+          "line": 907,
+          "isDefault": false
+        },
+        {
+          "name": "clear_chat_history",
+          "line": 940,
+          "isDefault": false
+        },
+        {
+          "name": "clear_all_chats",
+          "line": 989,
+          "isDefault": false
+        },
+        {
+          "name": "demo",
+          "line": 1031,
+          "isDefault": false
+        },
+        {
+          "name": "analyze_chat_context",
+          "line": 1045,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_limiter",
+          "callee": "current_app.extensions.get",
+          "lineNumber": 35
+        },
+        {
+          "caller": "serve_file",
+          "callee": "os.path.abspath",
+          "lineNumber": 39
+        },
+        {
+          "caller": "serve_file",
+          "callee": "send_from_directory",
+          "lineNumber": 40
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "open",
+          "lineNumber": 55
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "base64.b64encode(f.read()).decode",
+          "lineNumber": 56
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "base64.b64encode",
+          "lineNumber": 56
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "f.read",
+          "lineNumber": 56
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "requests.post",
+          "lineNumber": 73
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "response.raise_for_status",
+          "lineNumber": 79
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "response.json",
+          "lineNumber": 80
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "logger.info",
+          "lineNumber": 81
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "print",
+          "lineNumber": 82
+        },
+        {
+          "caller": "get_image_caption",
+          "callee": "logger.error",
+          "lineNumber": 86
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "get_limiter",
+          "lineNumber": 96
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "limiter.limit",
+          "lineNumber": 98
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "request.files.get",
+          "lineNumber": 101
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "request.form.get",
+          "lineNumber": 103
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "request.form.get",
+          "lineNumber": 104
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "request.files.get",
+          "lineNumber": 106
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "image.save",
+          "lineNumber": 110
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "get_image_caption",
+          "lineNumber": 112
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "print",
+          "lineNumber": 118
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "print",
+          "lineNumber": 119
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "os.remove",
+          "lineNumber": 120
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "request.get_json",
+          "lineNumber": 122
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "query_service.process_trial_query",
+          "lineNumber": 124
+        },
+        {
+          "caller": "trial_ask",
+          "callee": "jsonify",
+          "lineNumber": 125
+        },
+        {
+          "caller": "ask",
+          "callee": "print",
+          "lineNumber": 133
+        },
+        {
+          "caller": "ask",
+          "callee": "print",
+          "lineNumber": 134
+        },
+        {
+          "caller": "ask",
+          "callee": "print",
+          "lineNumber": 135
+        },
+        {
+          "caller": "ask",
+          "callee": "request.files.get",
+          "lineNumber": 154
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.get",
+          "lineNumber": 156
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.get",
+          "lineNumber": 157
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.get",
+          "lineNumber": 158
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.get",
+          "lineNumber": 159
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.get",
+          "lineNumber": 160
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.get",
+          "lineNumber": 161
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.get",
+          "lineNumber": 162
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.getlist",
+          "lineNumber": 163
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.get",
+          "lineNumber": 164
+        },
+        {
+          "caller": "ask",
+          "callee": "request.form.get",
+          "lineNumber": 165
+        },
+        {
+          "caller": "ask",
+          "callee": "request.files.get",
+          "lineNumber": 167
+        },
+        {
+          "caller": "ask",
+          "callee": "data.get",
+          "lineNumber": 171
+        },
+        {
+          "caller": "ask",
+          "callee": "os.path.splitext",
+          "lineNumber": 172
+        },
+        {
+          "caller": "ask",
+          "callee": "int",
+          "lineNumber": 173
+        },
+        {
+          "caller": "ask",
+          "callee": "time.time",
+          "lineNumber": 173
+        },
+        {
+          "caller": "ask",
+          "callee": "uuid.uuid4",
+          "lineNumber": 173
+        },
+        {
+          "caller": "ask",
+          "callee": "os.path.join",
+          "lineNumber": 174
+        },
+        {
+          "caller": "ask",
+          "callee": "os.makedirs",
+          "lineNumber": 175
+        },
+        {
+          "caller": "ask",
+          "callee": "os.path.join",
+          "lineNumber": 176
+        },
+        {
+          "caller": "ask",
+          "callee": "image.save",
+          "lineNumber": 177
+        },
+        {
+          "caller": "ask",
+          "callee": "get_image_caption",
+          "lineNumber": 180
+        },
+        {
+          "caller": "ask",
+          "callee": "print",
+          "lineNumber": 189
+        },
+        {
+          "caller": "ask",
+          "callee": "request.get_json",
+          "lineNumber": 192
+        },
+        {
+          "caller": "ask",
+          "callee": "data.get",
+          "lineNumber": 197
+        },
+        {
+          "caller": "ask",
+          "callee": "jsonify",
+          "lineNumber": 199
+        },
+        {
+          "caller": "ask",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 201
+        },
+        {
+          "caller": "ask",
+          "callee": "data.get",
+          "lineNumber": 203
+        },
+        {
+          "caller": "ask",
+          "callee": "data.get",
+          "lineNumber": 204
+        },
+        {
+          "caller": "ask",
+          "callee": "jsonify",
+          "lineNumber": 206
+        },
+        {
+          "caller": "ask",
+          "callee": "jsonify",
+          "lineNumber": 208
+        },
+        {
+          "caller": "ask",
+          "callee": "logger.exception",
+          "lineNumber": 210
+        },
+        {
+          "caller": "ask",
+          "callee": "jsonify",
+          "lineNumber": 211
+        },
+        {
+          "caller": "ask",
+          "callee": "data.get",
+          "lineNumber": 215
+        },
+        {
+          "caller": "ask",
+          "callee": "jsonify",
+          "lineNumber": 217
+        },
+        {
+          "caller": "ask",
+          "callee": "str",
+          "lineNumber": 219
+        },
+        {
+          "caller": "ask",
+          "callee": "session_id.lower",
+          "lineNumber": 219
+        },
+        {
+          "caller": "ask",
+          "callee": "query_service.process_authenticated_query",
+          "lineNumber": 228
+        },
+        {
+          "caller": "ask",
+          "callee": "jsonify",
+          "lineNumber": 233
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "data.get",
+          "lineNumber": 246
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "jsonify",
+          "lineNumber": 248
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 250
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "data.get",
+          "lineNumber": 251
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "data.get",
+          "lineNumber": 252
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "jsonify",
+          "lineNumber": 255
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "str",
+          "lineNumber": 260
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "session_id.lower",
+          "lineNumber": 260
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "logger.exception",
+          "lineNumber": 262
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "jsonify",
+          "lineNumber": 263
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "data.get",
+          "lineNumber": 266
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "query_service.process_authenticated_query",
+          "lineNumber": 269
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "jsonify",
+          "lineNumber": 270
+        },
+        {
+          "caller": "generate",
+          "callee": "query_service._extract_query_parameters",
+          "lineNumber": 276
+        },
+        {
+          "caller": "generate",
+          "callee": "query_service._guardrail.process_input",
+          "lineNumber": 279
+        },
+        {
+          "caller": "generate",
+          "callee": "guardrail_response.get",
+          "lineNumber": 280
+        },
+        {
+          "caller": "generate",
+          "callee": "json.dumps",
+          "lineNumber": 281
+        },
+        {
+          "caller": "generate",
+          "callee": "guardrail_response.get",
+          "lineNumber": 284
+        },
+        {
+          "caller": "generate",
+          "callee": "query_service.query_agent._get_chat_context_if_needed",
+          "lineNumber": 287
+        },
+        {
+          "caller": "generate",
+          "callee": "get_creative_reasoning_service",
+          "lineNumber": 293
+        },
+        {
+          "caller": "generate",
+          "callee": "creative_service.process_creative_query_stream",
+          "lineNumber": 295
+        },
+        {
+          "caller": "generate",
+          "callee": "json.dumps",
+          "lineNumber": 305
+        },
+        {
+          "caller": "generate",
+          "callee": "logger.error",
+          "lineNumber": 308
+        },
+        {
+          "caller": "generate",
+          "callee": "json.dumps",
+          "lineNumber": 309
+        },
+        {
+          "caller": "generate",
+          "callee": "str",
+          "lineNumber": 309
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "Response",
+          "lineNumber": 311
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "stream_with_context",
+          "lineNumber": 312
+        },
+        {
+          "caller": "ask_stream",
+          "callee": "generate",
+          "lineNumber": 312
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "get_limiter",
+          "lineNumber": 339
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "limiter.limit",
+          "lineNumber": 341
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "request.get_json",
+          "lineNumber": 343
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "data.get",
+          "lineNumber": 347
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 349
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 351
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "data.get",
+          "lineNumber": 353
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "data.get",
+          "lineNumber": 354
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 360
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 362
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "logger.exception",
+          "lineNumber": 364
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 365
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "data.get",
+          "lineNumber": 369
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 371
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "str",
+          "lineNumber": 373
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "session_id.lower",
+          "lineNumber": 373
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "query_service.process_authenticated_query",
+          "lineNumber": 377
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 383
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "isinstance",
+          "lineNumber": 387
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "isinstance",
+          "lineNumber": 389
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "logger.error",
+          "lineNumber": 392
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "type",
+          "lineNumber": 392
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 393
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "answer_text.strip",
+          "lineNumber": 395
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 396
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "logger.exception",
+          "lineNumber": 399
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 400
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "get_tts_service",
+          "lineNumber": 404
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "data.get",
+          "lineNumber": 407
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "isinstance",
+          "lineNumber": 408
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "language_map.get",
+          "lineNumber": 411
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "logger.info",
+          "lineNumber": 413
+        },
+        {
+          "caller": "generate_audio",
+          "callee": "tts_service.generate_audio_stream",
+          "lineNumber": 419
+        },
+        {
+          "caller": "generate_audio",
+          "callee": "logger.info",
+          "lineNumber": 423
+        },
+        {
+          "caller": "generate_audio",
+          "callee": "logger.error",
+          "lineNumber": 426
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "Response",
+          "lineNumber": 429
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "generate_audio",
+          "lineNumber": 430
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "logger.error",
+          "lineNumber": 442
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 443
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "logger.exception",
+          "lineNumber": 445
+        },
+        {
+          "caller": "ask_tts",
+          "callee": "jsonify",
+          "lineNumber": 446
+        },
+        {
+          "caller": "synthesize",
+          "callee": "get_limiter",
+          "lineNumber": 461
+        },
+        {
+          "caller": "synthesize",
+          "callee": "limiter.limit",
+          "lineNumber": 463
+        },
+        {
+          "caller": "synthesize",
+          "callee": "request.get_json",
+          "lineNumber": 465
+        },
+        {
+          "caller": "synthesize",
+          "callee": "jsonify",
+          "lineNumber": 467
+        },
+        {
+          "caller": "synthesize",
+          "callee": "data.get",
+          "lineNumber": 469
+        },
+        {
+          "caller": "synthesize",
+          "callee": "jsonify",
+          "lineNumber": 471
+        },
+        {
+          "caller": "synthesize",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 474
+        },
+        {
+          "caller": "synthesize",
+          "callee": "jsonify",
+          "lineNumber": 476
+        },
+        {
+          "caller": "synthesize",
+          "callee": "jsonify",
+          "lineNumber": 478
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.exception",
+          "lineNumber": 480
+        },
+        {
+          "caller": "synthesize",
+          "callee": "jsonify",
+          "lineNumber": 481
+        },
+        {
+          "caller": "synthesize",
+          "callee": "data.get",
+          "lineNumber": 483
+        },
+        {
+          "caller": "synthesize",
+          "callee": "text.strip",
+          "lineNumber": 484
+        },
+        {
+          "caller": "synthesize",
+          "callee": "jsonify",
+          "lineNumber": 485
+        },
+        {
+          "caller": "synthesize",
+          "callee": "data.get",
+          "lineNumber": 487
+        },
+        {
+          "caller": "synthesize",
+          "callee": "get_tts_service",
+          "lineNumber": 490
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.info",
+          "lineNumber": 492
+        },
+        {
+          "caller": "generate_audio",
+          "callee": "tts_service.generate_audio_stream",
+          "lineNumber": 496
+        },
+        {
+          "caller": "generate_audio",
+          "callee": "logger.error",
+          "lineNumber": 499
+        },
+        {
+          "caller": "synthesize",
+          "callee": "Response",
+          "lineNumber": 501
+        },
+        {
+          "caller": "synthesize",
+          "callee": "generate_audio",
+          "lineNumber": 502
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.error",
+          "lineNumber": 513
+        },
+        {
+          "caller": "synthesize",
+          "callee": "jsonify",
+          "lineNumber": 514
+        },
+        {
+          "caller": "synthesize",
+          "callee": "logger.exception",
+          "lineNumber": 516
+        },
+        {
+          "caller": "synthesize",
+          "callee": "jsonify",
+          "lineNumber": 517
+        },
+        {
+          "caller": "tts_health",
+          "callee": "request.args.get",
+          "lineNumber": 528
+        },
+        {
+          "caller": "tts_health",
+          "callee": "jsonify",
+          "lineNumber": 530
+        },
+        {
+          "caller": "tts_health",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 532
+        },
+        {
+          "caller": "tts_health",
+          "callee": "get_tts_service",
+          "lineNumber": 534
+        },
+        {
+          "caller": "tts_health",
+          "callee": "tts_service.test_connection",
+          "lineNumber": 535
+        },
+        {
+          "caller": "tts_health",
+          "callee": "jsonify",
+          "lineNumber": 537
+        },
+        {
+          "caller": "tts_health",
+          "callee": "logger.error",
+          "lineNumber": 545
+        },
+        {
+          "caller": "tts_health",
+          "callee": "jsonify",
+          "lineNumber": 546
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "request.form.get",
+          "lineNumber": 572
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "(request.get_json(silent=True) or {}).get",
+          "lineNumber": 572
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "request.get_json",
+          "lineNumber": 572
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 574
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 575
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 577
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 579
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "logger.exception",
+          "lineNumber": 581
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 582
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "request.files.get",
+          "lineNumber": 584
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 586
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "request.form.get",
+          "lineNumber": 588
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "audio_file.read",
+          "lineNumber": 591
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 593
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "get_stt_service",
+          "lineNumber": 595
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "stt_service.transcribe_audio_bytes",
+          "lineNumber": 596
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 601
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "logger.error",
+          "lineNumber": 604
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 605
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "str",
+          "lineNumber": 605
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "logger.error",
+          "lineNumber": 607
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 608
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "logger.exception",
+          "lineNumber": 610
+        },
+        {
+          "caller": "stt_transcribe",
+          "callee": "jsonify",
+          "lineNumber": 611
+        },
+        {
+          "caller": "stt_health",
+          "callee": "request.args.get",
+          "lineNumber": 623
+        },
+        {
+          "caller": "stt_health",
+          "callee": "jsonify",
+          "lineNumber": 625
+        },
+        {
+          "caller": "stt_health",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 626
+        },
+        {
+          "caller": "stt_health",
+          "callee": "get_stt_service",
+          "lineNumber": 628
+        },
+        {
+          "caller": "stt_health",
+          "callee": "stt_service.test_connection",
+          "lineNumber": 629
+        },
+        {
+          "caller": "stt_health",
+          "callee": "jsonify",
+          "lineNumber": 631
+        },
+        {
+          "caller": "stt_health",
+          "callee": "logger.error",
+          "lineNumber": 639
+        },
+        {
+          "caller": "stt_health",
+          "callee": "jsonify",
+          "lineNumber": 640
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "request.get_json",
+          "lineNumber": 654
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "data.get",
+          "lineNumber": 656
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "jsonify",
+          "lineNumber": 658
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 660
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "data.get",
+          "lineNumber": 661
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "data.get",
+          "lineNumber": 662
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "data.get",
+          "lineNumber": 663
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "jsonify",
+          "lineNumber": 666
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "jsonify",
+          "lineNumber": 672
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "str",
+          "lineNumber": 674
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "session_id.lower",
+          "lineNumber": 674
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "chat_history_manager.toggle_message_note",
+          "lineNumber": 676
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "jsonify",
+          "lineNumber": 679
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "jsonify",
+          "lineNumber": 685
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "jsonify",
+          "lineNumber": 691
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "jsonify",
+          "lineNumber": 693
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "logger.error",
+          "lineNumber": 695
+        },
+        {
+          "caller": "toggle_note",
+          "callee": "jsonify",
+          "lineNumber": 696
+        },
+        {
+          "caller": "list_notes",
+          "callee": "request.args.get",
+          "lineNumber": 701
+        },
+        {
+          "caller": "list_notes",
+          "callee": "jsonify",
+          "lineNumber": 703
+        },
+        {
+          "caller": "list_notes",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 705
+        },
+        {
+          "caller": "list_notes",
+          "callee": "request.args.get",
+          "lineNumber": 706
+        },
+        {
+          "caller": "list_notes",
+          "callee": "jsonify",
+          "lineNumber": 709
+        },
+        {
+          "caller": "list_notes",
+          "callee": "str",
+          "lineNumber": 711
+        },
+        {
+          "caller": "list_notes",
+          "callee": "session_id.lower",
+          "lineNumber": 711
+        },
+        {
+          "caller": "list_notes",
+          "callee": "chat_history_manager.get_saved_notes",
+          "lineNumber": 712
+        },
+        {
+          "caller": "list_notes",
+          "callee": "jsonify",
+          "lineNumber": 714
+        },
+        {
+          "caller": "list_notes",
+          "callee": "len",
+          "lineNumber": 717
+        },
+        {
+          "caller": "list_notes",
+          "callee": "jsonify",
+          "lineNumber": 721
+        },
+        {
+          "caller": "list_notes",
+          "callee": "jsonify",
+          "lineNumber": 723
+        },
+        {
+          "caller": "list_notes",
+          "callee": "logger.error",
+          "lineNumber": 725
+        },
+        {
+          "caller": "list_notes",
+          "callee": "jsonify",
+          "lineNumber": 726
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "request.args.get",
+          "lineNumber": 735
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 737
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 739
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "request.args.get",
+          "lineNumber": 740
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "request.args.get",
+          "lineNumber": 741
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 744
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "str",
+          "lineNumber": 746
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "session_id.lower",
+          "lineNumber": 746
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "chat_history_manager.get_latest_empty_chat",
+          "lineNumber": 749
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 752
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "str",
+          "lineNumber": 761
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "int",
+          "lineNumber": 761
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "time.time",
+          "lineNumber": 761
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "chat_history_manager._create_chat_name_entry",
+          "lineNumber": 762
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 764
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "chat_history_manager._generate_default_chat_name",
+          "lineNumber": 769
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "int",
+          "lineNumber": 773
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "request.args.get",
+          "lineNumber": 773
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "min",
+          "lineNumber": 774
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "chat_history_manager._get_session",
+          "lineNumber": 776
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "chat_history_manager._get_chat_name",
+          "lineNumber": 777
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "chat_history_manager._generate_default_chat_name",
+          "lineNumber": 779
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "chat_history_manager._create_chat_name_entry",
+          "lineNumber": 780
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 783
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "chat_session.get_recent_messages",
+          "lineNumber": 792
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "msg.to_dict",
+          "lineNumber": 796
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "messages.append",
+          "lineNumber": 797
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "msg_dict.get",
+          "lineNumber": 798
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "msg_dict.get",
+          "lineNumber": 799
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "msg_dict.get",
+          "lineNumber": 800
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "msg_dict.get",
+          "lineNumber": 801
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "msg_dict.get",
+          "lineNumber": 802
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "msg_dict.get",
+          "lineNumber": 803
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "msg_dict.get",
+          "lineNumber": 804
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "msg_dict.get",
+          "lineNumber": 805
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 808
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 818
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 820
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "logger.error",
+          "lineNumber": 822
+        },
+        {
+          "caller": "get_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 823
+        },
+        {
+          "caller": "list_chats",
+          "callee": "request.args.get",
+          "lineNumber": 828
+        },
+        {
+          "caller": "list_chats",
+          "callee": "jsonify",
+          "lineNumber": 830
+        },
+        {
+          "caller": "list_chats",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 832
+        },
+        {
+          "caller": "list_chats",
+          "callee": "request.args.get",
+          "lineNumber": 833
+        },
+        {
+          "caller": "list_chats",
+          "callee": "jsonify",
+          "lineNumber": 836
+        },
+        {
+          "caller": "list_chats",
+          "callee": "str",
+          "lineNumber": 838
+        },
+        {
+          "caller": "list_chats",
+          "callee": "session_id.lower",
+          "lineNumber": 838
+        },
+        {
+          "caller": "list_chats",
+          "callee": "chat_history_manager.list_chats",
+          "lineNumber": 839
+        },
+        {
+          "caller": "list_chats",
+          "callee": "jsonify",
+          "lineNumber": 841
+        },
+        {
+          "caller": "list_chats",
+          "callee": "len",
+          "lineNumber": 844
+        },
+        {
+          "caller": "list_chats",
+          "callee": "jsonify",
+          "lineNumber": 848
+        },
+        {
+          "caller": "list_chats",
+          "callee": "jsonify",
+          "lineNumber": 850
+        },
+        {
+          "caller": "list_chats",
+          "callee": "logger.error",
+          "lineNumber": 852
+        },
+        {
+          "caller": "list_chats",
+          "callee": "jsonify",
+          "lineNumber": 853
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "request.get_json",
+          "lineNumber": 858
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "data.get",
+          "lineNumber": 860
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "jsonify",
+          "lineNumber": 862
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 864
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "data.get",
+          "lineNumber": 865
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "data.get",
+          "lineNumber": 866
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "data.get",
+          "lineNumber": 867
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "jsonify",
+          "lineNumber": 870
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "new_chat_name.strip",
+          "lineNumber": 875
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "jsonify",
+          "lineNumber": 876
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "str",
+          "lineNumber": 878
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "session_id.lower",
+          "lineNumber": 878
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "new_chat_name.strip",
+          "lineNumber": 880
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "len",
+          "lineNumber": 881
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "jsonify",
+          "lineNumber": 882
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "chat_history_manager.update_chat_name",
+          "lineNumber": 884
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "jsonify",
+          "lineNumber": 887
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "jsonify",
+          "lineNumber": 894
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "jsonify",
+          "lineNumber": 900
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "jsonify",
+          "lineNumber": 902
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "logger.error",
+          "lineNumber": 904
+        },
+        {
+          "caller": "rename_chat",
+          "callee": "jsonify",
+          "lineNumber": 905
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "request.args.get",
+          "lineNumber": 910
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "jsonify",
+          "lineNumber": 912
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 914
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "request.args.get",
+          "lineNumber": 915
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "request.args.get",
+          "lineNumber": 916
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "jsonify",
+          "lineNumber": 919
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "str",
+          "lineNumber": 924
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "session_id.lower",
+          "lineNumber": 924
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "chat_history_manager.get_session_stats",
+          "lineNumber": 925
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "jsonify",
+          "lineNumber": 927
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "jsonify",
+          "lineNumber": 933
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "jsonify",
+          "lineNumber": 935
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "logger.error",
+          "lineNumber": 937
+        },
+        {
+          "caller": "get_chat_history_stats",
+          "callee": "jsonify",
+          "lineNumber": 938
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "request.get_json",
+          "lineNumber": 943
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "request.get_json",
+          "lineNumber": 944
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "request.args.get",
+          "lineNumber": 947
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "request.args.get",
+          "lineNumber": 948
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "request.args.get",
+          "lineNumber": 949
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "data.get",
+          "lineNumber": 952
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 954
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 956
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "data.get",
+          "lineNumber": 957
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "data.get",
+          "lineNumber": 958
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 961
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "str",
+          "lineNumber": 966
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "session_id.lower",
+          "lineNumber": 966
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "chat_history_manager.delete_session",
+          "lineNumber": 967
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 970
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 976
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 982
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 984
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "logger.error",
+          "lineNumber": 986
+        },
+        {
+          "caller": "clear_chat_history",
+          "callee": "jsonify",
+          "lineNumber": 987
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "request.get_json",
+          "lineNumber": 992
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "request.get_json",
+          "lineNumber": 993
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "request.args.get",
+          "lineNumber": 996
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "request.args.get",
+          "lineNumber": 997
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "data.get",
+          "lineNumber": 1000
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "jsonify",
+          "lineNumber": 1002
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 1004
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "data.get",
+          "lineNumber": 1005
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "jsonify",
+          "lineNumber": 1008
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "str",
+          "lineNumber": 1010
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "session_id.lower",
+          "lineNumber": 1010
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "chat_history_manager.delete_all_chats_for_session",
+          "lineNumber": 1011
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "jsonify",
+          "lineNumber": 1013
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "jsonify",
+          "lineNumber": 1020
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "jsonify",
+          "lineNumber": 1022
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "logger.error",
+          "lineNumber": 1024
+        },
+        {
+          "caller": "clear_all_chats",
+          "callee": "jsonify",
+          "lineNumber": 1025
+        },
+        {
+          "caller": "demo",
+          "callee": "get_limiter",
+          "lineNumber": 1033
+        },
+        {
+          "caller": "demo",
+          "callee": "limiter.limit",
+          "lineNumber": 1035
+        },
+        {
+          "caller": "demo",
+          "callee": "request.get_json",
+          "lineNumber": 1037
+        },
+        {
+          "caller": "demo",
+          "callee": "query_service.process_demo_query",
+          "lineNumber": 1038
+        },
+        {
+          "caller": "demo",
+          "callee": "jsonify",
+          "lineNumber": 1039
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "request.get_json",
+          "lineNumber": 1048
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "data.get",
+          "lineNumber": 1050
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "jsonify",
+          "lineNumber": 1052
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "auth_service.authenticate",
+          "lineNumber": 1054
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "data.get",
+          "lineNumber": 1055
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "data.get",
+          "lineNumber": 1056
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "data.get",
+          "lineNumber": 1057
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "jsonify",
+          "lineNumber": 1060
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "jsonify",
+          "lineNumber": 1066
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "str",
+          "lineNumber": 1068
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "session_id.lower",
+          "lineNumber": 1068
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "get_chat_context_service",
+          "lineNumber": 1071
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "chat_history_manager.get_session_stats",
+          "lineNumber": 1073
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "session_stats.get",
+          "lineNumber": 1074
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "session_stats.get",
+          "lineNumber": 1074
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "context_service.detect_context_need",
+          "lineNumber": 1076
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "jsonify",
+          "lineNumber": 1078
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "jsonify",
+          "lineNumber": 1087
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "jsonify",
+          "lineNumber": 1089
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "logger.error",
+          "lineNumber": 1091
+        },
+        {
+          "caller": "analyze_chat_context",
+          "callee": "jsonify",
+          "lineNumber": 1092
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 21,
+        "functionCount": 21,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/models/chat_models.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 310,
+      "nonEmptyLines": 278,
+      "classes": [
+        {
+          "name": "QueryType",
+          "startLine": 16,
+          "endLine": 23,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "MessageRole",
+          "startLine": 25,
+          "endLine": 29,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "ChatMessage",
+          "startLine": 32,
+          "endLine": 136,
+          "methods": [
+            "to_dict",
+            "from_dict"
+          ],
+          "properties": [
+            "message_id",
+            "timestamp",
+            "role",
+            "content",
+            "query_type",
+            "context_used",
+            "token_count",
+            "metadata",
+            "save_to_note",
+            "image_caption",
+            "image_url"
+          ]
+        },
+        {
+          "name": "ChatSession",
+          "startLine": 139,
+          "endLine": 272,
+          "methods": [
+            "add_message",
+            "get_recent_messages",
+            "get_messages_since",
+            "get_conversation_pairs",
+            "to_dict",
+            "from_dict"
+          ],
+          "properties": [
+            "user_session",
+            "chat_id",
+            "messages",
+            "total_messages",
+            "total_tokens",
+            "created_at",
+            "updated_at",
+            "metadata"
+          ]
+        },
+        {
+          "name": "ChatContext",
+          "startLine": 275,
+          "endLine": 310,
+          "methods": [
+            "has_context",
+            "get_formatted_context"
+          ],
+          "properties": [
+            "relevant_messages",
+            "context_summary",
+            "token_count",
+            "confidence_score",
+            "context_type"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "QueryType",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "MessageRole",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "ChatMessage",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "ChatSession",
+          "line": 138,
+          "isDefault": false
+        },
+        {
+          "name": "ChatContext",
+          "line": 274,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "to_dict",
+          "callee": "self.timestamp.isoformat",
+          "lineNumber": 55
+        },
+        {
+          "caller": "to_dict",
+          "callee": "isinstance",
+          "lineNumber": 55
+        },
+        {
+          "caller": "to_dict",
+          "callee": "str",
+          "lineNumber": 55
+        },
+        {
+          "caller": "to_dict",
+          "callee": "bool",
+          "lineNumber": 59
+        },
+        {
+          "caller": "to_dict",
+          "callee": "int",
+          "lineNumber": 60
+        },
+        {
+          "caller": "to_dict",
+          "callee": "bool",
+          "lineNumber": 62
+        },
+        {
+          "caller": "to_dict",
+          "callee": "logger.error",
+          "lineNumber": 69
+        },
+        {
+          "caller": "to_dict",
+          "callee": "str",
+          "lineNumber": 72
+        },
+        {
+          "caller": "to_dict",
+          "callee": "str",
+          "lineNumber": 72
+        },
+        {
+          "caller": "to_dict",
+          "callee": "uuid.uuid4",
+          "lineNumber": 72
+        },
+        {
+          "caller": "to_dict",
+          "callee": "datetime.utcnow().isoformat",
+          "lineNumber": 73
+        },
+        {
+          "caller": "to_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 73
+        },
+        {
+          "caller": "to_dict",
+          "callee": "str",
+          "lineNumber": 75
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 90
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 90
+        },
+        {
+          "caller": "from_dict",
+          "callee": "isinstance",
+          "lineNumber": 91
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.fromisoformat",
+          "lineNumber": 93
+        },
+        {
+          "caller": "from_dict",
+          "callee": "timestamp.replace",
+          "lineNumber": 93
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 95
+        },
+        {
+          "caller": "from_dict",
+          "callee": "isinstance",
+          "lineNumber": 96
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 97
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 100
+        },
+        {
+          "caller": "from_dict",
+          "callee": "MessageRole",
+          "lineNumber": 102
+        },
+        {
+          "caller": "from_dict",
+          "callee": "logger.warning",
+          "lineNumber": 104
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 109
+        },
+        {
+          "caller": "from_dict",
+          "callee": "QueryType",
+          "lineNumber": 112
+        },
+        {
+          "caller": "from_dict",
+          "callee": "logger.warning",
+          "lineNumber": 114
+        },
+        {
+          "caller": "from_dict",
+          "callee": "cls",
+          "lineNumber": 117
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 118
+        },
+        {
+          "caller": "from_dict",
+          "callee": "str",
+          "lineNumber": 118
+        },
+        {
+          "caller": "from_dict",
+          "callee": "uuid.uuid4",
+          "lineNumber": 118
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 121
+        },
+        {
+          "caller": "from_dict",
+          "callee": "bool",
+          "lineNumber": 123
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 123
+        },
+        {
+          "caller": "from_dict",
+          "callee": "int",
+          "lineNumber": 124
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 124
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 125
+        },
+        {
+          "caller": "from_dict",
+          "callee": "bool",
+          "lineNumber": 126
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 126
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 127
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 128
+        },
+        {
+          "caller": "from_dict",
+          "callee": "logger.error",
+          "lineNumber": 131
+        },
+        {
+          "caller": "from_dict",
+          "callee": "cls",
+          "lineNumber": 133
+        },
+        {
+          "caller": "from_dict",
+          "callee": "str",
+          "lineNumber": 134
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 134
+        },
+        {
+          "caller": "add_message",
+          "callee": "self.messages.append",
+          "lineNumber": 153
+        },
+        {
+          "caller": "add_message",
+          "callee": "len",
+          "lineNumber": 154
+        },
+        {
+          "caller": "add_message",
+          "callee": "getattr",
+          "lineNumber": 155
+        },
+        {
+          "caller": "add_message",
+          "callee": "datetime.utcnow",
+          "lineNumber": 156
+        },
+        {
+          "caller": "add_message",
+          "callee": "logger.error",
+          "lineNumber": 158
+        },
+        {
+          "caller": "get_recent_messages",
+          "callee": "logger.error",
+          "lineNumber": 165
+        },
+        {
+          "caller": "get_messages_since",
+          "callee": "logger.error",
+          "lineNumber": 173
+        },
+        {
+          "caller": "get_conversation_pairs",
+          "callee": "self.get_recent_messages",
+          "lineNumber": 183
+        },
+        {
+          "caller": "get_conversation_pairs",
+          "callee": "pairs.append",
+          "lineNumber": 189
+        },
+        {
+          "caller": "get_conversation_pairs",
+          "callee": "len",
+          "lineNumber": 191
+        },
+        {
+          "caller": "get_conversation_pairs",
+          "callee": "logger.error",
+          "lineNumber": 196
+        },
+        {
+          "caller": "to_dict",
+          "callee": "msg.to_dict",
+          "lineNumber": 205
+        },
+        {
+          "caller": "to_dict",
+          "callee": "self.created_at.isoformat",
+          "lineNumber": 208
+        },
+        {
+          "caller": "to_dict",
+          "callee": "isinstance",
+          "lineNumber": 208
+        },
+        {
+          "caller": "to_dict",
+          "callee": "str",
+          "lineNumber": 208
+        },
+        {
+          "caller": "to_dict",
+          "callee": "self.updated_at.isoformat",
+          "lineNumber": 209
+        },
+        {
+          "caller": "to_dict",
+          "callee": "isinstance",
+          "lineNumber": 209
+        },
+        {
+          "caller": "to_dict",
+          "callee": "str",
+          "lineNumber": 209
+        },
+        {
+          "caller": "to_dict",
+          "callee": "logger.error",
+          "lineNumber": 213
+        },
+        {
+          "caller": "to_dict",
+          "callee": "str",
+          "lineNumber": 215
+        },
+        {
+          "caller": "to_dict",
+          "callee": "str",
+          "lineNumber": 216
+        },
+        {
+          "caller": "to_dict",
+          "callee": "datetime.utcnow().isoformat",
+          "lineNumber": 220
+        },
+        {
+          "caller": "to_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 220
+        },
+        {
+          "caller": "to_dict",
+          "callee": "datetime.utcnow().isoformat",
+          "lineNumber": 221
+        },
+        {
+          "caller": "to_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 221
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 230
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 230
+        },
+        {
+          "caller": "from_dict",
+          "callee": "isinstance",
+          "lineNumber": 231
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.fromisoformat",
+          "lineNumber": 233
+        },
+        {
+          "caller": "from_dict",
+          "callee": "created_at.replace",
+          "lineNumber": 233
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 235
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 237
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 237
+        },
+        {
+          "caller": "from_dict",
+          "callee": "isinstance",
+          "lineNumber": 238
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.fromisoformat",
+          "lineNumber": 240
+        },
+        {
+          "caller": "from_dict",
+          "callee": "updated_at.replace",
+          "lineNumber": 240
+        },
+        {
+          "caller": "from_dict",
+          "callee": "datetime.utcnow",
+          "lineNumber": 242
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 245
+        },
+        {
+          "caller": "from_dict",
+          "callee": "cls",
+          "lineNumber": 247
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 248
+        },
+        {
+          "caller": "from_dict",
+          "callee": "int",
+          "lineNumber": 250
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 250
+        },
+        {
+          "caller": "from_dict",
+          "callee": "int",
+          "lineNumber": 251
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 251
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 254
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 258
+        },
+        {
+          "caller": "from_dict",
+          "callee": "session.messages.append",
+          "lineNumber": 260
+        },
+        {
+          "caller": "from_dict",
+          "callee": "ChatMessage.from_dict",
+          "lineNumber": 260
+        },
+        {
+          "caller": "from_dict",
+          "callee": "logger.error",
+          "lineNumber": 262
+        },
+        {
+          "caller": "from_dict",
+          "callee": "logger.error",
+          "lineNumber": 267
+        },
+        {
+          "caller": "from_dict",
+          "callee": "cls",
+          "lineNumber": 269
+        },
+        {
+          "caller": "from_dict",
+          "callee": "str",
+          "lineNumber": 270
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 270
+        },
+        {
+          "caller": "from_dict",
+          "callee": "str",
+          "lineNumber": 271
+        },
+        {
+          "caller": "from_dict",
+          "callee": "data.get",
+          "lineNumber": 271
+        },
+        {
+          "caller": "has_context",
+          "callee": "bool",
+          "lineNumber": 285
+        },
+        {
+          "caller": "get_formatted_context",
+          "callee": "self.has_context",
+          "lineNumber": 290
+        },
+        {
+          "caller": "get_formatted_context",
+          "callee": "len",
+          "lineNumber": 301
+        },
+        {
+          "caller": "get_formatted_context",
+          "callee": "logger.error",
+          "lineNumber": 304
+        },
+        {
+          "caller": "get_formatted_context",
+          "callee": "logger.error",
+          "lineNumber": 309
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 0,
+        "classCount": 5
+      }
+    },
+    {
+      "path": "app/services/auth_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 101,
+      "nonEmptyLines": 78,
+      "functions": [
+        {
+          "name": "get_auth_service",
+          "startLine": 79,
+          "endLine": 101,
+          "params": [
+            "app"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "AuthService",
+          "startLine": 13,
+          "endLine": 74,
+          "methods": [
+            "__init__",
+            "authenticate",
+            "get_full_session_name",
+            "create_token"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AuthService",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "get_auth_service",
+          "line": 79,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "authenticate",
+          "callee": "jwt.decode",
+          "lineNumber": 41
+        },
+        {
+          "caller": "authenticate",
+          "callee": "logger.info",
+          "lineNumber": 43
+        },
+        {
+          "caller": "get_full_session_name",
+          "callee": "self.authenticate",
+          "lineNumber": 61
+        },
+        {
+          "caller": "get_full_session_name",
+          "callee": "str",
+          "lineNumber": 62
+        },
+        {
+          "caller": "get_full_session_name",
+          "callee": "session_id.lower",
+          "lineNumber": 62
+        },
+        {
+          "caller": "create_token",
+          "callee": "jwt.encode",
+          "lineNumber": 74
+        },
+        {
+          "caller": "get_auth_service",
+          "callee": "AuthService",
+          "lineNumber": 94
+        },
+        {
+          "caller": "get_auth_service",
+          "callee": "AuthService",
+          "lineNumber": 96
+        },
+        {
+          "caller": "get_auth_service",
+          "callee": "app.config.get",
+          "lineNumber": 97
+        },
+        {
+          "caller": "get_auth_service",
+          "callee": "app.config.get",
+          "lineNumber": 98
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "app/services/chat_history_manager.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 881,
+      "nonEmptyLines": 727,
+      "functions": [
+        {
+          "name": "get_chat_history_manager",
+          "startLine": 876,
+          "endLine": 881,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "ChatHistoryManager",
+          "startLine": 23,
+          "endLine": 870,
+          "methods": [
+            "__init__",
+            "_initialize_mongodb",
+            "_create_indexes",
+            "_get_chat_key",
+            "_is_available",
+            "_generate_default_chat_name",
+            "_create_chat_name_entry",
+            "_get_chat_name",
+            "_get_all_chat_names",
+            "store_user_message",
+            "save_conversation_turn",
+            "get_chat_context",
+            "get_latest_empty_chat",
+            "list_chats",
+            "update_chat_name",
+            "toggle_message_note",
+            "get_saved_notes",
+            "_analyze_context_need",
+            "_llm_context_analysis",
+            "_get_recent_context",
+            "_get_reference_context",
+            "_get_adaptive_context",
+            "_get_or_create_session",
+            "_get_session",
+            "_save_session",
+            "_apply_session_limits",
+            "cleanup_old_sessions",
+            "get_session_stats",
+            "delete_session",
+            "delete_all_chats_for_session"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ChatHistoryManager",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "get_chat_history_manager",
+          "line": 876,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "get_fast_llm",
+          "lineNumber": 32
+        },
+        {
+          "caller": "__init__",
+          "callee": "self._initialize_mongodb",
+          "lineNumber": 42
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 43
+        },
+        {
+          "caller": "_initialize_mongodb",
+          "callee": "MongoClient",
+          "lineNumber": 49
+        },
+        {
+          "caller": "_initialize_mongodb",
+          "callee": "self.client.admin.command",
+          "lineNumber": 58
+        },
+        {
+          "caller": "_initialize_mongodb",
+          "callee": "self._create_indexes",
+          "lineNumber": 66
+        },
+        {
+          "caller": "_initialize_mongodb",
+          "callee": "logger.info",
+          "lineNumber": 68
+        },
+        {
+          "caller": "_initialize_mongodb",
+          "callee": "logger.error",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_initialize_mongodb",
+          "callee": "logger.warning",
+          "lineNumber": 72
+        },
+        {
+          "caller": "_initialize_mongodb",
+          "callee": "logger.error",
+          "lineNumber": 78
+        },
+        {
+          "caller": "_initialize_mongodb",
+          "callee": "type",
+          "lineNumber": 78
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "self._is_available",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "self.collection.drop_index",
+          "lineNumber": 92
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "IndexModel",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "IndexModel",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "IndexModel",
+          "lineNumber": 99
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "IndexModel",
+          "lineNumber": 100
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "IndexModel",
+          "lineNumber": 101
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "self.collection.create_indexes",
+          "lineNumber": 103
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "IndexModel",
+          "lineNumber": 108
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "IndexModel",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "IndexModel",
+          "lineNumber": 110
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "IndexModel",
+          "lineNumber": 111
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "self.chat_names_collection.create_indexes",
+          "lineNumber": 113
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "logger.debug",
+          "lineNumber": 115
+        },
+        {
+          "caller": "_create_indexes",
+          "callee": "logger.error",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_is_available",
+          "callee": "logger.info",
+          "lineNumber": 131
+        },
+        {
+          "caller": "_is_available",
+          "callee": "self._initialize_mongodb",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_generate_default_chat_name",
+          "callee": "datetime.utcnow",
+          "lineNumber": 139
+        },
+        {
+          "caller": "_generate_default_chat_name",
+          "callee": "now.strftime",
+          "lineNumber": 140
+        },
+        {
+          "caller": "_create_chat_name_entry",
+          "callee": "self._is_available",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_create_chat_name_entry",
+          "callee": "self._generate_default_chat_name",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_create_chat_name_entry",
+          "callee": "self._get_chat_key",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_create_chat_name_entry",
+          "callee": "datetime.utcnow",
+          "lineNumber": 157
+        },
+        {
+          "caller": "_create_chat_name_entry",
+          "callee": "datetime.utcnow",
+          "lineNumber": 158
+        },
+        {
+          "caller": "_create_chat_name_entry",
+          "callee": "self.chat_names_collection.replace_one",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_create_chat_name_entry",
+          "callee": "logger.error",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_get_chat_name",
+          "callee": "self._is_available",
+          "lineNumber": 173
+        },
+        {
+          "caller": "_get_chat_name",
+          "callee": "self._get_chat_key",
+          "lineNumber": 177
+        },
+        {
+          "caller": "_get_chat_name",
+          "callee": "self.chat_names_collection.find_one",
+          "lineNumber": 178
+        },
+        {
+          "caller": "_get_chat_name",
+          "callee": "doc.get",
+          "lineNumber": 180
+        },
+        {
+          "caller": "_get_chat_name",
+          "callee": "logger.error",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_get_all_chat_names",
+          "callee": "self._is_available",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_get_all_chat_names",
+          "callee": "self.chat_names_collection.find",
+          "lineNumber": 192
+        },
+        {
+          "caller": "_get_all_chat_names",
+          "callee": "doc.get",
+          "lineNumber": 199
+        },
+        {
+          "caller": "_get_all_chat_names",
+          "callee": "doc.get",
+          "lineNumber": 200
+        },
+        {
+          "caller": "_get_all_chat_names",
+          "callee": "logger.error",
+          "lineNumber": 206
+        },
+        {
+          "caller": "store_user_message",
+          "callee": "self._get_or_create_session",
+          "lineNumber": 225
+        },
+        {
+          "caller": "store_user_message",
+          "callee": "ChatMessage",
+          "lineNumber": 228
+        },
+        {
+          "caller": "store_user_message",
+          "callee": "datetime.utcnow",
+          "lineNumber": 233
+        },
+        {
+          "caller": "store_user_message",
+          "callee": "session.add_message",
+          "lineNumber": 237
+        },
+        {
+          "caller": "store_user_message",
+          "callee": "self._apply_session_limits",
+          "lineNumber": 238
+        },
+        {
+          "caller": "store_user_message",
+          "callee": "self._save_session",
+          "lineNumber": 239
+        },
+        {
+          "caller": "store_user_message",
+          "callee": "logger.error",
+          "lineNumber": 241
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "self._is_available",
+          "lineNumber": 254
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "logger.warning",
+          "lineNumber": 255
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "len",
+          "lineNumber": 263
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "user_query.split",
+          "lineNumber": 263
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "len",
+          "lineNumber": 264
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "assistant_response.split",
+          "lineNumber": 264
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "QueryType",
+          "lineNumber": 268
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "ChatMessage",
+          "lineNumber": 273
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "int",
+          "lineNumber": 277
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "ChatMessage",
+          "lineNumber": 283
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "int",
+          "lineNumber": 287
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "self._get_or_create_session",
+          "lineNumber": 292
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "session.add_message",
+          "lineNumber": 295
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "session.add_message",
+          "lineNumber": 296
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "self._apply_session_limits",
+          "lineNumber": 299
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "self._save_session",
+          "lineNumber": 302
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "logger.debug",
+          "lineNumber": 305
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "self._get_chat_key",
+          "lineNumber": 305
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "logger.warning",
+          "lineNumber": 308
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "self._get_chat_key",
+          "lineNumber": 308
+        },
+        {
+          "caller": "save_conversation_turn",
+          "callee": "logger.error",
+          "lineNumber": 312
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "self._is_available",
+          "lineNumber": 327
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "logger.warning",
+          "lineNumber": 328
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "ChatContext",
+          "lineNumber": 329
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "logger.error",
+          "lineNumber": 332
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "ChatContext",
+          "lineNumber": 333
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "self._analyze_context_need",
+          "lineNumber": 337
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "ChatContext",
+          "lineNumber": 340
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "self._get_session",
+          "lineNumber": 343
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "ChatContext",
+          "lineNumber": 345
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "self._get_recent_context",
+          "lineNumber": 349
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "self._get_reference_context",
+          "lineNumber": 351
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "self._get_adaptive_context",
+          "lineNumber": 353
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "logger.error",
+          "lineNumber": 356
+        },
+        {
+          "caller": "get_chat_context",
+          "callee": "ChatContext",
+          "lineNumber": 357
+        },
+        {
+          "caller": "get_latest_empty_chat",
+          "callee": "self._is_available",
+          "lineNumber": 369
+        },
+        {
+          "caller": "get_latest_empty_chat",
+          "callee": "self.collection.find(\n                {\n                    \"user_session\": user_session,\n                    \"total_messages\": 0\n                },\n                {\"chat_id\": 1, \"created_at\": 1}\n            ).sort(\"created_at\", DESCENDING).limit",
+          "lineNumber": 374
+        },
+        {
+          "caller": "get_latest_empty_chat",
+          "callee": "self.collection.find(\n                {\n                    \"user_session\": user_session,\n                    \"total_messages\": 0\n                },\n                {\"chat_id\": 1, \"created_at\": 1}\n            ).sort",
+          "lineNumber": 374
+        },
+        {
+          "caller": "get_latest_empty_chat",
+          "callee": "self.collection.find",
+          "lineNumber": 374
+        },
+        {
+          "caller": "get_latest_empty_chat",
+          "callee": "latest_empty.get",
+          "lineNumber": 388
+        },
+        {
+          "caller": "get_latest_empty_chat",
+          "callee": "self._get_chat_name",
+          "lineNumber": 391
+        },
+        {
+          "caller": "get_latest_empty_chat",
+          "callee": "self._generate_default_chat_name",
+          "lineNumber": 393
+        },
+        {
+          "caller": "get_latest_empty_chat",
+          "callee": "self._create_chat_name_entry",
+          "lineNumber": 394
+        },
+        {
+          "caller": "get_latest_empty_chat",
+          "callee": "logger.error",
+          "lineNumber": 404
+        },
+        {
+          "caller": "list_chats",
+          "callee": "self._is_available",
+          "lineNumber": 417
+        },
+        {
+          "caller": "list_chats",
+          "callee": "self.collection.find(\n                {\"user_session\": user_session},\n                {\"chat_id\": 1, \"total_messages\": 1, \"updated_at\": 1, \"created_at\": 1}\n            ).sort",
+          "lineNumber": 422
+        },
+        {
+          "caller": "list_chats",
+          "callee": "self.collection.find",
+          "lineNumber": 422
+        },
+        {
+          "caller": "list_chats",
+          "callee": "self._get_all_chat_names",
+          "lineNumber": 428
+        },
+        {
+          "caller": "list_chats",
+          "callee": "doc.get",
+          "lineNumber": 432
+        },
+        {
+          "caller": "list_chats",
+          "callee": "chat_names.get",
+          "lineNumber": 433
+        },
+        {
+          "caller": "list_chats",
+          "callee": "self._generate_default_chat_name",
+          "lineNumber": 433
+        },
+        {
+          "caller": "list_chats",
+          "callee": "chats.append",
+          "lineNumber": 435
+        },
+        {
+          "caller": "list_chats",
+          "callee": "doc.get",
+          "lineNumber": 438
+        },
+        {
+          "caller": "list_chats",
+          "callee": "doc.get",
+          "lineNumber": 439
+        },
+        {
+          "caller": "list_chats",
+          "callee": "doc.get",
+          "lineNumber": 440
+        },
+        {
+          "caller": "list_chats",
+          "callee": "logger.error",
+          "lineNumber": 446
+        },
+        {
+          "caller": "update_chat_name",
+          "callee": "self._is_available",
+          "lineNumber": 451
+        },
+        {
+          "caller": "update_chat_name",
+          "callee": "self._get_chat_key",
+          "lineNumber": 455
+        },
+        {
+          "caller": "update_chat_name",
+          "callee": "self.chat_names_collection.find_one",
+          "lineNumber": 458
+        },
+        {
+          "caller": "update_chat_name",
+          "callee": "self.chat_names_collection.update_one",
+          "lineNumber": 462
+        },
+        {
+          "caller": "update_chat_name",
+          "callee": "datetime.utcnow",
+          "lineNumber": 467
+        },
+        {
+          "caller": "update_chat_name",
+          "callee": "self._create_chat_name_entry",
+          "lineNumber": 474
+        },
+        {
+          "caller": "update_chat_name",
+          "callee": "logger.error",
+          "lineNumber": 477
+        },
+        {
+          "caller": "toggle_message_note",
+          "callee": "self._is_available",
+          "lineNumber": 482
+        },
+        {
+          "caller": "toggle_message_note",
+          "callee": "self._get_session",
+          "lineNumber": 486
+        },
+        {
+          "caller": "toggle_message_note",
+          "callee": "getattr",
+          "lineNumber": 494
+        },
+        {
+          "caller": "toggle_message_note",
+          "callee": "self._save_session",
+          "lineNumber": 502
+        },
+        {
+          "caller": "toggle_message_note",
+          "callee": "logger.error",
+          "lineNumber": 505
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "self._is_available",
+          "lineNumber": 510
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "self.collection.find",
+          "lineNumber": 515
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "self._get_all_chat_names",
+          "lineNumber": 521
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "doc.get",
+          "lineNumber": 525
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "chat_names.get",
+          "lineNumber": 526
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "self._generate_default_chat_name",
+          "lineNumber": 526
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "doc.get",
+          "lineNumber": 527
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "msg_data.get",
+          "lineNumber": 530
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "saved_notes.append",
+          "lineNumber": 531
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "msg_data.get",
+          "lineNumber": 532
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "msg_data.get",
+          "lineNumber": 535
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "msg_data.get",
+          "lineNumber": 536
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "msg_data.get",
+          "lineNumber": 537
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "msg_data.get",
+          "lineNumber": 538
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "msg_data.get",
+          "lineNumber": 539
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "saved_notes.sort",
+          "lineNumber": 543
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "x.get",
+          "lineNumber": 543
+        },
+        {
+          "caller": "get_saved_notes",
+          "callee": "logger.error",
+          "lineNumber": 547
+        },
+        {
+          "caller": "_analyze_context_need",
+          "callee": "query.lower",
+          "lineNumber": 572
+        },
+        {
+          "caller": "_analyze_context_need",
+          "callee": "re.search",
+          "lineNumber": 576
+        },
+        {
+          "caller": "_analyze_context_need",
+          "callee": "len",
+          "lineNumber": 580
+        },
+        {
+          "caller": "_analyze_context_need",
+          "callee": "query.split",
+          "lineNumber": 580
+        },
+        {
+          "caller": "_analyze_context_need",
+          "callee": "self._llm_context_analysis",
+          "lineNumber": 585
+        },
+        {
+          "caller": "_analyze_context_need",
+          "callee": "llm_result.get",
+          "lineNumber": 586
+        },
+        {
+          "caller": "_analyze_context_need",
+          "callee": "llm_result.get",
+          "lineNumber": 587
+        },
+        {
+          "caller": "_analyze_context_need",
+          "callee": "logger.warning",
+          "lineNumber": 589
+        },
+        {
+          "caller": "_analyze_context_need",
+          "callee": "logger.error",
+          "lineNumber": 593
+        },
+        {
+          "caller": "_llm_context_analysis",
+          "callee": "self.llm.invoke",
+          "lineNumber": 625
+        },
+        {
+          "caller": "_llm_context_analysis",
+          "callee": "json.loads",
+          "lineNumber": 626
+        },
+        {
+          "caller": "_llm_context_analysis",
+          "callee": "response.content.strip",
+          "lineNumber": 626
+        },
+        {
+          "caller": "_llm_context_analysis",
+          "callee": "logger.error",
+          "lineNumber": 628
+        },
+        {
+          "caller": "_get_recent_context",
+          "callee": "session.get_recent_messages",
+          "lineNumber": 634
+        },
+        {
+          "caller": "_get_recent_context",
+          "callee": "ChatContext",
+          "lineNumber": 636
+        },
+        {
+          "caller": "_get_recent_context",
+          "callee": "sum",
+          "lineNumber": 638
+        },
+        {
+          "caller": "_get_recent_context",
+          "callee": "getattr",
+          "lineNumber": 638
+        },
+        {
+          "caller": "_get_recent_context",
+          "callee": "ChatContext",
+          "lineNumber": 640
+        },
+        {
+          "caller": "_get_recent_context",
+          "callee": "logger.error",
+          "lineNumber": 647
+        },
+        {
+          "caller": "_get_recent_context",
+          "callee": "ChatContext",
+          "lineNumber": 648
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "set",
+          "lineNumber": 657
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "query.lower().split",
+          "lineNumber": 657
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "query.lower",
+          "lineNumber": 657
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "set",
+          "lineNumber": 661
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "msg.content.lower().split",
+          "lineNumber": 661
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "msg.content.lower",
+          "lineNumber": 661
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "len",
+          "lineNumber": 663
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "relevant_messages.append",
+          "lineNumber": 665
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "self._get_recent_context",
+          "lineNumber": 668
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "sum",
+          "lineNumber": 670
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "getattr",
+          "lineNumber": 670
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "ChatContext",
+          "lineNumber": 672
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "logger.error",
+          "lineNumber": 679
+        },
+        {
+          "caller": "_get_reference_context",
+          "callee": "ChatContext",
+          "lineNumber": 680
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "session.get_conversation_pairs",
+          "lineNumber": 686
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "ChatContext",
+          "lineNumber": 689
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "summary_content.append",
+          "lineNumber": 696
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "summary_content.append",
+          "lineNumber": 697
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "getattr",
+          "lineNumber": 698
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "getattr",
+          "lineNumber": 698
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "\" | \".join",
+          "lineNumber": 700
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "ChatContext",
+          "lineNumber": 702
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "logger.error",
+          "lineNumber": 709
+        },
+        {
+          "caller": "_get_adaptive_context",
+          "callee": "ChatContext",
+          "lineNumber": 710
+        },
+        {
+          "caller": "_get_or_create_session",
+          "callee": "self._get_session",
+          "lineNumber": 717
+        },
+        {
+          "caller": "_get_or_create_session",
+          "callee": "ChatSession",
+          "lineNumber": 723
+        },
+        {
+          "caller": "_get_session",
+          "callee": "self._is_available",
+          "lineNumber": 730
+        },
+        {
+          "caller": "_get_session",
+          "callee": "self._get_chat_key",
+          "lineNumber": 737
+        },
+        {
+          "caller": "_get_session",
+          "callee": "self.collection.find_one",
+          "lineNumber": 738
+        },
+        {
+          "caller": "_get_session",
+          "callee": "ChatSession.from_dict",
+          "lineNumber": 740
+        },
+        {
+          "caller": "_get_session",
+          "callee": "logger.error",
+          "lineNumber": 743
+        },
+        {
+          "caller": "_save_session",
+          "callee": "self._is_available",
+          "lineNumber": 748
+        },
+        {
+          "caller": "_save_session",
+          "callee": "session.to_dict",
+          "lineNumber": 752
+        },
+        {
+          "caller": "_save_session",
+          "callee": "self._get_chat_key",
+          "lineNumber": 753
+        },
+        {
+          "caller": "_save_session",
+          "callee": "self.collection.replace_one",
+          "lineNumber": 756
+        },
+        {
+          "caller": "_save_session",
+          "callee": "logger.error",
+          "lineNumber": 763
+        },
+        {
+          "caller": "_apply_session_limits",
+          "callee": "len",
+          "lineNumber": 774
+        },
+        {
+          "caller": "_apply_session_limits",
+          "callee": "sum",
+          "lineNumber": 775
+        },
+        {
+          "caller": "_apply_session_limits",
+          "callee": "getattr",
+          "lineNumber": 775
+        },
+        {
+          "caller": "_apply_session_limits",
+          "callee": "logger.info",
+          "lineNumber": 776
+        },
+        {
+          "caller": "_apply_session_limits",
+          "callee": "session.messages.pop",
+          "lineNumber": 782
+        },
+        {
+          "caller": "_apply_session_limits",
+          "callee": "getattr",
+          "lineNumber": 783
+        },
+        {
+          "caller": "_apply_session_limits",
+          "callee": "logger.info",
+          "lineNumber": 785
+        },
+        {
+          "caller": "_apply_session_limits",
+          "callee": "logger.error",
+          "lineNumber": 787
+        },
+        {
+          "caller": "cleanup_old_sessions",
+          "callee": "self._is_available",
+          "lineNumber": 791
+        },
+        {
+          "caller": "cleanup_old_sessions",
+          "callee": "datetime.utcnow",
+          "lineNumber": 795
+        },
+        {
+          "caller": "cleanup_old_sessions",
+          "callee": "timedelta",
+          "lineNumber": 795
+        },
+        {
+          "caller": "cleanup_old_sessions",
+          "callee": "self.collection.delete_many",
+          "lineNumber": 796
+        },
+        {
+          "caller": "cleanup_old_sessions",
+          "callee": "logger.info",
+          "lineNumber": 797
+        },
+        {
+          "caller": "cleanup_old_sessions",
+          "callee": "logger.error",
+          "lineNumber": 800
+        },
+        {
+          "caller": "get_session_stats",
+          "callee": "self._is_available",
+          "lineNumber": 805
+        },
+        {
+          "caller": "get_session_stats",
+          "callee": "self._get_session",
+          "lineNumber": 812
+        },
+        {
+          "caller": "get_session_stats",
+          "callee": "logger.error",
+          "lineNumber": 826
+        },
+        {
+          "caller": "get_session_stats",
+          "callee": "str",
+          "lineNumber": 827
+        },
+        {
+          "caller": "delete_session",
+          "callee": "self._is_available",
+          "lineNumber": 831
+        },
+        {
+          "caller": "delete_session",
+          "callee": "self._get_chat_key",
+          "lineNumber": 838
+        },
+        {
+          "caller": "delete_session",
+          "callee": "self.collection.delete_one",
+          "lineNumber": 841
+        },
+        {
+          "caller": "delete_session",
+          "callee": "self.chat_names_collection.delete_one",
+          "lineNumber": 845
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logger.info",
+          "lineNumber": 847
+        },
+        {
+          "caller": "delete_session",
+          "callee": "logger.error",
+          "lineNumber": 850
+        },
+        {
+          "caller": "delete_all_chats_for_session",
+          "callee": "self._is_available",
+          "lineNumber": 855
+        },
+        {
+          "caller": "delete_all_chats_for_session",
+          "callee": "self.collection.delete_many",
+          "lineNumber": 860
+        },
+        {
+          "caller": "delete_all_chats_for_session",
+          "callee": "self.chat_names_collection.delete_many",
+          "lineNumber": 864
+        },
+        {
+          "caller": "delete_all_chats_for_session",
+          "callee": "logger.info",
+          "lineNumber": 866
+        },
+        {
+          "caller": "delete_all_chats_for_session",
+          "callee": "logger.error",
+          "lineNumber": 869
+        },
+        {
+          "caller": "get_chat_history_manager",
+          "callee": "ChatHistoryManager",
+          "lineNumber": 880
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "app/services/stt_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 392,
+      "nonEmptyLines": 332,
+      "functions": [
+        {
+          "name": "_to_vexyl_lang",
+          "startLine": 82,
+          "endLine": 87,
+          "params": [
+            "language"
+          ]
+        },
+        {
+          "name": "_ws_to_http",
+          "startLine": 90,
+          "endLine": 92,
+          "params": [
+            "ws_url"
+          ]
+        },
+        {
+          "name": "_async_stream_stt",
+          "startLine": 300,
+          "endLine": 379,
+          "params": [
+            "pcm_chunks",
+            "lang_code",
+            "session_id",
+            "default_lang",
+            "result_queue",
+            "loop"
+          ]
+        },
+        {
+          "name": "get_stt_service",
+          "startLine": 387,
+          "endLine": 392,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "STTService",
+          "startLine": 97,
+          "endLine": 295,
+          "methods": [
+            "__init__",
+            "transcribe_audio_bytes",
+            "stream_transcription",
+            "test_connection"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_to_vexyl_lang",
+          "line": 82,
+          "isDefault": false
+        },
+        {
+          "name": "_ws_to_http",
+          "line": 90,
+          "isDefault": false
+        },
+        {
+          "name": "STTService",
+          "line": 97,
+          "isDefault": false
+        },
+        {
+          "name": "_async_stream_stt",
+          "line": 300,
+          "isDefault": false
+        },
+        {
+          "name": "get_stt_service",
+          "line": 387,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "isinstance",
+          "lineNumber": 84
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "str",
+          "lineNumber": 85
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "str(language).lower().strip",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "str(language).lower",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "str",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "_LANG_MAP.get",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_ws_to_http",
+          "callee": "ws_url.replace(\"ws://\", \"http://\", 1).replace",
+          "lineNumber": 92
+        },
+        {
+          "caller": "_ws_to_http",
+          "callee": "ws_url.replace",
+          "lineNumber": 92
+        },
+        {
+          "caller": "__init__",
+          "callee": "_ws_to_http",
+          "lineNumber": 108
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 109
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "_to_vexyl_lang",
+          "lineNumber": 139
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.info",
+          "lineNumber": 141
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "len",
+          "lineNumber": 141
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "filename.rsplit(\".\", 1)[-1].lower",
+          "lineNumber": 144
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "filename.rsplit",
+          "lineNumber": 144
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "mime_map.get",
+          "lineNumber": 153
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "requests.post",
+          "lineNumber": 156
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "io.BytesIO",
+          "lineNumber": 158
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.error",
+          "lineNumber": 163
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "RuntimeError",
+          "lineNumber": 164
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.error",
+          "lineNumber": 167
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "RuntimeError",
+          "lineNumber": 168
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "resp.json",
+          "lineNumber": 170
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "job_data.get",
+          "lineNumber": 171
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "job_data.get",
+          "lineNumber": 174
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.info",
+          "lineNumber": 175
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "job_data.get",
+          "lineNumber": 178
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "job_data.get",
+          "lineNumber": 179
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.info",
+          "lineNumber": 183
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "time.monotonic",
+          "lineNumber": 187
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "time.monotonic",
+          "lineNumber": 188
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "time.sleep",
+          "lineNumber": 189
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "requests.get",
+          "lineNumber": 191
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.warning",
+          "lineNumber": 193
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.warning",
+          "lineNumber": 197
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "poll_resp.json",
+          "lineNumber": 200
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "status_data.get",
+          "lineNumber": 201
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "status_data.get",
+          "lineNumber": 204
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.info",
+          "lineNumber": 205
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "status_data.get",
+          "lineNumber": 208
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "status_data.get",
+          "lineNumber": 209
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "status_data.get",
+          "lineNumber": 213
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.error",
+          "lineNumber": 214
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "RuntimeError",
+          "lineNumber": 215
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "logger.debug",
+          "lineNumber": 218
+        },
+        {
+          "caller": "transcribe_audio_bytes",
+          "callee": "TimeoutError",
+          "lineNumber": 220
+        },
+        {
+          "caller": "stream_transcription",
+          "callee": "_to_vexyl_lang",
+          "lineNumber": 246
+        },
+        {
+          "caller": "stream_transcription",
+          "callee": "uuid.uuid4",
+          "lineNumber": 247
+        },
+        {
+          "caller": "stream_transcription",
+          "callee": "_queue.Queue",
+          "lineNumber": 250
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "asyncio.new_event_loop",
+          "lineNumber": 253
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "asyncio.set_event_loop",
+          "lineNumber": 254
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "loop.run_until_complete",
+          "lineNumber": 256
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "_async_stream_stt",
+          "lineNumber": 257
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "loop.close",
+          "lineNumber": 262
+        },
+        {
+          "caller": "stream_transcription",
+          "callee": "threading.Thread",
+          "lineNumber": 264
+        },
+        {
+          "caller": "stream_transcription",
+          "callee": "thread.start",
+          "lineNumber": 265
+        },
+        {
+          "caller": "stream_transcription",
+          "callee": "result_queue.get",
+          "lineNumber": 268
+        },
+        {
+          "caller": "stream_transcription",
+          "callee": "isinstance",
+          "lineNumber": 271
+        },
+        {
+          "caller": "stream_transcription",
+          "callee": "logger.error",
+          "lineNumber": 272
+        },
+        {
+          "caller": "stream_transcription",
+          "callee": "thread.join",
+          "lineNumber": 276
+        },
+        {
+          "caller": "test_connection",
+          "callee": "requests.get",
+          "lineNumber": 286
+        },
+        {
+          "caller": "test_connection",
+          "callee": "resp.json",
+          "lineNumber": 288
+        },
+        {
+          "caller": "test_connection",
+          "callee": "logger.info",
+          "lineNumber": 289
+        },
+        {
+          "caller": "test_connection",
+          "callee": "data.get",
+          "lineNumber": 289
+        },
+        {
+          "caller": "test_connection",
+          "callee": "logger.warning",
+          "lineNumber": 291
+        },
+        {
+          "caller": "test_connection",
+          "callee": "logger.error",
+          "lineNumber": 294
+        },
+        {
+          "caller": "_put",
+          "callee": "loop.call_soon_threadsafe",
+          "lineNumber": 316
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "websockets.connect",
+          "lineNumber": 319
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 321
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "ws.recv",
+          "lineNumber": 321
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "json.loads",
+          "lineNumber": 322
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "ready.get",
+          "lineNumber": 323
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "logger.warning",
+          "lineNumber": 324
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "ws.send",
+          "lineNumber": 327
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "json.dumps",
+          "lineNumber": 327
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 335
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "ws.recv",
+          "lineNumber": 335
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "json.loads",
+          "lineNumber": 336
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "logger.info",
+          "lineNumber": 337
+        },
+        {
+          "caller": "_send_audio",
+          "callee": "ws.send",
+          "lineNumber": 342
+        },
+        {
+          "caller": "_send_audio",
+          "callee": "ws.send",
+          "lineNumber": 344
+        },
+        {
+          "caller": "_send_audio",
+          "callee": "json.dumps",
+          "lineNumber": 344
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 349
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "ws.recv",
+          "lineNumber": 349
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "logger.warning",
+          "lineNumber": 351
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "json.loads",
+          "lineNumber": 353
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "msg.get",
+          "lineNumber": 354
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "msg.get(\"text\", \"\").strip",
+          "lineNumber": 356
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "msg.get",
+          "lineNumber": 356
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "_put",
+          "lineNumber": 358
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "msg.get",
+          "lineNumber": 360
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "msg.get",
+          "lineNumber": 361
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "msg.get",
+          "lineNumber": 362
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "logger.error",
+          "lineNumber": 367
+        },
+        {
+          "caller": "_recv_transcripts",
+          "callee": "msg.get",
+          "lineNumber": 367
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "asyncio.gather",
+          "lineNumber": 370
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "_send_audio",
+          "lineNumber": 370
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "_recv_transcripts",
+          "lineNumber": 370
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "_put",
+          "lineNumber": 374
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "logger.error",
+          "lineNumber": 376
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "_put",
+          "lineNumber": 377
+        },
+        {
+          "caller": "_async_stream_stt",
+          "callee": "_put",
+          "lineNumber": 379
+        },
+        {
+          "caller": "get_stt_service",
+          "callee": "STTService",
+          "lineNumber": 391
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 5,
+        "functionCount": 4,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "app/services/tts_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 387,
+      "nonEmptyLines": 322,
+      "functions": [
+        {
+          "name": "_to_vexyl_lang",
+          "startLine": 83,
+          "endLine": 88,
+          "params": [
+            "language"
+          ]
+        },
+        {
+          "name": "_ws_to_http",
+          "startLine": 91,
+          "endLine": 93,
+          "params": [
+            "ws_url"
+          ]
+        },
+        {
+          "name": "_clean_text_for_tts",
+          "startLine": 98,
+          "endLine": 129,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "_async_generate_audio_stream",
+          "startLine": 134,
+          "endLine": 212,
+          "params": [
+            "text",
+            "lang_code"
+          ]
+        },
+        {
+          "name": "_run_async_generator_to_queue",
+          "startLine": 215,
+          "endLine": 226,
+          "params": [
+            "coro_gen",
+            "queue",
+            "loop"
+          ]
+        },
+        {
+          "name": "get_tts_service",
+          "startLine": 382,
+          "endLine": 387,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "TTSService",
+          "startLine": 231,
+          "endLine": 374,
+          "methods": [
+            "__init__",
+            "generate_audio_stream",
+            "generate_audio_buffer",
+            "test_connection",
+            "vexyl_url"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_to_vexyl_lang",
+          "line": 83,
+          "isDefault": false
+        },
+        {
+          "name": "_ws_to_http",
+          "line": 91,
+          "isDefault": false
+        },
+        {
+          "name": "_clean_text_for_tts",
+          "line": 98,
+          "isDefault": false
+        },
+        {
+          "name": "_async_generate_audio_stream",
+          "line": 134,
+          "isDefault": false
+        },
+        {
+          "name": "_run_async_generator_to_queue",
+          "line": 215,
+          "isDefault": false
+        },
+        {
+          "name": "TTSService",
+          "line": 231,
+          "isDefault": false
+        },
+        {
+          "name": "get_tts_service",
+          "line": 382,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "isinstance",
+          "lineNumber": 85
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "str",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "str(language).lower().strip",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "str(language).lower",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "str",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_to_vexyl_lang",
+          "callee": "_LANG_MAP.get",
+          "lineNumber": 88
+        },
+        {
+          "caller": "_ws_to_http",
+          "callee": "ws_url.replace(\"ws://\", \"http://\", 1).replace",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_ws_to_http",
+          "callee": "ws_url.replace",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 104
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 111
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 116
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 118
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 124
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 125
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 127
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "re.sub",
+          "lineNumber": 128
+        },
+        {
+          "caller": "_clean_text_for_tts",
+          "callee": "text.strip",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "uuid.uuid4",
+          "lineNumber": 140
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.info",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "websockets.connect",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "ws.recv",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "json.loads",
+          "lineNumber": 148
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "ready.get",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.warning",
+          "lineNumber": 150
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "ws.send",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "json.dumps",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.debug",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "len",
+          "lineNumber": 162
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "asyncio.wait_for",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "ws.recv",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.error",
+          "lineNumber": 170
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "json.loads",
+          "lineNumber": 173
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "msg.get",
+          "lineNumber": 174
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "msg.get",
+          "lineNumber": 177
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "base64.b64decode",
+          "lineNumber": 179
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.debug",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "len",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "msg.get",
+          "lineNumber": 186
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "base64.b64decode",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.info",
+          "lineNumber": 192
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "msg.get",
+          "lineNumber": 194
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.error",
+          "lineNumber": 199
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "msg.get",
+          "lineNumber": 199
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.debug",
+          "lineNumber": 204
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.error",
+          "lineNumber": 208
+        },
+        {
+          "caller": "_async_generate_audio_stream",
+          "callee": "logger.error",
+          "lineNumber": 211
+        },
+        {
+          "caller": "_drain",
+          "callee": "loop.call_soon_threadsafe",
+          "lineNumber": 220
+        },
+        {
+          "caller": "_drain",
+          "callee": "loop.call_soon_threadsafe",
+          "lineNumber": 222
+        },
+        {
+          "caller": "_drain",
+          "callee": "loop.call_soon_threadsafe",
+          "lineNumber": 224
+        },
+        {
+          "caller": "_run_async_generator_to_queue",
+          "callee": "loop.run_until_complete",
+          "lineNumber": 226
+        },
+        {
+          "caller": "_run_async_generator_to_queue",
+          "callee": "_drain",
+          "lineNumber": 226
+        },
+        {
+          "caller": "__init__",
+          "callee": "_ws_to_http",
+          "lineNumber": 237
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 238
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "_clean_text_for_tts",
+          "lineNumber": 255
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "logger.warning",
+          "lineNumber": 257
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "_to_vexyl_lang",
+          "lineNumber": 260
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "logger.info",
+          "lineNumber": 261
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "len",
+          "lineNumber": 261
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "_queue.Queue",
+          "lineNumber": 267
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "asyncio.new_event_loop",
+          "lineNumber": 270
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "asyncio.set_event_loop",
+          "lineNumber": 271
+        },
+        {
+          "caller": "_drain",
+          "callee": "_async_generate_audio_stream",
+          "lineNumber": 275
+        },
+        {
+          "caller": "_drain",
+          "callee": "result_queue.put",
+          "lineNumber": 276
+        },
+        {
+          "caller": "_drain",
+          "callee": "result_queue.put",
+          "lineNumber": 278
+        },
+        {
+          "caller": "_drain",
+          "callee": "result_queue.put",
+          "lineNumber": 280
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "loop.run_until_complete",
+          "lineNumber": 282
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "_drain",
+          "lineNumber": 282
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "logger.error",
+          "lineNumber": 284
+        },
+        {
+          "caller": "_thread_target",
+          "callee": "loop.close",
+          "lineNumber": 286
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "threading.Thread",
+          "lineNumber": 288
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "thread.start",
+          "lineNumber": 289
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "result_queue.get",
+          "lineNumber": 294
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "isinstance",
+          "lineNumber": 297
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "logger.error",
+          "lineNumber": 298
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "isinstance",
+          "lineNumber": 301
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "len",
+          "lineNumber": 303
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "bytearray",
+          "lineNumber": 305
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "(0x7f000024).to_bytes",
+          "lineNumber": 306
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "(0x7f000000).to_bytes",
+          "lineNumber": 307
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "bytes",
+          "lineNumber": 308
+        },
+        {
+          "caller": "generate_audio_stream",
+          "callee": "thread.join",
+          "lineNumber": 318
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "_clean_text_for_tts",
+          "lineNumber": 331
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "io.BytesIO",
+          "lineNumber": 336
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "self.generate_audio_stream",
+          "lineNumber": 337
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "buf.write",
+          "lineNumber": 338
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "bytearray",
+          "lineNumber": 340
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "buf.getvalue",
+          "lineNumber": 340
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "len",
+          "lineNumber": 341
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "len",
+          "lineNumber": 343
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "(data_size + 36).to_bytes",
+          "lineNumber": 344
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "data_size.to_bytes",
+          "lineNumber": 345
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "bytes",
+          "lineNumber": 347
+        },
+        {
+          "caller": "generate_audio_buffer",
+          "callee": "logger.error",
+          "lineNumber": 349
+        },
+        {
+          "caller": "test_connection",
+          "callee": "requests.get",
+          "lineNumber": 361
+        },
+        {
+          "caller": "test_connection",
+          "callee": "resp.json",
+          "lineNumber": 363
+        },
+        {
+          "caller": "test_connection",
+          "callee": "logger.info",
+          "lineNumber": 364
+        },
+        {
+          "caller": "test_connection",
+          "callee": "data.get",
+          "lineNumber": 364
+        },
+        {
+          "caller": "test_connection",
+          "callee": "logger.warning",
+          "lineNumber": 366
+        },
+        {
+          "caller": "test_connection",
+          "callee": "logger.error",
+          "lineNumber": 369
+        },
+        {
+          "caller": "get_tts_service",
+          "callee": "TTSService",
+          "lineNumber": 386
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 7,
+        "functionCount": 6,
+        "classCount": 1
+      }
+    }
+  ]
+}

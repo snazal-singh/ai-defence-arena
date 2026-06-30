@@ -46,18 +46,111 @@ def trial_ask(request: Request, body: TrialQueryRequest):
 # ---------------------------------------------------------------------------
 
 @router.post("/ask")
-def ask(body: QueryRequest, user_email: str = Depends(get_current_user)):
+async def ask(request: Request, user_email: str = Depends(get_current_user)):
     """Process a document query with full chat-history context for an authenticated user."""
-    data = body.model_dump()
-    session_name = user_email
-    chat_id = body.chatId or "default"
+    content_type = request.headers.get("content-type", "")
+    
+    image_url = None
+    caption = None
+    
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        logger.info(f"📋 Form keys: {list(form.keys())} | Image object: {form.get('image')} | Image type: {type(form.get('image'))}")
+        message = form.get("message", "")
+        chat_id = form.get("chatId", "default")
+        session_id = form.get("sessionId")
+        context = form.get("context", "")
+        
+        # Convert types carefully
+        try:
+            input_language = int(form.get("inputLanguage", 23))
+        except (ValueError, TypeError):
+            input_language = 23
+            
+        try:
+            output_language = int(form.get("outputLanguage", 23))
+        except (ValueError, TypeError):
+            output_language = 23
+            
+        has_csv_or_xlsx = form.get("hasCsvOrXlsx", "false").lower() == "true"
+        mode = form.get("mode", "default")
+        
+        # form.getlist returns a list of strings
+        filenames = form.getlist("filenames")
+        
+        # Process image file
+        image = form.get("image")
+        logger.info(f"Checking image: image={bool(image)}, type={type(image).__name__}, filename={getattr(image, 'filename', None)}")
+        if image and (type(image).__name__ == "UploadFile" or hasattr(image, "filename")) and getattr(image, "filename", None):
+            import os, uuid, time
+            BASE_USERS_DIR = "chat_images"
+            session_id_for_path = session_id or 'default'
+            ext = os.path.splitext(image.filename)[1] or ".jpg"
+            image_filename = f"img_{int(time.time())}_{uuid.uuid4().hex[:8]}{ext}"
+            image_dir = os.path.join(BASE_USERS_DIR, session_id_for_path)
+            os.makedirs(image_dir, exist_ok=True)
+            image_save_path = os.path.join(image_dir, image_filename)
+            
+            # Read and write chunks
+            image_bytes = await image.read()
+            if image_bytes:
+                with open(image_save_path, "wb") as f:
+                    f.write(image_bytes)
+                
+                # Get caption from vision service
+                from app.services.vision_service import get_vision_service
+                vision_service = get_vision_service()
+                try:
+                    caption = vision_service.get_image_caption(image_save_path)
+                    if message:
+                        message = f"{message}\n\nImage Description: {caption}"
+                    else:
+                        message = f"Image Description: {caption}"
+                    image_url = f"/chat_images/{session_id_for_path}/{image_filename}"
+                    logger.info(f"Generated caption for uploaded image: {caption}")
+                except Exception as e:
+                    logger.error(f"Error calling vision service for caption: {e}")
+            
+        data = {
+            "message": message,
+            "chatId": chat_id,
+            "sessionId": session_id,
+            "context": context,
+            "inputLanguage": input_language,
+            "outputLanguage": output_language,
+            "hasCsvOrXlsx": has_csv_or_xlsx,
+            "mode": mode,
+            "filenames": filenames,
+        }
+    else:
+        # Standard JSON body
+        body_json = await request.json()
+        
+        # Validate body_json against QueryRequest model attributes
+        body = QueryRequest(**body_json)
+        data = body.model_dump()
+        chat_id = body.chatId or "default"
+        session_id = body.sessionId
+        context = body.context
 
-    if body.context:
-        if not body.sessionId:
+    session_name = user_email
+    if context:
+        if not session_id:
             raise HTTPException(status_code=400, detail="sessionId is required when context=true.")
-        session_name = user_email + body.sessionId.lower()
+        session_name = user_email + session_id.lower()
+
+    # Pre-populate image metadata if available
+    data['image_url'] = image_url
+    data['image_caption'] = caption
+    data['skip_user_message_storage'] = False
 
     response, status_code = query_service.process_authenticated_query(data, user_email, session_name, chat_id)
+    
+    # Return image url in JSONResponse content so the frontend has it immediately
+    if image_url and isinstance(response, dict):
+        response["image_url"] = image_url
+        response["image_caption"] = caption
+        
     return JSONResponse(content=response, status_code=status_code)
 
 
@@ -390,6 +483,7 @@ def get_chat_history(
     messages = []
     for msg in recent:
         d = msg.to_dict()
+        metadata = d.get("metadata") or {}
         messages.append({
             "message_id": d.get("message_id"),
             "timestamp": d.get("timestamp"),
@@ -397,6 +491,8 @@ def get_chat_history(
             "content": d.get("content"),
             "query_type": d.get("query_type"),
             "save_to_note": d.get("save_to_note", False),
+            "image": metadata.get("image_url"),
+            "image_caption": metadata.get("image_caption")
         })
 
     return {

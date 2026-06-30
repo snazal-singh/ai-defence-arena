@@ -75,7 +75,8 @@ class QueryAgentService:
                     input_language: int = 23, output_language: int = 23,
                     filenames: Optional[List[str]] = None,
                     has_csvxl: bool = False, mode: str = 'default',
-                    is_trial: bool = False, chat_id: str = None) -> Dict[str, Any]:
+                    is_trial: bool = False, chat_id: str = None,
+                    image_url: str = None, image_caption: str = None) -> Dict[str, Any]:
         """
         Process a user query with support for both standard and creative modes.
         
@@ -140,6 +141,15 @@ class QueryAgentService:
             query_type = "creative"
 
         # Save and get assistant message ID
+        chat_metadata = {
+            "processing_time": response.get("processing_metadata", {}).get("processing_time"),
+            "mode": response.get("creative_reasoning", {}).get("strategy_used", "standard")
+        }
+        if image_url:
+            chat_metadata["image_url"] = image_url
+        if image_caption:
+            chat_metadata["image_caption"] = image_caption
+
         assistant_message_id = self.chat_history_manager.save_conversation_turn(
             user_session=user_session,
             user_query=user_query,
@@ -147,10 +157,7 @@ class QueryAgentService:
             chat_id=chat_id,
             query_type=query_type,
             context_used=chat_context.get("context_used", False) if chat_context else False,
-            metadata={
-                "processing_time": response.get("processing_metadata", {}).get("processing_time"),
-                "mode": response.get("creative_reasoning", {}).get("strategy_used", "standard")
-            }
+            metadata=chat_metadata
         )
 
         # Add assistant message ID to response

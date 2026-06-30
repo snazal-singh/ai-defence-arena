@@ -1,0 +1,1052 @@
+{
+  "nodes": [
+    {
+      "id": "file:app/services/adaptive_search_service.py",
+      "type": "file",
+      "name": "adaptive_search_service.py",
+      "filePath": "app/services/adaptive_search_service.py",
+      "summary": "Runs an iterative, multi-round search loop that progressively refines queries using LLM-based evaluation until results are deemed sufficient or limits are reached, deduplicating and combining content across rounds.",
+      "tags": [
+        "service",
+        "search",
+        "iterative-refinement",
+        "orchestration"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:app/services/adaptive_search_service.py:AdaptiveSearchResult",
+      "type": "class",
+      "name": "AdaptiveSearchResult",
+      "filePath": "app/services/adaptive_search_service.py",
+      "lineRange": [
+        19,
+        30
+      ],
+      "summary": "Dataclass capturing the outcome of an adaptive search run, including success flag, iteration count, final content, all intermediate results, and evaluation history.",
+      "tags": [
+        "data-model",
+        "result-object"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/adaptive_search_service.py:AdaptiveSearchService",
+      "type": "class",
+      "name": "AdaptiveSearchService",
+      "filePath": "app/services/adaptive_search_service.py",
+      "lineRange": [
+        32,
+        319
+      ],
+      "summary": "Coordinates iterative search execution: enhances queries with chat context, executes searches against document/data/summary resources, evaluates sufficiency via the evaluation service, and deduplicates combined results across rounds.",
+      "tags": [
+        "service",
+        "search",
+        "iterative-refinement",
+        "orchestration"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/services/adaptive_search_service.py:get_adaptive_search_service",
+      "type": "function",
+      "name": "get_adaptive_search_service",
+      "filePath": "app/services/adaptive_search_service.py",
+      "lineRange": [
+        325,
+        335
+      ],
+      "summary": "Factory/singleton-style accessor that constructs and returns an AdaptiveSearchService instance.",
+      "tags": [
+        "factory",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/services/context_provider_service.py",
+      "type": "file",
+      "name": "context_provider_service.py",
+      "filePath": "app/services/context_provider_service.py",
+      "summary": "Centralizes retrieval of document, SQL data, and summary context for a user session, enriching search queries with conversational context (references, clarifications, continuations) before querying Elasticsearch, the SQL database, or the summarizer.",
+      "tags": [
+        "service",
+        "context",
+        "retrieval",
+        "rag"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:app/services/context_provider_service.py:ContextProviderService",
+      "type": "class",
+      "name": "ContextProviderService",
+      "filePath": "app/services/context_provider_service.py",
+      "lineRange": [
+        24,
+        418
+      ],
+      "summary": "Provides document, SQL, and summary context retrieval for a chat session, augmenting search queries with conversational history and merging full table chunks into Elasticsearch retrieval results.",
+      "tags": [
+        "service",
+        "context",
+        "retrieval",
+        "rag"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/services/context_provider_service.py:get_context_provider_service",
+      "type": "function",
+      "name": "get_context_provider_service",
+      "filePath": "app/services/context_provider_service.py",
+      "lineRange": [
+        423,
+        433
+      ],
+      "summary": "Factory/singleton-style accessor that constructs and returns a ContextProviderService instance.",
+      "tags": [
+        "factory",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/services/creative_reasoning_service.py",
+      "type": "file",
+      "name": "creative_reasoning_service.py",
+      "filePath": "app/services/creative_reasoning_service.py",
+      "summary": "Handles open-ended, creative-style query processing by running adaptive search, synthesizing results into a structured answer via LLM, and generating follow-up questions, with both streaming and non-streaming entry points.",
+      "tags": [
+        "service",
+        "llm",
+        "reasoning",
+        "streaming"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:app/services/creative_reasoning_service.py:CreativeReasoningService",
+      "type": "class",
+      "name": "CreativeReasoningService",
+      "filePath": "app/services/creative_reasoning_service.py",
+      "lineRange": [
+        25,
+        525
+      ],
+      "summary": "Orchestrates creative-mode query answering: runs adaptive search, synthesizes a JSON-structured response with an LLM, parses/repairs the response, generates follow-up questions, and provides fallback/error responses on failure.",
+      "tags": [
+        "service",
+        "llm",
+        "reasoning",
+        "streaming"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/services/creative_reasoning_service.py:get_creative_reasoning_service",
+      "type": "function",
+      "name": "get_creative_reasoning_service",
+      "filePath": "app/services/creative_reasoning_service.py",
+      "lineRange": [
+        531,
+        536
+      ],
+      "summary": "Factory/singleton-style accessor that constructs and returns a CreativeReasoningService instance.",
+      "tags": [
+        "factory",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/services/llm_service.py",
+      "type": "file",
+      "name": "llm_service.py",
+      "filePath": "app/services/llm_service.py",
+      "summary": "Defines a custom LangChain-compatible chat model that talks to a self-hosted GPU inference server over HTTP, plus factory functions exposing pre-configured LLM instances tuned for different use cases (fast, standard, comprehensive, creative, code, streaming).",
+      "tags": [
+        "service",
+        "llm",
+        "factory",
+        "integration"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Implements the LangChain BaseChatModel interface (_generate/_stream) to wrap a custom GPU server API, including SSE-style streaming token parsing."
+    },
+    {
+      "id": "class:app/services/llm_service.py:GPUServerChatModel",
+      "type": "class",
+      "name": "GPUServerChatModel",
+      "filePath": "app/services/llm_service.py",
+      "lineRange": [
+        92,
+        275
+      ],
+      "summary": "Custom LangChain BaseChatModel implementation that sends chat messages to a self-hosted GPU inference server via REST and supports both synchronous generation and token streaming.",
+      "tags": [
+        "llm",
+        "integration",
+        "streaming"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:app/services/llm_service.py:LLMType",
+      "type": "class",
+      "name": "LLMType",
+      "filePath": "app/services/llm_service.py",
+      "lineRange": [
+        282,
+        288
+      ],
+      "summary": "Enum identifying the available LLM configuration profiles (fast, standard, comprehensive, creative, code) used to select model behavior.",
+      "tags": [
+        "enum",
+        "type-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/services/llm_service.py:_make_llm",
+      "type": "function",
+      "name": "_make_llm",
+      "filePath": "app/services/llm_service.py",
+      "lineRange": [
+        295,
+        297
+      ],
+      "summary": "Internal helper that instantiates a GPUServerChatModel with the given keyword overrides.",
+      "tags": [
+        "factory",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/services/llm_service.py:get_fast_llm",
+      "type": "function",
+      "name": "get_fast_llm",
+      "filePath": "app/services/llm_service.py",
+      "lineRange": [
+        300,
+        302
+      ],
+      "summary": "Returns an LLM instance configured for fast, low-latency responses.",
+      "tags": [
+        "factory"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/services/llm_service.py:get_standard_llm",
+      "type": "function",
+      "name": "get_standard_llm",
+      "filePath": "app/services/llm_service.py",
+      "lineRange": [
+        305,
+        307
+      ],
+      "summary": "Returns an LLM instance configured with standard, balanced settings used across general query answering.",
+      "tags": [
+        "factory"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/services/llm_service.py:get_comprehensive_llm",
+      "type": "function",
+      "name": "get_comprehensive_llm",
+      "filePath": "app/services/llm_service.py",
+      "lineRange": [
+        310,
+        312
+      ],
+      "summary": "Returns an LLM instance configured for comprehensive, higher-token-budget reasoning tasks such as strategy planning and synthesis.",
+      "tags": [
+        "factory"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/services/llm_service.py:get_creative_llm",
+      "type": "function",
+      "name": "get_creative_llm",
+      "filePath": "app/services/llm_service.py",
+      "lineRange": [
+        315,
+        317
+      ],
+      "summary": "Returns an LLM instance tuned with higher temperature for creative-mode response generation.",
+      "tags": [
+        "factory"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/services/llm_service.py:get_code_llm",
+      "type": "function",
+      "name": "get_code_llm",
+      "filePath": "app/services/llm_service.py",
+      "lineRange": [
+        320,
+        322
+      ],
+      "summary": "Returns an LLM instance configured for code-related generation tasks.",
+      "tags": [
+        "factory"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/services/llm_service.py:get_streaming_llm",
+      "type": "function",
+      "name": "get_streaming_llm",
+      "filePath": "app/services/llm_service.py",
+      "lineRange": [
+        325,
+        335
+      ],
+      "summary": "Builds an LLM configured for streaming output, attaching the provided callback handlers and binding the requested LLM type's configuration.",
+      "tags": [
+        "factory",
+        "streaming"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/services/reasoning_strategy_service.py",
+      "type": "file",
+      "name": "reasoning_strategy_service.py",
+      "filePath": "app/services/reasoning_strategy_service.py",
+      "summary": "Analyzes a user's query with an LLM to produce a structured multi-step search strategy (decomposed sub-queries, types, priorities, dependencies), converting it into executable search instructions with a rule-based fallback when LLM parsing fails.",
+      "tags": [
+        "service",
+        "llm",
+        "planning",
+        "data-model"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:app/services/reasoning_strategy_service.py:SearchType",
+      "type": "class",
+      "name": "SearchType",
+      "filePath": "app/services/reasoning_strategy_service.py",
+      "lineRange": [
+        20,
+        26
+      ],
+      "summary": "Enum of supported search categories such as document, SQL/data, summary, and hybrid search.",
+      "tags": [
+        "enum",
+        "type-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/reasoning_strategy_service.py:SearchPriority",
+      "type": "class",
+      "name": "SearchPriority",
+      "filePath": "app/services/reasoning_strategy_service.py",
+      "lineRange": [
+        28,
+        32
+      ],
+      "summary": "Enum of execution priority levels used to order and parallelize search instructions.",
+      "tags": [
+        "enum",
+        "type-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/reasoning_strategy_service.py:SearchInstruction",
+      "type": "class",
+      "name": "SearchInstruction",
+      "filePath": "app/services/reasoning_strategy_service.py",
+      "lineRange": [
+        35,
+        42
+      ],
+      "summary": "Dataclass representing one executable search step, including its query, type, priority, instructions, expected information, and dependencies on other steps.",
+      "tags": [
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/reasoning_strategy_service.py:SearchStrategy",
+      "type": "class",
+      "name": "SearchStrategy",
+      "filePath": "app/services/reasoning_strategy_service.py",
+      "lineRange": [
+        44,
+        58
+      ],
+      "summary": "Dataclass representing the LLM-produced overall search plan: reasoning, query breakdown, list of searches, synthesis approach, and confidence level.",
+      "tags": [
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/reasoning_strategy_service.py:ReasoningStrategyService",
+      "type": "class",
+      "name": "ReasoningStrategyService",
+      "filePath": "app/services/reasoning_strategy_service.py",
+      "lineRange": [
+        60,
+        305
+      ],
+      "summary": "Uses a comprehensive LLM with a Pydantic output parser to analyze a query and available resources, generating a SearchStrategy; converts that strategy into SearchInstruction objects and falls back to a rule-based strategy on failure.",
+      "tags": [
+        "service",
+        "llm",
+        "planning"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/services/reasoning_strategy_service.py:get_reasoning_strategy_service",
+      "type": "function",
+      "name": "get_reasoning_strategy_service",
+      "filePath": "app/services/reasoning_strategy_service.py",
+      "lineRange": [
+        310,
+        320
+      ],
+      "summary": "Factory/singleton-style accessor that constructs and returns a ReasoningStrategyService instance.",
+      "tags": [
+        "factory",
+        "singleton"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/services/result_evaluation_service.py",
+      "type": "file",
+      "name": "result_evaluation_service.py",
+      "filePath": "app/services/result_evaluation_service.py",
+      "summary": "Evaluates whether accumulated search results sufficiently answer a query using an LLM-based judgment (with keyword-overlap fallback) and generates focused follow-up queries to fill identified gaps.",
+      "tags": [
+        "service",
+        "llm",
+        "evaluation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:app/services/result_evaluation_service.py:EvaluationResult",
+      "type": "class",
+      "name": "EvaluationResult",
+      "filePath": "app/services/result_evaluation_service.py",
+      "lineRange": [
+        19,
+        25
+      ],
+      "summary": "Dataclass holding the outcome of a sufficiency evaluation: whether results are sufficient, a confidence score, missing aspects, reasoning, and suggested refinements.",
+      "tags": [
+        "data-model",
+        "result-object"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/result_evaluation_service.py:ResultEvaluationService",
+      "type": "class",
+      "name": "ResultEvaluationService",
+      "filePath": "app/services/result_evaluation_service.py",
+      "lineRange": [
+        27,
+        202
+      ],
+      "summary": "Judges whether search results sufficiently answer a query via an LLM call (with a heuristic keyword-overlap fallback) and proposes refined/focused follow-up search queries when results are insufficient.",
+      "tags": [
+        "service",
+        "llm",
+        "evaluation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/services/result_evaluation_service.py:get_result_evaluation_service",
+      "type": "function",
+      "name": "get_result_evaluation_service",
+      "filePath": "app/services/result_evaluation_service.py",
+      "lineRange": [
+        208,
+        213
+      ],
+      "summary": "Factory/singleton-style accessor that constructs and returns a ResultEvaluationService instance.",
+      "tags": [
+        "factory",
+        "singleton"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:app/services/adaptive_search_service.py",
+      "target": "class:app/services/adaptive_search_service.py:AdaptiveSearchResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/adaptive_search_service.py",
+      "target": "class:app/services/adaptive_search_service.py:AdaptiveSearchService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/adaptive_search_service.py",
+      "target": "function:app/services/adaptive_search_service.py:get_adaptive_search_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/adaptive_search_service.py",
+      "target": "class:app/services/adaptive_search_service.py:AdaptiveSearchResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/adaptive_search_service.py",
+      "target": "class:app/services/adaptive_search_service.py:AdaptiveSearchService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/adaptive_search_service.py",
+      "target": "function:app/services/adaptive_search_service.py:get_adaptive_search_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/adaptive_search_service.py",
+      "target": "file:app/services/result_evaluation_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/adaptive_search_service.py",
+      "target": "file:app/services/context_provider_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/adaptive_search_service.py:AdaptiveSearchService",
+      "target": "function:app/services/result_evaluation_service.py:get_result_evaluation_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/adaptive_search_service.py:AdaptiveSearchService",
+      "target": "function:app/services/context_provider_service.py:get_context_provider_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/context_provider_service.py",
+      "target": "class:app/services/context_provider_service.py:ContextProviderService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/context_provider_service.py",
+      "target": "function:app/services/context_provider_service.py:get_context_provider_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/context_provider_service.py",
+      "target": "class:app/services/context_provider_service.py:ContextProviderService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/context_provider_service.py",
+      "target": "function:app/services/context_provider_service.py:get_context_provider_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/context_provider_service.py",
+      "target": "file:elastic/retriever.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/context_provider_service.py",
+      "target": "file:controllers/sql_db.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/context_provider_service.py",
+      "target": "file:controllers/doc_summary.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/context_provider_service.py",
+      "target": "file:utils/extractText.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/context_provider_service.py:ContextProviderService",
+      "target": "function:controllers/sql_db.py:query_database",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/context_provider_service.py:ContextProviderService",
+      "target": "function:controllers/doc_summary.py:get_summary_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/creative_reasoning_service.py",
+      "target": "class:app/services/creative_reasoning_service.py:CreativeReasoningService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/creative_reasoning_service.py",
+      "target": "function:app/services/creative_reasoning_service.py:get_creative_reasoning_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/creative_reasoning_service.py",
+      "target": "class:app/services/creative_reasoning_service.py:CreativeReasoningService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/creative_reasoning_service.py",
+      "target": "function:app/services/creative_reasoning_service.py:get_creative_reasoning_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/creative_reasoning_service.py",
+      "target": "file:app/services/adaptive_search_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/creative_reasoning_service.py",
+      "target": "file:app/services/result_synthesis_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/creative_reasoning_service.py",
+      "target": "file:app/services/context_provider_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/creative_reasoning_service.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/creative_reasoning_service.py:CreativeReasoningService",
+      "target": "function:app/services/adaptive_search_service.py:get_adaptive_search_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/creative_reasoning_service.py:CreativeReasoningService",
+      "target": "function:app/services/result_synthesis_service.py:get_result_synthesis_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/creative_reasoning_service.py:CreativeReasoningService",
+      "target": "function:app/services/context_provider_service.py:get_context_provider_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/creative_reasoning_service.py:CreativeReasoningService",
+      "target": "function:app/services/llm_service.py:get_standard_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/creative_reasoning_service.py:CreativeReasoningService",
+      "target": "class:app/services/adaptive_search_service.py:AdaptiveSearchResult",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "class:app/services/llm_service.py:GPUServerChatModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "class:app/services/llm_service.py:LLMType",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:_make_llm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_fast_llm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_standard_llm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_comprehensive_llm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_creative_llm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_code_llm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_streaming_llm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "class:app/services/llm_service.py:GPUServerChatModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "class:app/services/llm_service.py:LLMType",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_fast_llm",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_standard_llm",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_comprehensive_llm",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_creative_llm",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_code_llm",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "function:app/services/llm_service.py:get_streaming_llm",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/llm_service.py",
+      "target": "file:app/config.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/services/llm_service.py:_make_llm",
+      "target": "class:app/services/llm_service.py:GPUServerChatModel",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/services/llm_service.py:get_fast_llm",
+      "target": "function:app/services/llm_service.py:_make_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/services/llm_service.py:get_standard_llm",
+      "target": "function:app/services/llm_service.py:_make_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/services/llm_service.py:get_comprehensive_llm",
+      "target": "function:app/services/llm_service.py:_make_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/services/llm_service.py:get_creative_llm",
+      "target": "function:app/services/llm_service.py:_make_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/services/llm_service.py:get_code_llm",
+      "target": "function:app/services/llm_service.py:_make_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/services/llm_service.py:get_streaming_llm",
+      "target": "function:app/services/llm_service.py:_make_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchType",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchPriority",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchInstruction",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchStrategy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:ReasoningStrategyService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "function:app/services/reasoning_strategy_service.py:get_reasoning_strategy_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchType",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchPriority",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchInstruction",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:SearchStrategy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "class:app/services/reasoning_strategy_service.py:ReasoningStrategyService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "function:app/services/reasoning_strategy_service.py:get_reasoning_strategy_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/reasoning_strategy_service.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/reasoning_strategy_service.py:ReasoningStrategyService",
+      "target": "function:app/services/llm_service.py:get_comprehensive_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/result_evaluation_service.py",
+      "target": "class:app/services/result_evaluation_service.py:EvaluationResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/result_evaluation_service.py",
+      "target": "class:app/services/result_evaluation_service.py:ResultEvaluationService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/result_evaluation_service.py",
+      "target": "function:app/services/result_evaluation_service.py:get_result_evaluation_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/result_evaluation_service.py",
+      "target": "class:app/services/result_evaluation_service.py:EvaluationResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/result_evaluation_service.py",
+      "target": "class:app/services/result_evaluation_service.py:ResultEvaluationService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/result_evaluation_service.py",
+      "target": "function:app/services/result_evaluation_service.py:get_result_evaluation_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/result_evaluation_service.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/result_evaluation_service.py:ResultEvaluationService",
+      "target": "function:app/services/llm_service.py:get_fast_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}
