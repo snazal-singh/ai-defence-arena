@@ -1,0 +1,521 @@
+{
+  "nodes": [
+    {
+      "id": "file:app/services/chat_context_service.py",
+      "type": "file",
+      "name": "chat_context_service.py",
+      "filePath": "app/services/chat_context_service.py",
+      "summary": "Detects whether a follow-up query needs prior conversation context (via regex patterns plus LLM fallback) and extracts the relevant slice of chat history to feed into downstream prompts.",
+      "tags": ["service", "context-management", "nlp", "pattern-matching"],
+      "complexity": "complex",
+      "languageNotes": "Combines fast regex-based heuristics with an LLM-based fallback, merging both signals via a confidence-weighted combination step before extracting context using one of several specialized strategies (recent, reference, clarification, continuation, adaptive)."
+    },
+    {
+      "id": "class:app/services/chat_context_service.py:ChatContextService",
+      "type": "class",
+      "name": "ChatContextService",
+      "filePath": "app/services/chat_context_service.py",
+      "lineRange": [17, 426],
+      "summary": "Core service that detects context-dependency in user queries and extracts the most relevant chat history segment using regex pattern matching combined with an LLM-based classifier.",
+      "tags": ["service", "context-detection", "chat-history", "nlp"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/services/chat_context_service.py:get_chat_context_service",
+      "type": "function",
+      "name": "get_chat_context_service",
+      "filePath": "app/services/chat_context_service.py",
+      "lineRange": [432, 437],
+      "summary": "Factory/singleton accessor that constructs and returns a ChatContextService instance.",
+      "tags": ["factory", "singleton"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/services/query_agent_service.py",
+      "type": "file",
+      "name": "query_agent_service.py",
+      "filePath": "app/services/query_agent_service.py",
+      "summary": "Top-level orchestrator for the query pipeline: combines intent classification, chat context retrieval, document/data/hybrid context lookup, optional creative reasoning mode, and response generation into a single process_query entry point.",
+      "tags": ["service", "orchestrator", "entry-point", "query-processing"],
+      "complexity": "complex",
+      "languageNotes": "Acts as a facade composing five other services (intent, context provider, response generator, chat history, chat context, and an optional creative reasoning service) and dispatches to mode-specific handlers (document, data, hybrid, summary, general chat)."
+    },
+    {
+      "id": "class:app/services/query_agent_service.py:QueryAgentService",
+      "type": "class",
+      "name": "QueryAgentService",
+      "filePath": "app/services/query_agent_service.py",
+      "lineRange": [35, 700],
+      "summary": "Main query-processing facade that wires together intent classification, context retrieval, chat history, and response generation, exposing process_query as the primary API used by callers to answer user questions against documents and structured data.",
+      "tags": ["orchestrator", "service", "query-processing", "facade"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/services/query_agent_service.py:get_query_agent_service",
+      "type": "function",
+      "name": "get_query_agent_service",
+      "filePath": "app/services/query_agent_service.py",
+      "lineRange": [706, 711],
+      "summary": "Factory/singleton accessor that constructs and returns a QueryAgentService instance.",
+      "tags": ["factory", "singleton"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/services/query_intent_service.py",
+      "type": "file",
+      "name": "query_intent_service.py",
+      "filePath": "app/services/query_intent_service.py",
+      "summary": "Classifies a user query's intent (general chat, summary request, data query, or document-context-needed) using an LLM-backed classifier so the query agent can route to the correct response strategy.",
+      "tags": ["service", "intent-classification", "nlp", "routing"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:app/services/query_intent_service.py:QueryIntent",
+      "type": "class",
+      "name": "QueryIntent",
+      "filePath": "app/services/query_intent_service.py",
+      "lineRange": [20, 26],
+      "summary": "Simple data/enum-like class representing the possible query intent categories used throughout the routing logic.",
+      "tags": ["data-model", "enum"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/services/query_intent_service.py:QueryIntentService",
+      "type": "class",
+      "name": "QueryIntentService",
+      "filePath": "app/services/query_intent_service.py",
+      "lineRange": [28, 221],
+      "summary": "Classifies incoming queries into general-chat, summary, data, or document-context categories by chaining several LLM-backed boolean checks.",
+      "tags": ["service", "intent-classification", "nlp"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/services/query_intent_service.py:get_query_intent_service",
+      "type": "function",
+      "name": "get_query_intent_service",
+      "filePath": "app/services/query_intent_service.py",
+      "lineRange": [226, 236],
+      "summary": "Factory/singleton accessor that constructs and returns a QueryIntentService instance.",
+      "tags": ["factory", "singleton"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/services/response_generator_service.py",
+      "type": "file",
+      "name": "response_generator_service.py",
+      "filePath": "app/services/response_generator_service.py",
+      "summary": "Generates the final natural-language responses for every query mode (general chat, document, data, hybrid, document-aware chat) by building mode-specific prompts, invoking the LLM, parsing structured JSON-like output, and translating results to the user's requested language.",
+      "tags": ["service", "response-generation", "prompt-engineering", "llm"],
+      "complexity": "complex",
+      "languageNotes": "Heavy use of regex-based structured-response extraction and JSON parsing fallbacks to robustly handle LLM output that may not strictly follow the requested format, plus an integration point with the translation utility for multi-language output."
+    },
+    {
+      "id": "class:app/services/response_generator_service.py:ResponseGeneratorService",
+      "type": "class",
+      "name": "ResponseGeneratorService",
+      "filePath": "app/services/response_generator_service.py",
+      "lineRange": [21, 658],
+      "summary": "Builds prompts and generates structured, translated responses for general chat, document, data, hybrid, and document-aware chat query modes, parsing and validating the LLM's structured output before returning it to callers.",
+      "tags": ["service", "response-generation", "llm", "prompt-engineering"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/services/response_generator_service.py:get_response_generator_service",
+      "type": "function",
+      "name": "get_response_generator_service",
+      "filePath": "app/services/response_generator_service.py",
+      "lineRange": [663, 673],
+      "summary": "Factory/singleton accessor that constructs and returns a ResponseGeneratorService instance.",
+      "tags": ["factory", "singleton"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:utils/translation.py",
+      "type": "file",
+      "name": "translation.py",
+      "filePath": "utils/translation.py",
+      "summary": "Translation utility that delegates to a remote IndicTrans2 inference server, providing translate_to_indic and translate_to_english helpers for converting text between English and 23 Indic languages using FLORES-200 language codes.",
+      "tags": ["utility", "translation", "multi-language", "http-client"],
+      "complexity": "moderate",
+      "languageNotes": "Configuration (server URL, API key, timeout) is read once at import time from environment variables; sentence splitting is used to keep translation requests within manageable chunk sizes for the remote service."
+    },
+    {
+      "id": "function:utils/translation.py:_headers",
+      "type": "function",
+      "name": "_headers",
+      "filePath": "utils/translation.py",
+      "lineRange": [65, 68],
+      "summary": "Builds the HTTP Authorization header dict for requests to the translation server, using the API key if configured.",
+      "tags": ["utility", "http-client"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:utils/translation.py:translate_to_indic",
+      "type": "function",
+      "name": "translate_to_indic",
+      "filePath": "utils/translation.py",
+      "lineRange": [71, 136],
+      "summary": "Translates English text into a target Indic language by calling the remote IndicTrans2 inference server, validating the language against the FLORES-200 mapping before making the request.",
+      "tags": ["translation", "http-client", "utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:utils/translation.py:translate_to_english",
+      "type": "function",
+      "name": "translate_to_english",
+      "filePath": "utils/translation.py",
+      "lineRange": [166, 237],
+      "summary": "Translates text from a source Indic language (identified by numeric language ID) into English via the remote translation server.",
+      "tags": ["translation", "http-client", "utility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:utils/translation.py:_split_into_sentences",
+      "type": "function",
+      "name": "_split_into_sentences",
+      "filePath": "utils/translation.py",
+      "lineRange": [241, 246],
+      "summary": "Splits a block of text into individual sentences using regex, used to chunk text before sending to the translation server.",
+      "tags": ["utility", "text-processing"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:app/services/chat_context_service.py",
+      "target": "class:app/services/chat_context_service.py:ChatContextService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/chat_context_service.py",
+      "target": "function:app/services/chat_context_service.py:get_chat_context_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/chat_context_service.py",
+      "target": "class:app/services/chat_context_service.py:ChatContextService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/chat_context_service.py",
+      "target": "function:app/services/chat_context_service.py:get_chat_context_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/chat_context_service.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/chat_context_service.py:ChatContextService",
+      "target": "function:app/services/llm_service.py:get_fast_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/query_agent_service.py",
+      "target": "class:app/services/query_agent_service.py:QueryAgentService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/query_agent_service.py",
+      "target": "function:app/services/query_agent_service.py:get_query_agent_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/query_agent_service.py",
+      "target": "class:app/services/query_agent_service.py:QueryAgentService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/query_agent_service.py",
+      "target": "function:app/services/query_agent_service.py:get_query_agent_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/query_agent_service.py",
+      "target": "file:app/services/chat_context_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/query_agent_service.py",
+      "target": "file:app/services/chat_history_manager.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/query_agent_service.py",
+      "target": "file:app/services/context_provider_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/query_agent_service.py",
+      "target": "file:app/services/query_intent_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/query_agent_service.py",
+      "target": "file:app/services/response_generator_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/query_agent_service.py:QueryAgentService",
+      "target": "function:app/services/query_intent_service.py:get_query_intent_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/query_agent_service.py:QueryAgentService",
+      "target": "function:app/services/context_provider_service.py:get_context_provider_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/query_agent_service.py:QueryAgentService",
+      "target": "function:app/services/response_generator_service.py:get_response_generator_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/query_agent_service.py:QueryAgentService",
+      "target": "function:app/services/chat_history_manager.py:get_chat_history_manager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/query_agent_service.py:QueryAgentService",
+      "target": "function:app/services/chat_context_service.py:get_chat_context_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/query_agent_service.py:QueryAgentService",
+      "target": "class:app/services/chat_context_service.py:ChatContextService",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:app/services/query_agent_service.py:QueryAgentService",
+      "target": "class:app/services/response_generator_service.py:ResponseGeneratorService",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:app/services/query_intent_service.py",
+      "target": "class:app/services/query_intent_service.py:QueryIntent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/query_intent_service.py",
+      "target": "class:app/services/query_intent_service.py:QueryIntentService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/query_intent_service.py",
+      "target": "function:app/services/query_intent_service.py:get_query_intent_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/query_intent_service.py",
+      "target": "class:app/services/query_intent_service.py:QueryIntent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/query_intent_service.py",
+      "target": "class:app/services/query_intent_service.py:QueryIntentService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/query_intent_service.py",
+      "target": "function:app/services/query_intent_service.py:get_query_intent_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/query_intent_service.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/query_intent_service.py:QueryIntentService",
+      "target": "function:app/services/llm_service.py:get_fast_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/response_generator_service.py",
+      "target": "class:app/services/response_generator_service.py:ResponseGeneratorService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/response_generator_service.py",
+      "target": "function:app/services/response_generator_service.py:get_response_generator_service",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/services/response_generator_service.py",
+      "target": "class:app/services/response_generator_service.py:ResponseGeneratorService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/response_generator_service.py",
+      "target": "function:app/services/response_generator_service.py:get_response_generator_service",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/services/response_generator_service.py",
+      "target": "file:app/services/llm_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/services/response_generator_service.py",
+      "target": "file:utils/translation.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:app/services/response_generator_service.py:ResponseGeneratorService",
+      "target": "function:app/services/llm_service.py:get_standard_llm",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/services/response_generator_service.py:ResponseGeneratorService",
+      "target": "function:utils/translation.py:translate_to_indic",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/translation.py",
+      "target": "function:utils/translation.py:_headers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:utils/translation.py",
+      "target": "function:utils/translation.py:translate_to_indic",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:utils/translation.py",
+      "target": "function:utils/translation.py:translate_to_english",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:utils/translation.py",
+      "target": "function:utils/translation.py:_split_into_sentences",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:utils/translation.py",
+      "target": "function:utils/translation.py:_headers",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/translation.py",
+      "target": "function:utils/translation.py:translate_to_indic",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/translation.py",
+      "target": "function:utils/translation.py:translate_to_english",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/translation.py",
+      "target": "function:utils/translation.py:_split_into_sentences",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:utils/translation.py:translate_to_indic",
+      "target": "function:utils/translation.py:_headers",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:utils/translation.py:translate_to_english",
+      "target": "function:utils/translation.py:_headers",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

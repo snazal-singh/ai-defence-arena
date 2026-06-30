@@ -1,0 +1,57 @@
+{
+  "batchIndex": 9,
+  "files": [
+    {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/config.json",
+      "language": "json",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "docs/sachet_agent_backend_docs.md",
+      "language": "markdown",
+      "sizeLines": 965,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "load_test.py",
+      "language": "python",
+      "sizeLines": 570,
+      "fileCategory": "code"
+    },
+    {
+      "path": "sample_data/generate_samples.py",
+      "language": "python",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "sample_data/sample_alerts.json",
+      "language": "json",
+      "sizeLines": 8701,
+      "fileCategory": "config"
+    },
+    {
+      "path": "utils/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    ".understand-anything/.understandignore": [],
+    ".understand-anything/config.json": [],
+    "docs/sachet_agent_backend_docs.md": [],
+    "load_test.py": [],
+    "sample_data/generate_samples.py": [],
+    "sample_data/sample_alerts.json": [],
+    "utils/__init__.py": []
+  },
+  "neighborMap": {}
+}

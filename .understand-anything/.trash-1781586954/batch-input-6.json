@@ -1,0 +1,134 @@
+{
+  "batchIndex": 6,
+  "files": [
+    {
+      "path": "app/services/chat_context_service.py",
+      "language": "python",
+      "sizeLines": 436,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/services/query_agent_service.py",
+      "language": "python",
+      "sizeLines": 710,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/services/query_intent_service.py",
+      "language": "python",
+      "sizeLines": 235,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/services/response_generator_service.py",
+      "language": "python",
+      "sizeLines": 672,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/translation.py",
+      "language": "python",
+      "sizeLines": 246,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "app/services/chat_context_service.py": [
+      "app/services/llm_service.py"
+    ],
+    "app/services/query_agent_service.py": [
+      "app/services/chat_context_service.py",
+      "app/services/chat_history_manager.py",
+      "app/services/context_provider_service.py",
+      "app/services/query_intent_service.py",
+      "app/services/response_generator_service.py"
+    ],
+    "app/services/query_intent_service.py": [
+      "app/services/llm_service.py"
+    ],
+    "app/services/response_generator_service.py": [
+      "app/services/llm_service.py",
+      "utils/translation.py"
+    ],
+    "utils/translation.py": []
+  },
+  "neighborMap": {
+    "app/services/chat_context_service.py": [
+      {
+        "path": "app/services/llm_service.py",
+        "batchIndex": 1,
+        "symbols": [
+          "GPUServerChatModel",
+          "LLMType",
+          "_make_llm",
+          "get_fast_llm",
+          "get_standard_llm",
+          "get_comprehensive_llm",
+          "get_creative_llm",
+          "get_code_llm",
+          "get_streaming_llm"
+        ]
+      }
+    ],
+    "app/services/query_agent_service.py": [
+      {
+        "path": "app/services/chat_history_manager.py",
+        "batchIndex": 2,
+        "symbols": [
+          "ChatHistoryManager",
+          "get_chat_history_manager"
+        ]
+      },
+      {
+        "path": "app/services/context_provider_service.py",
+        "batchIndex": 1,
+        "symbols": [
+          "ContextProviderService",
+          "get_context_provider_service"
+        ]
+      },
+      {
+        "path": "app/services/query_service.py",
+        "batchIndex": 4,
+        "symbols": [
+          "QueryService",
+          "get_query_service"
+        ]
+      }
+    ],
+    "app/services/query_intent_service.py": [
+      {
+        "path": "app/services/llm_service.py",
+        "batchIndex": 1,
+        "symbols": [
+          "GPUServerChatModel",
+          "LLMType",
+          "_make_llm",
+          "get_fast_llm",
+          "get_standard_llm",
+          "get_comprehensive_llm",
+          "get_creative_llm",
+          "get_code_llm",
+          "get_streaming_llm"
+        ]
+      }
+    ],
+    "app/services/response_generator_service.py": [
+      {
+        "path": "app/services/llm_service.py",
+        "batchIndex": 1,
+        "symbols": [
+          "GPUServerChatModel",
+          "LLMType",
+          "_make_llm",
+          "get_fast_llm",
+          "get_standard_llm",
+          "get_comprehensive_llm",
+          "get_creative_llm",
+          "get_code_llm",
+          "get_streaming_llm"
+        ]
+      }
+    ]
+  }
+}

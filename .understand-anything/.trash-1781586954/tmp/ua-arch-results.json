@@ -1,0 +1,480 @@
+{
+  "scriptCompleted": true,
+  "directoryGroups": {
+    "app": [
+      "file:app/services/result_synthesis_service.py",
+      "file:app/services/search_execution_service.py",
+      "file:app/services/adaptive_search_service.py",
+      "file:app/services/context_provider_service.py",
+      "file:app/services/creative_reasoning_service.py",
+      "file:app/services/llm_service.py",
+      "file:app/services/reasoning_strategy_service.py",
+      "file:app/services/result_evaluation_service.py",
+      "file:app/services/auth_service.py",
+      "file:app/services/chat_history_manager.py",
+      "file:app/services/stt_service.py",
+      "file:app/services/tts_service.py",
+      "file:app/api/auth.py",
+      "file:app/api/documents.py",
+      "file:app/api/queries.py",
+      "file:app/models/chat_models.py",
+      "file:app/services/document_service.py",
+      "file:app/services/file_storage_service.py",
+      "file:app/services/url_content_service.py",
+      "file:app/api/accounts.py",
+      "file:app/services/account_service.py",
+      "file:app/services/query_service.py",
+      "file:app/config.py",
+      "file:app/services/chat_context_service.py",
+      "file:app/services/query_agent_service.py",
+      "file:app/services/query_intent_service.py",
+      "file:app/services/response_generator_service.py",
+      "file:app/__init__.py",
+      "file:app/api/__init__.py",
+      "file:app/extensions/__init__.py"
+    ],
+    "controllers": [
+      "file:controllers/ask.py",
+      "file:controllers/doc_summary.py",
+      "file:controllers/sql_db.py",
+      "file:controllers/delete_session.py",
+      "file:controllers/upload.py",
+      "file:controllers/database.py"
+    ],
+    "utils": [
+      "file:utils/extractText.py",
+      "file:utils/guardrails.py",
+      "file:utils/translation.py",
+      "file:utils/__init__.py"
+    ],
+    "elastic": [
+      "file:elastic/client.py",
+      "file:elastic/document_manager.py",
+      "file:elastic/index_manager.py",
+      "file:elastic/retriever.py"
+    ],
+    "root": [
+      "file:run.py",
+      "config:.env.example",
+      "document:requirements.txt",
+      "table:results.csv",
+      "file:load_test.py"
+    ],
+    "documentation": [
+      "document:api-documentation.md",
+      "document:readme.md"
+    ],
+    ".understand-anything": [
+      "config:.understand-anything/.understandignore",
+      "config:.understand-anything/config.json"
+    ],
+    "docs": [
+      "document:docs/sachet_agent_backend_docs.md"
+    ],
+    "sample_data": [
+      "file:sample_data/generate_samples.py",
+      "config:sample_data/sample_alerts.json"
+    ]
+  },
+  "nodeTypeGroups": {
+    "file": [
+      "file:app/services/result_synthesis_service.py",
+      "file:app/services/search_execution_service.py",
+      "file:controllers/ask.py",
+      "file:controllers/doc_summary.py",
+      "file:controllers/sql_db.py",
+      "file:app/services/adaptive_search_service.py",
+      "file:app/services/context_provider_service.py",
+      "file:app/services/creative_reasoning_service.py",
+      "file:app/services/llm_service.py",
+      "file:app/services/reasoning_strategy_service.py",
+      "file:app/services/result_evaluation_service.py",
+      "file:app/services/auth_service.py",
+      "file:app/services/chat_history_manager.py",
+      "file:app/services/stt_service.py",
+      "file:app/services/tts_service.py",
+      "file:app/api/auth.py",
+      "file:app/api/documents.py",
+      "file:app/api/queries.py",
+      "file:app/models/chat_models.py",
+      "file:app/services/document_service.py",
+      "file:app/services/file_storage_service.py",
+      "file:app/services/url_content_service.py",
+      "file:controllers/delete_session.py",
+      "file:controllers/upload.py",
+      "file:utils/extractText.py",
+      "file:app/api/accounts.py",
+      "file:app/services/account_service.py",
+      "file:app/services/query_service.py",
+      "file:controllers/database.py",
+      "file:utils/guardrails.py",
+      "file:app/config.py",
+      "file:elastic/client.py",
+      "file:elastic/document_manager.py",
+      "file:elastic/index_manager.py",
+      "file:elastic/retriever.py",
+      "file:app/services/chat_context_service.py",
+      "file:app/services/query_agent_service.py",
+      "file:app/services/query_intent_service.py",
+      "file:app/services/response_generator_service.py",
+      "file:utils/translation.py",
+      "file:app/__init__.py",
+      "file:app/api/__init__.py",
+      "file:app/extensions/__init__.py",
+      "file:run.py",
+      "file:load_test.py",
+      "file:sample_data/generate_samples.py",
+      "file:utils/__init__.py"
+    ],
+    "config": [
+      "config:.env.example",
+      "config:.understand-anything/.understandignore",
+      "config:.understand-anything/config.json",
+      "config:sample_data/sample_alerts.json"
+    ],
+    "document": [
+      "document:api-documentation.md",
+      "document:readme.md",
+      "document:requirements.txt",
+      "document:docs/sachet_agent_backend_docs.md"
+    ],
+    "table": [
+      "table:results.csv"
+    ]
+  },
+  "crossCategoryEdges": [
+    {
+      "fromType": "document",
+      "toType": "config",
+      "edgeType": "documents",
+      "count": 1
+    },
+    {
+      "fromType": "document",
+      "toType": "document",
+      "edgeType": "documents",
+      "count": 1
+    },
+    {
+      "fromType": "document",
+      "toType": "document",
+      "edgeType": "related",
+      "count": 1
+    },
+    {
+      "fromType": "document",
+      "toType": "table",
+      "edgeType": "related",
+      "count": 1
+    },
+    {
+      "fromType": "file",
+      "toType": "config",
+      "edgeType": "related",
+      "count": 1
+    },
+    {
+      "fromType": "document",
+      "toType": "config",
+      "edgeType": "related",
+      "count": 1
+    }
+  ],
+  "interGroupImports": [
+    {
+      "from": "controllers",
+      "to": "app",
+      "count": 7
+    },
+    {
+      "from": "app",
+      "to": "elastic",
+      "count": 1
+    },
+    {
+      "from": "app",
+      "to": "controllers",
+      "count": 10
+    },
+    {
+      "from": "app",
+      "to": "utils",
+      "count": 4
+    },
+    {
+      "from": "controllers",
+      "to": "elastic",
+      "count": 2
+    },
+    {
+      "from": "controllers",
+      "to": "utils",
+      "count": 1
+    },
+    {
+      "from": "utils",
+      "to": "app",
+      "count": 1
+    },
+    {
+      "from": "elastic",
+      "to": "app",
+      "count": 4
+    },
+    {
+      "from": "root",
+      "to": "app",
+      "count": 1
+    }
+  ],
+  "intraGroupDensity": {
+    "app": {
+      "internalEdges": 43,
+      "totalEdges": 71,
+      "density": 0.606
+    },
+    "controllers": {
+      "internalEdges": 1,
+      "totalEdges": 21,
+      "density": 0.048
+    },
+    "utils": {
+      "internalEdges": 0,
+      "totalEdges": 6,
+      "density": 0
+    },
+    "elastic": {
+      "internalEdges": 5,
+      "totalEdges": 12,
+      "density": 0.417
+    },
+    "root": {
+      "internalEdges": 0,
+      "totalEdges": 1,
+      "density": 0
+    },
+    "documentation": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    ".understand-anything": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "docs": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    },
+    "sample_data": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0
+    }
+  },
+  "patternMatches": {
+    "controllers": "api",
+    "utils": "utility",
+    "documentation": "documentation",
+    "docs": "documentation"
+  },
+  "deploymentTopology": {
+    "hasDockerfile": false,
+    "hasCompose": false,
+    "hasK8s": false,
+    "hasTerraform": false,
+    "hasCI": false,
+    "infraFiles": []
+  },
+  "dataPipeline": {
+    "schemaFiles": [],
+    "migrationFiles": [],
+    "dataModelFiles": [
+      "app/services/reasoning_strategy_service.py",
+      "app/models/chat_models.py"
+    ],
+    "apiHandlerFiles": [
+      "controllers/ask.py",
+      "controllers/doc_summary.py",
+      "controllers/sql_db.py",
+      "app/api/auth.py",
+      "app/api/documents.py",
+      "app/api/queries.py",
+      "controllers/delete_session.py",
+      "controllers/upload.py",
+      "app/api/accounts.py",
+      "controllers/database.py",
+      "app/api/__init__.py"
+    ]
+  },
+  "docCoverage": {
+    "groupsWithDocs": 9,
+    "totalGroups": 9,
+    "coverageRatio": 1,
+    "undocumentedGroups": []
+  },
+  "dependencyDirection": [
+    {
+      "dependent": "app",
+      "dependsOn": "controllers"
+    },
+    {
+      "dependent": "elastic",
+      "dependsOn": "app"
+    },
+    {
+      "dependent": "app",
+      "dependsOn": "utils"
+    },
+    {
+      "dependent": "controllers",
+      "dependsOn": "elastic"
+    },
+    {
+      "dependent": "controllers",
+      "dependsOn": "utils"
+    },
+    {
+      "dependent": "root",
+      "dependsOn": "app"
+    }
+  ],
+  "fileStats": {
+    "totalFileNodes": 56,
+    "filesPerGroup": {
+      "app": 30,
+      "controllers": 6,
+      "utils": 4,
+      "elastic": 4,
+      "root": 5,
+      "documentation": 2,
+      ".understand-anything": 2,
+      "docs": 1,
+      "sample_data": 2
+    },
+    "nodeTypeCounts": {
+      "file": 47,
+      "config": 4,
+      "document": 4,
+      "table": 1
+    }
+  },
+  "fileFanIn": {
+    "file:app/services/result_synthesis_service.py": 1,
+    "file:app/services/search_execution_service.py": 1,
+    "file:controllers/ask.py": 1,
+    "file:controllers/doc_summary.py": 2,
+    "file:controllers/sql_db.py": 3,
+    "file:app/services/adaptive_search_service.py": 1,
+    "file:app/services/context_provider_service.py": 4,
+    "file:app/services/creative_reasoning_service.py": 0,
+    "file:app/services/llm_service.py": 13,
+    "file:app/services/reasoning_strategy_service.py": 2,
+    "file:app/services/result_evaluation_service.py": 1,
+    "file:app/services/auth_service.py": 3,
+    "file:app/services/chat_history_manager.py": 3,
+    "file:app/services/stt_service.py": 1,
+    "file:app/services/tts_service.py": 1,
+    "file:app/api/auth.py": 0,
+    "file:app/api/documents.py": 0,
+    "file:app/api/queries.py": 0,
+    "file:app/models/chat_models.py": 2,
+    "file:app/services/document_service.py": 1,
+    "file:app/services/file_storage_service.py": 1,
+    "file:app/services/url_content_service.py": 1,
+    "file:controllers/delete_session.py": 1,
+    "file:controllers/upload.py": 1,
+    "file:utils/extractText.py": 3,
+    "file:app/api/accounts.py": 0,
+    "file:app/services/account_service.py": 1,
+    "file:app/services/query_service.py": 1,
+    "file:controllers/database.py": 3,
+    "file:utils/guardrails.py": 1,
+    "file:app/config.py": 11,
+    "file:elastic/client.py": 4,
+    "file:elastic/document_manager.py": 1,
+    "file:elastic/index_manager.py": 2,
+    "file:elastic/retriever.py": 1,
+    "file:app/services/chat_context_service.py": 1,
+    "file:app/services/query_agent_service.py": 1,
+    "file:app/services/query_intent_service.py": 1,
+    "file:app/services/response_generator_service.py": 1,
+    "file:utils/translation.py": 1,
+    "file:app/__init__.py": 1,
+    "file:app/api/__init__.py": 1,
+    "file:app/extensions/__init__.py": 1,
+    "file:run.py": 0,
+    "config:.env.example": 0,
+    "document:api-documentation.md": 0,
+    "document:readme.md": 0,
+    "document:requirements.txt": 0,
+    "table:results.csv": 0,
+    "config:.understand-anything/.understandignore": 0,
+    "config:.understand-anything/config.json": 0,
+    "document:docs/sachet_agent_backend_docs.md": 0,
+    "file:load_test.py": 0,
+    "file:sample_data/generate_samples.py": 0,
+    "config:sample_data/sample_alerts.json": 0,
+    "file:utils/__init__.py": 0
+  },
+  "fileFanOut": {
+    "file:app/services/result_synthesis_service.py": 3,
+    "file:app/services/search_execution_service.py": 2,
+    "file:controllers/ask.py": 2,
+    "file:controllers/doc_summary.py": 2,
+    "file:controllers/sql_db.py": 2,
+    "file:app/services/adaptive_search_service.py": 2,
+    "file:app/services/context_provider_service.py": 4,
+    "file:app/services/creative_reasoning_service.py": 4,
+    "file:app/services/llm_service.py": 1,
+    "file:app/services/reasoning_strategy_service.py": 1,
+    "file:app/services/result_evaluation_service.py": 1,
+    "file:app/services/auth_service.py": 0,
+    "file:app/services/chat_history_manager.py": 3,
+    "file:app/services/stt_service.py": 1,
+    "file:app/services/tts_service.py": 1,
+    "file:app/api/auth.py": 1,
+    "file:app/api/documents.py": 2,
+    "file:app/api/queries.py": 6,
+    "file:app/models/chat_models.py": 0,
+    "file:app/services/document_service.py": 8,
+    "file:app/services/file_storage_service.py": 0,
+    "file:app/services/url_content_service.py": 0,
+    "file:controllers/delete_session.py": 2,
+    "file:controllers/upload.py": 2,
+    "file:utils/extractText.py": 0,
+    "file:app/api/accounts.py": 1,
+    "file:app/services/account_service.py": 1,
+    "file:app/services/query_service.py": 4,
+    "file:controllers/database.py": 1,
+    "file:utils/guardrails.py": 1,
+    "file:app/config.py": 0,
+    "file:elastic/client.py": 1,
+    "file:elastic/document_manager.py": 3,
+    "file:elastic/index_manager.py": 1,
+    "file:elastic/retriever.py": 4,
+    "file:app/services/chat_context_service.py": 1,
+    "file:app/services/query_agent_service.py": 5,
+    "file:app/services/query_intent_service.py": 1,
+    "file:app/services/response_generator_service.py": 2,
+    "file:utils/translation.py": 0,
+    "file:app/__init__.py": 3,
+    "file:app/api/__init__.py": 0,
+    "file:app/extensions/__init__.py": 0,
+    "file:run.py": 1,
+    "config:.env.example": 0,
+    "document:api-documentation.md": 0,
+    "document:readme.md": 0,
+    "document:requirements.txt": 0,
+    "table:results.csv": 0,
+    "config:.understand-anything/.understandignore": 0,
+    "config:.understand-anything/config.json": 0,
+    "document:docs/sachet_agent_backend_docs.md": 0,
+    "file:load_test.py": 0,
+    "file:sample_data/generate_samples.py": 0,
+    "config:sample_data/sample_alerts.json": 0,
+    "file:utils/__init__.py": 0
+  }
+}

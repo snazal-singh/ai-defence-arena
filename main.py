@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -57,6 +58,31 @@ app.add_middleware(
 )
 
 
+# Validation error handler — sanitise binary blobs so the response is
+# always JSON-serialisable (prevents UnicodeDecodeError on file uploads).
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    def _sanitise(obj):
+        if isinstance(obj, bytes):
+            return f"<binary {len(obj)} bytes>"
+        if isinstance(obj, dict):
+            return {k: _sanitise(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [_sanitise(v) for v in obj]
+        return obj
+
+    safe_errors = _sanitise(exc.errors())
+    
+    # Debug logging
+    try:
+        body = await request.body()
+        logger.error(f"❌ VALIDATION ERROR! Errors: {safe_errors} | Request body: {body.decode('utf-8', errors='ignore')}")
+    except Exception as e:
+        logger.error(f"❌ VALIDATION ERROR! Errors: {safe_errors} | Could not read request body: {e}")
+        
+    return JSONResponse(status_code=422, content={"detail": safe_errors})
+
+
 # Global error handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -71,6 +97,8 @@ app.include_router(accounts_router, prefix=PREFIX)
 app.include_router(documents_router, prefix=PREFIX)
 app.include_router(queries_router, prefix=PREFIX)
 
+from fastapi.staticfiles import StaticFiles
+app.mount("/chat_images", StaticFiles(directory="chat_images"), name="chat_images")
 
 if __name__ == "__main__":
     import uvicorn

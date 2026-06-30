@@ -1,0 +1,183 @@
+{
+  "batchIndex": 2,
+  "files": [
+    {
+      "path": "app/api/auth.py",
+      "language": "python",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/api/documents.py",
+      "language": "python",
+      "sizeLines": 358,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/api/queries.py",
+      "language": "python",
+      "sizeLines": 1091,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/models/chat_models.py",
+      "language": "python",
+      "sizeLines": 309,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/services/auth_service.py",
+      "language": "python",
+      "sizeLines": 100,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/services/chat_history_manager.py",
+      "language": "python",
+      "sizeLines": 880,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/services/stt_service.py",
+      "language": "python",
+      "sizeLines": 392,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/services/tts_service.py",
+      "language": "python",
+      "sizeLines": 386,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "app/api/auth.py": [
+      "app/services/auth_service.py"
+    ],
+    "app/api/documents.py": [
+      "app/services/auth_service.py",
+      "app/services/document_service.py"
+    ],
+    "app/api/queries.py": [
+      "app/models/chat_models.py",
+      "app/services/auth_service.py",
+      "app/services/chat_history_manager.py",
+      "app/services/query_service.py",
+      "app/services/stt_service.py",
+      "app/services/tts_service.py"
+    ],
+    "app/models/chat_models.py": [],
+    "app/services/auth_service.py": [],
+    "app/services/chat_history_manager.py": [
+      "app/config.py",
+      "app/models/chat_models.py",
+      "app/services/llm_service.py"
+    ],
+    "app/services/stt_service.py": [
+      "app/config.py"
+    ],
+    "app/services/tts_service.py": [
+      "app/config.py"
+    ]
+  },
+  "neighborMap": {
+    "app/api/documents.py": [
+      {
+        "path": "app/services/document_service.py",
+        "batchIndex": 3,
+        "symbols": [
+          "classify_files",
+          "process_document_files",
+          "process_data_files",
+          "process_urls",
+          "DocumentService",
+          "get_document_service"
+        ]
+      }
+    ],
+    "app/api/queries.py": [
+      {
+        "path": "app/services/query_service.py",
+        "batchIndex": 4,
+        "symbols": [
+          "QueryService",
+          "get_query_service"
+        ]
+      }
+    ],
+    "app/services/chat_history_manager.py": [
+      {
+        "path": "app/config.py",
+        "batchIndex": 5,
+        "symbols": [
+          "BaseConfig",
+          "DevelopmentConfig",
+          "TestingConfig",
+          "ProductionConfig",
+          "ConfigFactory"
+        ]
+      },
+      {
+        "path": "app/services/llm_service.py",
+        "batchIndex": 1,
+        "symbols": [
+          "GPUServerChatModel",
+          "LLMType",
+          "_make_llm",
+          "get_fast_llm",
+          "get_standard_llm",
+          "get_comprehensive_llm",
+          "get_creative_llm",
+          "get_code_llm",
+          "get_streaming_llm"
+        ]
+      },
+      {
+        "path": "app/services/query_agent_service.py",
+        "batchIndex": 6,
+        "symbols": [
+          "QueryAgentService",
+          "get_query_agent_service"
+        ]
+      },
+      {
+        "path": "controllers/delete_session.py",
+        "batchIndex": 3,
+        "symbols": [
+          "delete_directory",
+          "delete_elastic_index",
+          "delete_chat_history",
+          "delete_session",
+          "delete_session_legacy",
+          "delete_session_original"
+        ]
+      }
+    ],
+    "app/services/stt_service.py": [
+      {
+        "path": "app/config.py",
+        "batchIndex": 5,
+        "symbols": [
+          "BaseConfig",
+          "DevelopmentConfig",
+          "TestingConfig",
+          "ProductionConfig",
+          "ConfigFactory"
+        ]
+      }
+    ],
+    "app/services/tts_service.py": [
+      {
+        "path": "app/config.py",
+        "batchIndex": 5,
+        "symbols": [
+          "BaseConfig",
+          "DevelopmentConfig",
+          "TestingConfig",
+          "ProductionConfig",
+          "ConfigFactory"
+        ]
+      }
+    ]
+  }
+}

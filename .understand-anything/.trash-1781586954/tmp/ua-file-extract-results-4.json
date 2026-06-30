@@ -1,0 +1,1825 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "app/api/accounts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 96,
+      "nonEmptyLines": 78,
+      "functions": [
+        {
+          "name": "update_payment",
+          "startLine": 22,
+          "endLine": 45,
+          "params": []
+        },
+        {
+          "name": "check_payment_status",
+          "startLine": 48,
+          "endLine": 70,
+          "params": []
+        },
+        {
+          "name": "login",
+          "startLine": 73,
+          "endLine": 96,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "update_payment",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "check_payment_status",
+          "line": 47,
+          "isDefault": false
+        },
+        {
+          "name": "login",
+          "line": 72,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "update_payment",
+          "callee": "request.get_json",
+          "lineNumber": 36
+        },
+        {
+          "caller": "update_payment",
+          "callee": "data.get",
+          "lineNumber": 37
+        },
+        {
+          "caller": "update_payment",
+          "callee": "int",
+          "lineNumber": 38
+        },
+        {
+          "caller": "update_payment",
+          "callee": "data.get",
+          "lineNumber": 38
+        },
+        {
+          "caller": "update_payment",
+          "callee": "logger.exception",
+          "lineNumber": 40
+        },
+        {
+          "caller": "update_payment",
+          "callee": "jsonify",
+          "lineNumber": 41
+        },
+        {
+          "caller": "update_payment",
+          "callee": "account_service.update_payment_plan",
+          "lineNumber": 44
+        },
+        {
+          "caller": "update_payment",
+          "callee": "jsonify",
+          "lineNumber": 45
+        },
+        {
+          "caller": "check_payment_status",
+          "callee": "request.get_json",
+          "lineNumber": 62
+        },
+        {
+          "caller": "check_payment_status",
+          "callee": "data.get",
+          "lineNumber": 63
+        },
+        {
+          "caller": "check_payment_status",
+          "callee": "logger.exception",
+          "lineNumber": 65
+        },
+        {
+          "caller": "check_payment_status",
+          "callee": "jsonify",
+          "lineNumber": 66
+        },
+        {
+          "caller": "check_payment_status",
+          "callee": "account_service.get_payment_status",
+          "lineNumber": 69
+        },
+        {
+          "caller": "check_payment_status",
+          "callee": "jsonify",
+          "lineNumber": 70
+        },
+        {
+          "caller": "login",
+          "callee": "request.get_json",
+          "lineNumber": 87
+        },
+        {
+          "caller": "login",
+          "callee": "data.get",
+          "lineNumber": 88
+        },
+        {
+          "caller": "login",
+          "callee": "data.get",
+          "lineNumber": 89
+        },
+        {
+          "caller": "login",
+          "callee": "logger.exception",
+          "lineNumber": 91
+        },
+        {
+          "caller": "login",
+          "callee": "jsonify",
+          "lineNumber": 92
+        },
+        {
+          "caller": "login",
+          "callee": "account_service.login",
+          "lineNumber": 95
+        },
+        {
+          "caller": "login",
+          "callee": "jsonify",
+          "lineNumber": 96
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "app/services/account_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 139,
+      "nonEmptyLines": 109,
+      "functions": [
+        {
+          "name": "get_account_service",
+          "startLine": 129,
+          "endLine": 139,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "AccountService",
+          "startLine": 15,
+          "endLine": 124,
+          "methods": [
+            "__init__",
+            "update_payment_plan",
+            "get_payment_status",
+            "login"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AccountService",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "get_account_service",
+          "line": 129,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 20
+        },
+        {
+          "caller": "update_payment_plan",
+          "callee": "logger.info",
+          "lineNumber": 38
+        },
+        {
+          "caller": "update_payment_plan",
+          "callee": "logger.warning",
+          "lineNumber": 42
+        },
+        {
+          "caller": "update_payment_plan",
+          "callee": "logger.warning",
+          "lineNumber": 47
+        },
+        {
+          "caller": "update_payment_plan",
+          "callee": "logger.info",
+          "lineNumber": 51
+        },
+        {
+          "caller": "update_payment_plan",
+          "callee": "upgrade_account",
+          "lineNumber": 55
+        },
+        {
+          "caller": "update_payment_plan",
+          "callee": "logger.info",
+          "lineNumber": 57
+        },
+        {
+          "caller": "update_payment_plan",
+          "callee": "logger.warning",
+          "lineNumber": 60
+        },
+        {
+          "caller": "update_payment_plan",
+          "callee": "logger.exception",
+          "lineNumber": 63
+        },
+        {
+          "caller": "get_payment_status",
+          "callee": "logger.info",
+          "lineNumber": 76
+        },
+        {
+          "caller": "get_payment_status",
+          "callee": "logger.warning",
+          "lineNumber": 79
+        },
+        {
+          "caller": "get_payment_status",
+          "callee": "get_account_status",
+          "lineNumber": 84
+        },
+        {
+          "caller": "get_payment_status",
+          "callee": "logger.info",
+          "lineNumber": 85
+        },
+        {
+          "caller": "get_payment_status",
+          "callee": "logger.exception",
+          "lineNumber": 87
+        },
+        {
+          "caller": "login",
+          "callee": "logger.info",
+          "lineNumber": 109
+        },
+        {
+          "caller": "login",
+          "callee": "logger.warning",
+          "lineNumber": 112
+        },
+        {
+          "caller": "login",
+          "callee": "logger.warning",
+          "lineNumber": 116
+        },
+        {
+          "caller": "login",
+          "callee": "validate_user",
+          "lineNumber": 119
+        },
+        {
+          "caller": "login",
+          "callee": "logger.warning",
+          "lineNumber": 122
+        },
+        {
+          "caller": "login",
+          "callee": "validated_user.get",
+          "lineNumber": 123
+        },
+        {
+          "caller": "get_account_service",
+          "callee": "AccountService",
+          "lineNumber": 138
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "app/services/query_service.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 296,
+      "nonEmptyLines": 248,
+      "functions": [
+        {
+          "name": "get_query_service",
+          "startLine": 286,
+          "endLine": 296,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "QueryService",
+          "startLine": 21,
+          "endLine": 280,
+          "methods": [
+            "__init__",
+            "process_trial_query",
+            "process_authenticated_query",
+            "process_demo_query",
+            "_extract_query_parameters"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "QueryService",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "get_query_service",
+          "line": 286,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 26
+        },
+        {
+          "caller": "__init__",
+          "callee": "input_guardrail_pipeline",
+          "lineNumber": 27
+        },
+        {
+          "caller": "__init__",
+          "callee": "get_query_agent_service",
+          "lineNumber": 28
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "time.time",
+          "lineNumber": 40
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.info",
+          "lineNumber": 41
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "data.get",
+          "lineNumber": 45
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.warning",
+          "lineNumber": 47
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "is_trial_limit_over",
+          "lineNumber": 50
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.info",
+          "lineNumber": 51
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.exception",
+          "lineNumber": 54
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "self._extract_query_parameters",
+          "lineNumber": 59
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.exception",
+          "lineNumber": 61
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "str",
+          "lineNumber": 62
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "self._guardrail.process_input",
+          "lineNumber": 66
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "guardrail_response.get",
+          "lineNumber": 67
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.warning",
+          "lineNumber": 68
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "guardrail_response.get",
+          "lineNumber": 72
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.info",
+          "lineNumber": 73
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.warning",
+          "lineNumber": 75
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.info",
+          "lineNumber": 79
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "self.query_agent.process_query",
+          "lineNumber": 83
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "data.get",
+          "lineNumber": 93
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "data.get",
+          "lineNumber": 94
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.exception",
+          "lineNumber": 98
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "logger.info",
+          "lineNumber": 101
+        },
+        {
+          "caller": "process_trial_query",
+          "callee": "time.time",
+          "lineNumber": 101
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "time.time",
+          "lineNumber": 118
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.info",
+          "lineNumber": 119
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "is_user_limit_over",
+          "lineNumber": 122
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.info",
+          "lineNumber": 123
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "self._extract_query_parameters",
+          "lineNumber": 128
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.exception",
+          "lineNumber": 130
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "str",
+          "lineNumber": 131
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "self._guardrail.process_input",
+          "lineNumber": 135
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "guardrail_response.get",
+          "lineNumber": 136
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.warning",
+          "lineNumber": 137
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "guardrail_response.get",
+          "lineNumber": 141
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.info",
+          "lineNumber": 142
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.warning",
+          "lineNumber": 144
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.info",
+          "lineNumber": 153
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "self.query_agent.process_no_context_query",
+          "lineNumber": 154
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.info",
+          "lineNumber": 162
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "self.query_agent.process_query",
+          "lineNumber": 163
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "data.get",
+          "lineNumber": 173
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "data.get",
+          "lineNumber": 174
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.info",
+          "lineNumber": 177
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.exception",
+          "lineNumber": 179
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "logger.info",
+          "lineNumber": 182
+        },
+        {
+          "caller": "process_authenticated_query",
+          "callee": "time.time",
+          "lineNumber": 182
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "time.time",
+          "lineNumber": 195
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "logger.info",
+          "lineNumber": 196
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "data.get",
+          "lineNumber": 200
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "logger.warning",
+          "lineNumber": 202
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "logger.exception",
+          "lineNumber": 205
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "str",
+          "lineNumber": 206
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "logger.info",
+          "lineNumber": 210
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "get_demo_response",
+          "lineNumber": 212
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "logger.exception",
+          "lineNumber": 214
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "logger.info",
+          "lineNumber": 217
+        },
+        {
+          "caller": "process_demo_query",
+          "callee": "time.time",
+          "lineNumber": 217
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 233
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "int",
+          "lineNumber": 237
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 237
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "int",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 238
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "logger.info",
+          "lineNumber": 240
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "logger.info",
+          "lineNumber": 246
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "user_query.split",
+          "lineNumber": 251
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "translate_to_english",
+          "lineNumber": 254
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "translate_to_english",
+          "lineNumber": 257
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "logger.info",
+          "lineNumber": 259
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "logger.error",
+          "lineNumber": 261
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 263
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 263
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 264
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 265
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 266
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 267
+        },
+        {
+          "caller": "_extract_query_parameters",
+          "callee": "data.get",
+          "lineNumber": 268
+        },
+        {
+          "caller": "get_query_service",
+          "callee": "QueryService",
+          "lineNumber": 295
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "controllers/database.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 405,
+      "nonEmptyLines": 324,
+      "functions": [
+        {
+          "name": "check_trial_status",
+          "startLine": 30,
+          "endLine": 55,
+          "params": [
+            "fingerprint"
+          ]
+        },
+        {
+          "name": "create_fingerprint_entry",
+          "startLine": 58,
+          "endLine": 78,
+          "params": [
+            "fingerprint"
+          ]
+        },
+        {
+          "name": "is_trial_limit_over",
+          "startLine": 81,
+          "endLine": 105,
+          "params": [
+            "fingerprint"
+          ]
+        },
+        {
+          "name": "is_user_limit_over",
+          "startLine": 108,
+          "endLine": 141,
+          "params": [
+            "session_name"
+          ]
+        },
+        {
+          "name": "upgrade_account",
+          "startLine": 144,
+          "endLine": 168,
+          "params": [
+            "email",
+            "plan_limit_days"
+          ]
+        },
+        {
+          "name": "get_account_status",
+          "startLine": 171,
+          "endLine": 197,
+          "params": [
+            "email"
+          ]
+        },
+        {
+          "name": "sha512",
+          "startLine": 199,
+          "endLine": 201,
+          "params": [
+            "password",
+            "salt"
+          ]
+        },
+        {
+          "name": "salt_hash_password",
+          "startLine": 203,
+          "endLine": 206,
+          "params": [
+            "user_password",
+            "secret"
+          ]
+        },
+        {
+          "name": "validate_user",
+          "startLine": 208,
+          "endLine": 238,
+          "params": [
+            "email",
+            "password"
+          ]
+        },
+        {
+          "name": "create_session",
+          "startLine": 240,
+          "endLine": 288,
+          "params": [
+            "email",
+            "session_id",
+            "files"
+          ]
+        },
+        {
+          "name": "add_files_to_session",
+          "startLine": 290,
+          "endLine": 303,
+          "params": [
+            "email",
+            "session_id",
+            "file_names"
+          ]
+        },
+        {
+          "name": "rename_session",
+          "startLine": 305,
+          "endLine": 331,
+          "params": [
+            "session_id",
+            "new_name"
+          ]
+        },
+        {
+          "name": "update_session_timestamp",
+          "startLine": 333,
+          "endLine": 362,
+          "params": [
+            "email",
+            "session_id"
+          ]
+        },
+        {
+          "name": "delete_session_from_db",
+          "startLine": 364,
+          "endLine": 383,
+          "params": [
+            "email",
+            "session_id"
+          ]
+        },
+        {
+          "name": "get_user_sessions",
+          "startLine": 385,
+          "endLine": 405,
+          "params": [
+            "email"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "check_trial_status",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "create_fingerprint_entry",
+          "line": 58,
+          "isDefault": false
+        },
+        {
+          "name": "is_trial_limit_over",
+          "line": 81,
+          "isDefault": false
+        },
+        {
+          "name": "is_user_limit_over",
+          "line": 108,
+          "isDefault": false
+        },
+        {
+          "name": "upgrade_account",
+          "line": 144,
+          "isDefault": false
+        },
+        {
+          "name": "get_account_status",
+          "line": 171,
+          "isDefault": false
+        },
+        {
+          "name": "sha512",
+          "line": 199,
+          "isDefault": false
+        },
+        {
+          "name": "salt_hash_password",
+          "line": 203,
+          "isDefault": false
+        },
+        {
+          "name": "validate_user",
+          "line": 208,
+          "isDefault": false
+        },
+        {
+          "name": "create_session",
+          "line": 240,
+          "isDefault": false
+        },
+        {
+          "name": "add_files_to_session",
+          "line": 290,
+          "isDefault": false
+        },
+        {
+          "name": "rename_session",
+          "line": 305,
+          "isDefault": false
+        },
+        {
+          "name": "update_session_timestamp",
+          "line": 333,
+          "isDefault": false
+        },
+        {
+          "name": "delete_session_from_db",
+          "line": 364,
+          "isDefault": false
+        },
+        {
+          "name": "get_user_sessions",
+          "line": 385,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "check_trial_status",
+          "callee": "str",
+          "lineNumber": 40
+        },
+        {
+          "caller": "check_trial_status",
+          "callee": "fingerprint_collection.find_one",
+          "lineNumber": 42
+        },
+        {
+          "caller": "check_trial_status",
+          "callee": "fingerprint_detail.get",
+          "lineNumber": 44
+        },
+        {
+          "caller": "check_trial_status",
+          "callee": "str",
+          "lineNumber": 49
+        },
+        {
+          "caller": "check_trial_status",
+          "callee": "fingerprint_collection.insert_one",
+          "lineNumber": 53
+        },
+        {
+          "caller": "create_fingerprint_entry",
+          "callee": "str",
+          "lineNumber": 66
+        },
+        {
+          "caller": "create_fingerprint_entry",
+          "callee": "fingerprint_collection.find_one",
+          "lineNumber": 69
+        },
+        {
+          "caller": "create_fingerprint_entry",
+          "callee": "fingerprint_collection.update_one",
+          "lineNumber": 71
+        },
+        {
+          "caller": "create_fingerprint_entry",
+          "callee": "fingerprint_collection.insert_one",
+          "lineNumber": 75
+        },
+        {
+          "caller": "create_fingerprint_entry",
+          "callee": "str",
+          "lineNumber": 76
+        },
+        {
+          "caller": "is_trial_limit_over",
+          "callee": "str",
+          "lineNumber": 92
+        },
+        {
+          "caller": "is_trial_limit_over",
+          "callee": "fingerprint_collection.find_one",
+          "lineNumber": 94
+        },
+        {
+          "caller": "is_trial_limit_over",
+          "callee": "fingerprint_detail.get",
+          "lineNumber": 96
+        },
+        {
+          "caller": "is_trial_limit_over",
+          "callee": "fingerprint_collection.update_one",
+          "lineNumber": 100
+        },
+        {
+          "caller": "is_user_limit_over",
+          "callee": "str",
+          "lineNumber": 118
+        },
+        {
+          "caller": "is_user_limit_over",
+          "callee": "collection.find_one",
+          "lineNumber": 119
+        },
+        {
+          "caller": "is_user_limit_over",
+          "callee": "user_details.get",
+          "lineNumber": 123
+        },
+        {
+          "caller": "is_user_limit_over",
+          "callee": "int",
+          "lineNumber": 124
+        },
+        {
+          "caller": "is_user_limit_over",
+          "callee": "user_details.get",
+          "lineNumber": 124
+        },
+        {
+          "caller": "is_user_limit_over",
+          "callee": "int",
+          "lineNumber": 130
+        },
+        {
+          "caller": "is_user_limit_over",
+          "callee": "user_details.get",
+          "lineNumber": 130
+        },
+        {
+          "caller": "is_user_limit_over",
+          "callee": "collection.update_one",
+          "lineNumber": 133
+        },
+        {
+          "caller": "is_user_limit_over",
+          "callee": "logging.info",
+          "lineNumber": 137
+        },
+        {
+          "caller": "upgrade_account",
+          "callee": "date.today",
+          "lineNumber": 156
+        },
+        {
+          "caller": "upgrade_account",
+          "callee": "timedelta",
+          "lineNumber": 156
+        },
+        {
+          "caller": "upgrade_account",
+          "callee": "int",
+          "lineNumber": 159
+        },
+        {
+          "caller": "upgrade_account",
+          "callee": "expiry_date.strftime",
+          "lineNumber": 159
+        },
+        {
+          "caller": "upgrade_account",
+          "callee": "logging.info",
+          "lineNumber": 160
+        },
+        {
+          "caller": "upgrade_account",
+          "callee": "collection.update_one",
+          "lineNumber": 163
+        },
+        {
+          "caller": "get_account_status",
+          "callee": "collection.find_one",
+          "lineNumber": 182
+        },
+        {
+          "caller": "get_account_status",
+          "callee": "user.get",
+          "lineNumber": 185
+        },
+        {
+          "caller": "get_account_status",
+          "callee": "user.get",
+          "lineNumber": 186
+        },
+        {
+          "caller": "get_account_status",
+          "callee": "str",
+          "lineNumber": 188
+        },
+        {
+          "caller": "get_account_status",
+          "callee": "datetime.strptime(expiry_date_str, \"%Y%m%d\").date",
+          "lineNumber": 189
+        },
+        {
+          "caller": "get_account_status",
+          "callee": "datetime.strptime",
+          "lineNumber": 189
+        },
+        {
+          "caller": "get_account_status",
+          "callee": "date.today",
+          "lineNumber": 190
+        },
+        {
+          "caller": "get_account_status",
+          "callee": "logging.info",
+          "lineNumber": 191
+        },
+        {
+          "caller": "sha512",
+          "callee": "hmac.new",
+          "lineNumber": 200
+        },
+        {
+          "caller": "sha512",
+          "callee": "salt.encode",
+          "lineNumber": 200
+        },
+        {
+          "caller": "sha512",
+          "callee": "password.encode",
+          "lineNumber": 200
+        },
+        {
+          "caller": "sha512",
+          "callee": "hash_obj.hexdigest",
+          "lineNumber": 201
+        },
+        {
+          "caller": "salt_hash_password",
+          "callee": "sha512",
+          "lineNumber": 204
+        },
+        {
+          "caller": "salt_hash_password",
+          "callee": "logging.info",
+          "lineNumber": 205
+        },
+        {
+          "caller": "validate_user",
+          "callee": "collection.find_one",
+          "lineNumber": 218
+        },
+        {
+          "caller": "validate_user",
+          "callee": "user.get",
+          "lineNumber": 224
+        },
+        {
+          "caller": "validate_user",
+          "callee": "salt_hash_password",
+          "lineNumber": 225
+        },
+        {
+          "caller": "validate_user",
+          "callee": "logging.info",
+          "lineNumber": 226
+        },
+        {
+          "caller": "validate_user",
+          "callee": "jwt.encode",
+          "lineNumber": 229
+        },
+        {
+          "caller": "validate_user",
+          "callee": "user.get",
+          "lineNumber": 234
+        },
+        {
+          "caller": "validate_user",
+          "callee": "logging.exception",
+          "lineNumber": 237
+        },
+        {
+          "caller": "create_session",
+          "callee": "collection.find_one",
+          "lineNumber": 256
+        },
+        {
+          "caller": "create_session",
+          "callee": "len",
+          "lineNumber": 257
+        },
+        {
+          "caller": "create_session",
+          "callee": "user_doc.get",
+          "lineNumber": 257
+        },
+        {
+          "caller": "create_session",
+          "callee": "datetime.now(timezone.utc).isoformat",
+          "lineNumber": 267
+        },
+        {
+          "caller": "create_session",
+          "callee": "datetime.now",
+          "lineNumber": 267
+        },
+        {
+          "caller": "create_session",
+          "callee": "logging.info",
+          "lineNumber": 270
+        },
+        {
+          "caller": "create_session",
+          "callee": "collection.update_one",
+          "lineNumber": 273
+        },
+        {
+          "caller": "create_session",
+          "callee": "logging.info",
+          "lineNumber": 280
+        },
+        {
+          "caller": "create_session",
+          "callee": "logging.info",
+          "lineNumber": 282
+        },
+        {
+          "caller": "create_session",
+          "callee": "logging.error",
+          "lineNumber": 287
+        },
+        {
+          "caller": "add_files_to_session",
+          "callee": "db.sessions.update_one",
+          "lineNumber": 292
+        },
+        {
+          "caller": "add_files_to_session",
+          "callee": "logging.warning",
+          "lineNumber": 297
+        },
+        {
+          "caller": "add_files_to_session",
+          "callee": "logging.info",
+          "lineNumber": 299
+        },
+        {
+          "caller": "add_files_to_session",
+          "callee": "len",
+          "lineNumber": 299
+        },
+        {
+          "caller": "add_files_to_session",
+          "callee": "logging.error",
+          "lineNumber": 302
+        },
+        {
+          "caller": "rename_session",
+          "callee": "db.sessions.update_one",
+          "lineNumber": 317
+        },
+        {
+          "caller": "rename_session",
+          "callee": "logging.warning",
+          "lineNumber": 323
+        },
+        {
+          "caller": "rename_session",
+          "callee": "logging.info",
+          "lineNumber": 326
+        },
+        {
+          "caller": "rename_session",
+          "callee": "logging.error",
+          "lineNumber": 330
+        },
+        {
+          "caller": "update_session_timestamp",
+          "callee": "datetime.now(timezone.utc).strftime",
+          "lineNumber": 346
+        },
+        {
+          "caller": "update_session_timestamp",
+          "callee": "datetime.now",
+          "lineNumber": 346
+        },
+        {
+          "caller": "update_session_timestamp",
+          "callee": "db.sessions.update_one",
+          "lineNumber": 348
+        },
+        {
+          "caller": "update_session_timestamp",
+          "callee": "logging.warning",
+          "lineNumber": 354
+        },
+        {
+          "caller": "update_session_timestamp",
+          "callee": "logging.info",
+          "lineNumber": 357
+        },
+        {
+          "caller": "update_session_timestamp",
+          "callee": "logging.error",
+          "lineNumber": 361
+        },
+        {
+          "caller": "delete_session_from_db",
+          "callee": "db.sessions.update_one",
+          "lineNumber": 376
+        },
+        {
+          "caller": "delete_session_from_db",
+          "callee": "logging.error",
+          "lineNumber": 382
+        },
+        {
+          "caller": "get_user_sessions",
+          "callee": "db.sessions.find_one",
+          "lineNumber": 395
+        },
+        {
+          "caller": "get_user_sessions",
+          "callee": "isinstance",
+          "lineNumber": 397
+        },
+        {
+          "caller": "get_user_sessions",
+          "callee": "str",
+          "lineNumber": 398
+        },
+        {
+          "caller": "get_user_sessions",
+          "callee": "user_sessions[\"sessions\"].sort",
+          "lineNumber": 399
+        },
+        {
+          "caller": "get_user_sessions",
+          "callee": "s.get",
+          "lineNumber": 399
+        },
+        {
+          "caller": "get_user_sessions",
+          "callee": "logging.error",
+          "lineNumber": 404
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 15,
+        "functionCount": 15,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "utils/guardrails.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 405,
+      "nonEmptyLines": 325,
+      "functions": [
+        {
+          "name": "create_sanitizer",
+          "startLine": 319,
+          "endLine": 331,
+          "params": [
+            "escape_chars",
+            "remove_pattern"
+          ]
+        },
+        {
+          "name": "create_pattern_checker",
+          "startLine": 334,
+          "endLine": 350,
+          "params": [
+            "patterns",
+            "case_sensitive"
+          ]
+        },
+        {
+          "name": "create_llm_classifier",
+          "startLine": 353,
+          "endLine": 363,
+          "params": [
+            "prompt"
+          ]
+        },
+        {
+          "name": "input_guardrail_pipeline",
+          "startLine": 366,
+          "endLine": 381,
+          "params": []
+        },
+        {
+          "name": "create_custom_pipeline",
+          "startLine": 384,
+          "endLine": 405,
+          "params": [
+            "sanitizer",
+            "pattern_checker",
+            "llm_classifier",
+            "custom_handlers"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "InputSanitizer",
+          "startLine": 21,
+          "endLine": 62,
+          "methods": [
+            "__init__",
+            "sanitize"
+          ],
+          "properties": []
+        },
+        {
+          "name": "MaliciousPatternChecker",
+          "startLine": 65,
+          "endLine": 142,
+          "methods": [
+            "__init__",
+            "_sanitize_and_wrap",
+            "contains_malicious_pattern",
+            "get_matching_patterns"
+          ],
+          "properties": []
+        },
+        {
+          "name": "LLMClassifier",
+          "startLine": 145,
+          "endLine": 195,
+          "methods": [
+            "__init__",
+            "_call_llm",
+            "classify"
+          ],
+          "properties": []
+        },
+        {
+          "name": "SecurityPipeline",
+          "startLine": 202,
+          "endLine": 271,
+          "methods": [
+            "__init__",
+            "process_input"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "InputSanitizer",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "MaliciousPatternChecker",
+          "line": 65,
+          "isDefault": false
+        },
+        {
+          "name": "LLMClassifier",
+          "line": 145,
+          "isDefault": false
+        },
+        {
+          "name": "SecurityPipeline",
+          "line": 202,
+          "isDefault": false
+        },
+        {
+          "name": "create_sanitizer",
+          "line": 319,
+          "isDefault": false
+        },
+        {
+          "name": "create_pattern_checker",
+          "line": 334,
+          "isDefault": false
+        },
+        {
+          "name": "create_llm_classifier",
+          "line": 353,
+          "isDefault": false
+        },
+        {
+          "name": "input_guardrail_pipeline",
+          "line": 366,
+          "isDefault": false
+        },
+        {
+          "name": "create_custom_pipeline",
+          "line": 384,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "re.compile",
+          "lineNumber": 38
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.debug",
+          "lineNumber": 39
+        },
+        {
+          "caller": "sanitize",
+          "callee": "self.escape_chars.items",
+          "lineNumber": 52
+        },
+        {
+          "caller": "sanitize",
+          "callee": "text.replace",
+          "lineNumber": 53
+        },
+        {
+          "caller": "sanitize",
+          "callee": "self.remove_regex.sub",
+          "lineNumber": 56
+        },
+        {
+          "caller": "sanitize",
+          "callee": "len",
+          "lineNumber": 59
+        },
+        {
+          "caller": "sanitize",
+          "callee": "len",
+          "lineNumber": 59
+        },
+        {
+          "caller": "sanitize",
+          "callee": "logger.warning",
+          "lineNumber": 60
+        },
+        {
+          "caller": "__init__",
+          "callee": "isinstance",
+          "lineNumber": 88
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.compiled_patterns.append",
+          "lineNumber": 90
+        },
+        {
+          "caller": "__init__",
+          "callee": "self._sanitize_and_wrap",
+          "lineNumber": 93
+        },
+        {
+          "caller": "__init__",
+          "callee": "self.compiled_patterns.append",
+          "lineNumber": 94
+        },
+        {
+          "caller": "__init__",
+          "callee": "re.compile",
+          "lineNumber": 95
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.debug",
+          "lineNumber": 98
+        },
+        {
+          "caller": "__init__",
+          "callee": "len",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_sanitize_and_wrap",
+          "callee": "pattern.startswith",
+          "lineNumber": 111
+        },
+        {
+          "caller": "contains_malicious_pattern",
+          "callee": "enumerate",
+          "lineNumber": 125
+        },
+        {
+          "caller": "contains_malicious_pattern",
+          "callee": "pattern.search",
+          "lineNumber": 126
+        },
+        {
+          "caller": "contains_malicious_pattern",
+          "callee": "logger.warning",
+          "lineNumber": 127
+        },
+        {
+          "caller": "get_matching_patterns",
+          "callee": "enumerate",
+          "lineNumber": 141
+        },
+        {
+          "caller": "get_matching_patterns",
+          "callee": "pattern.search",
+          "lineNumber": 142
+        },
+        {
+          "caller": "__init__",
+          "callee": "get_fast_llm",
+          "lineNumber": 158
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.debug",
+          "lineNumber": 159
+        },
+        {
+          "caller": "_call_llm",
+          "callee": "self.llm.invoke",
+          "lineNumber": 172
+        },
+        {
+          "caller": "_call_llm",
+          "callee": "logger.error",
+          "lineNumber": 175
+        },
+        {
+          "caller": "classify",
+          "callee": "self.validation_prompt.format",
+          "lineNumber": 188
+        },
+        {
+          "caller": "classify",
+          "callee": "self._call_llm(prompt).strip().upper",
+          "lineNumber": 189
+        },
+        {
+          "caller": "classify",
+          "callee": "self._call_llm(prompt).strip",
+          "lineNumber": 189
+        },
+        {
+          "caller": "classify",
+          "callee": "self._call_llm",
+          "lineNumber": 189
+        },
+        {
+          "caller": "classify",
+          "callee": "logger.warning",
+          "lineNumber": 193
+        },
+        {
+          "caller": "__init__",
+          "callee": "logger.info",
+          "lineNumber": 226
+        },
+        {
+          "caller": "process_input",
+          "callee": "handler",
+          "lineNumber": 240
+        },
+        {
+          "caller": "process_input",
+          "callee": "result.get",
+          "lineNumber": 241
+        },
+        {
+          "caller": "process_input",
+          "callee": "logger.info",
+          "lineNumber": 242
+        },
+        {
+          "caller": "process_input",
+          "callee": "self.sanitizer.sanitize",
+          "lineNumber": 246
+        },
+        {
+          "caller": "process_input",
+          "callee": "self.pattern_checker.contains_malicious_pattern",
+          "lineNumber": 249
+        },
+        {
+          "caller": "process_input",
+          "callee": "logger.info",
+          "lineNumber": 250
+        },
+        {
+          "caller": "process_input",
+          "callee": "self.llm_classifier.classify",
+          "lineNumber": 254
+        },
+        {
+          "caller": "process_input",
+          "callee": "logger.info",
+          "lineNumber": 255
+        },
+        {
+          "caller": "process_input",
+          "callee": "len",
+          "lineNumber": 259
+        },
+        {
+          "caller": "process_input",
+          "callee": "logger.info",
+          "lineNumber": 262
+        },
+        {
+          "caller": "process_input",
+          "callee": "logger.info",
+          "lineNumber": 266
+        },
+        {
+          "caller": "create_sanitizer",
+          "callee": "InputSanitizer",
+          "lineNumber": 331
+        },
+        {
+          "caller": "create_pattern_checker",
+          "callee": "MaliciousPatternChecker",
+          "lineNumber": 346
+        },
+        {
+          "caller": "create_llm_classifier",
+          "callee": "LLMClassifier",
+          "lineNumber": 363
+        },
+        {
+          "caller": "input_guardrail_pipeline",
+          "callee": "create_sanitizer",
+          "lineNumber": 373
+        },
+        {
+          "caller": "input_guardrail_pipeline",
+          "callee": "create_pattern_checker",
+          "lineNumber": 374
+        },
+        {
+          "caller": "input_guardrail_pipeline",
+          "callee": "create_llm_classifier",
+          "lineNumber": 375
+        },
+        {
+          "caller": "input_guardrail_pipeline",
+          "callee": "SecurityPipeline",
+          "lineNumber": 377
+        },
+        {
+          "caller": "create_custom_pipeline",
+          "callee": "SecurityPipeline",
+          "lineNumber": 400
+        },
+        {
+          "caller": "create_custom_pipeline",
+          "callee": "create_sanitizer",
+          "lineNumber": 401
+        },
+        {
+          "caller": "create_custom_pipeline",
+          "callee": "create_pattern_checker",
+          "lineNumber": 402
+        },
+        {
+          "caller": "create_custom_pipeline",
+          "callee": "create_llm_classifier",
+          "lineNumber": 403
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 9,
+        "functionCount": 5,
+        "classCount": 4
+      }
+    }
+  ]
+}

@@ -7,11 +7,12 @@ Updated to use the agent-based approach for more efficient and modular processin
 
 import logging
 import time
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Optional, Tuple
 
 from app.services.query_agent_service import get_query_agent_service
 from controllers.database import is_user_limit_over, is_trial_limit_over
 from utils.guardrails import input_guardrail_pipeline
+from utils.translation import translate_to_english
 from controllers.ask import get_demo_response
 
 # Configure logging
@@ -60,6 +61,12 @@ class QueryService:
             logger.exception(f'Invalid request format: {e}')
             return {'message': str(e)}, 400
         
+        # Translate Indic input to English for RAG, preserving the original
+        original_message = user_query["message"]
+        user_query["message"] = self._translate_input_to_english(
+            user_query["message"], user_query["input_language"]
+        )
+        
         # Apply guardrails
         try:
             guardrail_response = self._guardrail.process_input(user_query["message"])
@@ -93,6 +100,9 @@ class QueryService:
             logger.exception(f'Error processing query with agent: {e}')
             return {'message': 'Error generating response'}, 500
 
+        # Attach original Indic text so the frontend/TTS can use it
+        response["original_message"] = original_message
+
         logger.info('--- %s seconds to complete query response ---' % (time.time() - start_time))
         return response, 200
     
@@ -124,6 +134,12 @@ class QueryService:
         except Exception as e:
             logger.exception(f'Invalid request format: {e}')
             return {'message': str(e)}, 400
+        
+        # Translate Indic input to English for RAG, preserving the original
+        original_message = user_query["message"]
+        user_query["message"] = self._translate_input_to_english(
+            user_query["message"], user_query["input_language"]
+        )
         
         # Apply guardrails
         try:
@@ -164,13 +180,18 @@ class QueryService:
                     user_query["hascsvxl"],
                     user_query["mode"],
                     is_trial=False,
-                    chat_id=chat_id
+                    chat_id=chat_id,
+                    image_url=user_query.get("image_url"),
+                    image_caption=user_query.get("image_caption")
                 )
 
                 logger.info(f"RESPNSE answer: {response['answer']}")
         except Exception as e:
             logger.exception(f'Error processing query with agent: {e}')
             return {'message': 'Error generating response'}, 500
+
+        # Attach original Indic text so the frontend/TTS can use it
+        response["original_message"] = original_message
 
         logger.info('--- %s seconds to complete query response ---' % (time.time() - start_time))
         return response, 200
@@ -224,7 +245,7 @@ class QueryService:
             ValueError: If required parameters are missing
         """
         user_query = data.get('message')
-        if not user_query:
+        if user_query is None or (not user_query and not data.get('image_url')):
             raise ValueError("Query message is missing")
             
         input_language = int(data.get('inputLanguage', 23))
@@ -245,8 +266,37 @@ class QueryService:
             "mode": mode,
             "filenames": filenames,
             "chat_id": chat_id,
-            "session_id": session_id
+            "session_id": session_id,
+            "image_url": data.get("image_url"),
+            "image_caption": data.get("image_caption")
         }
+
+    # Language code → name map (same as QueryAgentService._get_language)
+    LANGUAGE_MAP = {
+        1: "Hindi", 2: "Gom", 3: "Kannada", 4: "Dogri", 5: "Bodo",
+        6: "Urdu", 7: "Tamil", 8: "Kashmiri", 9: "Assamese", 10: "Bengali",
+        11: "Marathi", 12: "Sindhi", 13: "Maithili", 14: "Punjabi", 15: "Malayalam",
+        16: "Manipuri", 17: "Telugu", 18: "Sanskrit", 19: "Nepali", 20: "Santali",
+        21: "Gujarati", 22: "Odia", 23: "English"
+    }
+
+    def _translate_input_to_english(self, message: str, input_language: int) -> str:
+        """
+        Translate an Indic-language input query to English so that
+        RAG retrieval (which indexes English documents) works correctly.
+
+        Returns the message unchanged if the input language is already English
+        or if translation fails (falls back gracefully).
+        """
+        language_name = self.LANGUAGE_MAP.get(input_language, "English")
+        if language_name == "English":
+            return message
+
+        logger.info(f"Translating input from {language_name} to English for RAG")
+        translated = translate_to_english(message, language_name)
+        logger.info(f"Translated query: {translated}")
+        return translated
+
 
 # Create a singleton instance
 _query_service = None

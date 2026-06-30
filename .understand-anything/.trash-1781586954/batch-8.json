@@ -1,0 +1,84 @@
+{
+  "nodes": [
+    {
+      "id": "config:.env.example",
+      "type": "config",
+      "name": ".env.example",
+      "filePath": ".env.example",
+      "summary": "Template listing all environment variables required to run icarKno, covering Elasticsearch, AI provider keys (Gemini, Mistral OCR, OpenAI), MongoDB/MySQL/Neo4j credentials, Bhashini and ElevenLabs speech keys, and GPU inference server settings.",
+      "tags": ["configuration", "environment-variables", "secrets-template", "deployment"],
+      "complexity": "simple",
+      "languageNotes": "Defines 24 environment variables spanning vector search, multiple LLM/translation providers, three database backends, and a self-hosted GPU inference server, reflecting the platform's multi-provider AI architecture."
+    },
+    {
+      "id": "document:api-documentation.md",
+      "type": "document",
+      "name": "api-documentation.md",
+      "filePath": "api-documentation.md",
+      "summary": "Comprehensive REST API reference for icarKno covering authentication, rate limits, document upload/session management, query and streaming endpoints, knowledge graph generation, payment/account management, multi-language translation, health checks, WhatsApp webhook integration, error handling, and example workflows with a Python SDK sample.",
+      "tags": ["documentation", "api-schema", "rest-api", "reference"],
+      "complexity": "complex",
+      "languageNotes": "Organized into 74 sections/subsections by feature area (documents, query, knowledge graphs, account, multi-language, utility, WhatsApp), each typically documenting request parameters and JSON response shapes."
+    },
+    {
+      "id": "document:readme.md",
+      "type": "document",
+      "name": "readme.md",
+      "filePath": "readme.md",
+      "summary": "Top-level project README for icarKno, a document intelligence platform; describes features (document processing, hybrid search, AI capabilities, multi-language support), quick start/installation, usage examples, architecture diagram, project structure, configuration, deployment via Docker, and contribution guidelines.",
+      "tags": ["documentation", "entry-point", "overview", "architecture"],
+      "complexity": "moderate",
+      "languageNotes": "Includes an ASCII architecture diagram showing Client Apps -> Flask API -> AI Services with a shared Data Layer (Elasticsearch, MongoDB, MySQL, Neo4j), and a project structure tree referencing app/, controllers/, elastic/, utils/, webhook/, and run.py."
+    },
+    {
+      "id": "document:requirements.txt",
+      "type": "document",
+      "name": "requirements.txt",
+      "filePath": "requirements.txt",
+      "summary": "Python dependency manifest pinning versions for the Flask/FastAPI web layer, document processing libraries, LangChain/Elasticsearch vector search stack, Hugging Face transformers and summarization models, multi-database clients (MongoDB, MySQL/SQLAlchemy), authentication, and web scraping utilities.",
+      "tags": ["dependency-manifest", "build-system", "python", "configuration"],
+      "complexity": "moderate",
+      "languageNotes": "Groups dependencies by concern (Web Framework, Document Processing, Vector Store and Embedding, AI Services, Database, Authentication, Utilities) and flags a known compatibility risk between bert-extractive-summarizer and torch/transformers versions via an inline comment."
+    },
+    {
+      "id": "table:results.csv",
+      "type": "table",
+      "name": "results.csv",
+      "filePath": "results.csv",
+      "summary": "Benchmark/test results dataset capturing query latency and quality metrics for the document Q&A pipeline, recording per-user-ID question, HTTP status code, total response time, time-to-first-byte, answer length, estimated tokens/sec, an answer preview, error text, and a success flag.",
+      "tags": ["database", "test-data", "benchmark", "performance"],
+      "complexity": "moderate",
+      "languageNotes": "Tabular load-test/evaluation output (170 rows) used to assess query response latency (TTFB up to ~120s observed) and answer quality of the RAG query endpoint described in api-documentation.md."
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:readme.md",
+      "target": "config:.env.example",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:readme.md",
+      "target": "document:requirements.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:readme.md",
+      "target": "document:api-documentation.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:api-documentation.md",
+      "target": "table:results.csv",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

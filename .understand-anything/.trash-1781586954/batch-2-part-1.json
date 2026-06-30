@@ -1,0 +1,1338 @@
+{
+  "nodes": [
+    {
+      "id": "file:app/api/auth.py",
+      "type": "file",
+      "name": "auth.py",
+      "filePath": "app/api/auth.py",
+      "summary": "Flask blueprint defining authentication-related API routes; currently exposes only a simple health check endpoint while real auth logic lives in auth_service.",
+      "tags": [
+        "api-handler",
+        "entry-point",
+        "health-check",
+        "blueprint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/auth.py:healthcheck",
+      "type": "function",
+      "name": "healthcheck",
+      "filePath": "app/api/auth.py",
+      "lineRange": [
+        23,
+        30
+      ],
+      "summary": "Health check route handler that returns a JSON status message confirming the app is running.",
+      "tags": [
+        "api-handler",
+        "health-check"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/documents.py",
+      "type": "file",
+      "name": "documents.py",
+      "filePath": "app/api/documents.py",
+      "summary": "Flask blueprint exposing document and container management routes: free-trial uploads, authenticated file/URL uploads, file retrieval, container renaming, listing, and deletion.",
+      "tags": [
+        "api-handler",
+        "document-management",
+        "blueprint",
+        "file-upload"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/api/documents.py:free_trial",
+      "type": "function",
+      "name": "free_trial",
+      "filePath": "app/api/documents.py",
+      "lineRange": [
+        30,
+        88
+      ],
+      "summary": "Unauthenticated trial endpoint that accepts files and URLs, validates them, and forwards processing to the document service.",
+      "tags": [
+        "api-handler",
+        "file-upload",
+        "trial"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/documents.py:upload",
+      "type": "function",
+      "name": "upload",
+      "filePath": "app/api/documents.py",
+      "lineRange": [
+        95,
+        146
+      ],
+      "summary": "Authenticated endpoint that creates a new container/session and uploads files and URLs into it via the document service.",
+      "tags": [
+        "api-handler",
+        "file-upload",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/documents.py:add_upload",
+      "type": "function",
+      "name": "add_upload",
+      "filePath": "app/api/documents.py",
+      "lineRange": [
+        149,
+        200
+      ],
+      "summary": "Authenticated endpoint that adds additional files/URLs to an existing document container/session.",
+      "tags": [
+        "api-handler",
+        "file-upload",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/documents.py:fetch_file",
+      "type": "function",
+      "name": "fetch_file",
+      "filePath": "app/api/documents.py",
+      "lineRange": [
+        203,
+        250
+      ],
+      "summary": "Authenticated endpoint that resolves a stored file's path via the document service and streams it back to the client.",
+      "tags": [
+        "api-handler",
+        "file-download",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/documents.py:update_timestamp",
+      "type": "function",
+      "name": "update_timestamp",
+      "filePath": "app/api/documents.py",
+      "lineRange": [
+        253,
+        278
+      ],
+      "summary": "Authenticated endpoint that updates the last-activity timestamp of a document container/session.",
+      "tags": [
+        "api-handler",
+        "authentication",
+        "session-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/documents.py:rename_container_route",
+      "type": "function",
+      "name": "rename_container_route",
+      "filePath": "app/api/documents.py",
+      "lineRange": [
+        281,
+        309
+      ],
+      "summary": "Authenticated endpoint that renames a document container via the document service.",
+      "tags": [
+        "api-handler",
+        "authentication",
+        "session-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/documents.py:get_containers",
+      "type": "function",
+      "name": "get_containers",
+      "filePath": "app/api/documents.py",
+      "lineRange": [
+        312,
+        331
+      ],
+      "summary": "Authenticated endpoint that lists all document containers/sessions belonging to a user.",
+      "tags": [
+        "api-handler",
+        "authentication",
+        "session-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/documents.py:delete_container_route",
+      "type": "function",
+      "name": "delete_container_route",
+      "filePath": "app/api/documents.py",
+      "lineRange": [
+        334,
+        359
+      ],
+      "summary": "Authenticated endpoint that deletes a document container/session via the document service.",
+      "tags": [
+        "api-handler",
+        "authentication",
+        "session-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:app/api/queries.py",
+      "type": "file",
+      "name": "queries.py",
+      "filePath": "app/api/queries.py",
+      "summary": "Large Flask blueprint that powers the query/chat experience: image captioning, trial and authenticated Q&A (sync and streaming), text-to-speech responses, speech-to-text transcription, chat history retrieval, renaming, stats, clearing, notes, demo queries, and chat context analysis.",
+      "tags": [
+        "api-handler",
+        "blueprint",
+        "chat",
+        "streaming",
+        "voice"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Uses Flask's stream_with_context with a generator to implement server-sent JSON streaming for both chat answers and TTS audio output."
+    },
+    {
+      "id": "function:app/api/queries.py:get_limiter",
+      "type": "function",
+      "name": "get_limiter",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        34,
+        35
+      ],
+      "summary": "Retrieves the Flask-Limiter extension instance from the current app context for rate limiting routes.",
+      "tags": [
+        "utility",
+        "rate-limiting"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/queries.py:get_image_caption",
+      "type": "function",
+      "name": "get_image_caption",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        53,
+        87
+      ],
+      "summary": "Encodes an image file as base64 and posts it to an external captioning service to obtain a descriptive caption.",
+      "tags": [
+        "utility",
+        "image-processing",
+        "external-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/queries.py:trial_ask",
+      "type": "function",
+      "name": "trial_ask",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        95,
+        125
+      ],
+      "summary": "Rate-limited trial endpoint accepting an optional image and query, delegating answer generation to the query service for unauthenticated users.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "trial",
+        "rate-limiting"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/queries.py:ask",
+      "type": "function",
+      "name": "ask",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        132,
+        233
+      ],
+      "summary": "Primary authenticated chat endpoint that accepts text and optional images, authenticates the session, and returns an answer via the query service.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication",
+        "image-processing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/api/queries.py:ask_stream",
+      "type": "function",
+      "name": "ask_stream",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        236,
+        319
+      ],
+      "summary": "Authenticated streaming chat endpoint that uses guardrails, chat context, and a creative reasoning service to stream JSON-chunked answers back to the client.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "streaming",
+        "authentication"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/api/queries.py:ask_tts",
+      "type": "function",
+      "name": "ask_tts",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        322,
+        446
+      ],
+      "summary": "Authenticated endpoint that answers a query via the query service and then streams the answer as synthesized speech audio using the TTS service.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "tts",
+        "streaming",
+        "authentication"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/api/queries.py:synthesize",
+      "type": "function",
+      "name": "synthesize",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        449,
+        517
+      ],
+      "summary": "Rate-limited, authenticated endpoint that converts arbitrary input text directly into streamed synthesized speech audio.",
+      "tags": [
+        "api-handler",
+        "tts",
+        "streaming",
+        "authentication",
+        "rate-limiting"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/queries.py:tts_health",
+      "type": "function",
+      "name": "tts_health",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        520,
+        550
+      ],
+      "summary": "Authenticated health check endpoint that verifies connectivity to the text-to-speech backend service.",
+      "tags": [
+        "api-handler",
+        "health-check",
+        "tts",
+        "authentication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/queries.py:stt_transcribe",
+      "type": "function",
+      "name": "stt_transcribe",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        558,
+        611
+      ],
+      "summary": "Authenticated endpoint that accepts an uploaded audio file and returns its transcription via the speech-to-text service.",
+      "tags": [
+        "api-handler",
+        "stt",
+        "authentication",
+        "file-upload"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/queries.py:stt_health",
+      "type": "function",
+      "name": "stt_health",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        615,
+        644
+      ],
+      "summary": "Authenticated health check endpoint that verifies connectivity to the speech-to-text backend service.",
+      "tags": [
+        "api-handler",
+        "health-check",
+        "stt",
+        "authentication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/queries.py:toggle_note",
+      "type": "function",
+      "name": "toggle_note",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        652,
+        696
+      ],
+      "summary": "Authenticated endpoint that toggles the saved-note flag on a specific chat message via the chat history manager.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/queries.py:list_notes",
+      "type": "function",
+      "name": "list_notes",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        699,
+        726
+      ],
+      "summary": "Authenticated endpoint that lists all messages a user has flagged as saved notes for a session.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/queries.py:get_chat_history",
+      "type": "function",
+      "name": "get_chat_history",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        733,
+        823
+      ],
+      "summary": "Authenticated endpoint that retrieves (and lazily creates) a chat's message history with pagination, generating default chat names as needed.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication",
+        "pagination"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:app/api/queries.py:list_chats",
+      "type": "function",
+      "name": "list_chats",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        826,
+        853
+      ],
+      "summary": "Authenticated endpoint that lists all chat sessions belonging to a user via the chat history manager.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/queries.py:rename_chat",
+      "type": "function",
+      "name": "rename_chat",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        856,
+        905
+      ],
+      "summary": "Authenticated endpoint that renames a specific chat session via the chat history manager.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/queries.py:get_chat_history_stats",
+      "type": "function",
+      "name": "get_chat_history_stats",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        908,
+        938
+      ],
+      "summary": "Authenticated endpoint returning aggregate statistics about a user's chat session history.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication",
+        "analytics"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/queries.py:clear_chat_history",
+      "type": "function",
+      "name": "clear_chat_history",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        941,
+        987
+      ],
+      "summary": "Authenticated endpoint that deletes a single chat session's history via the chat history manager.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/queries.py:clear_all_chats",
+      "type": "function",
+      "name": "clear_all_chats",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        990,
+        1025
+      ],
+      "summary": "Authenticated endpoint that deletes all chat sessions for a given user/session via the chat history manager.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app/api/queries.py:demo",
+      "type": "function",
+      "name": "demo",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        1032,
+        1039
+      ],
+      "summary": "Rate-limited demo endpoint that delegates query processing to the query service's demo query flow.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "rate-limiting",
+        "demo"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:app/api/queries.py:analyze_chat_context",
+      "type": "function",
+      "name": "analyze_chat_context",
+      "filePath": "app/api/queries.py",
+      "lineRange": [
+        1046,
+        1092
+      ],
+      "summary": "Authenticated endpoint that analyzes whether a new query needs prior chat context, using session stats and a chat context detection service.",
+      "tags": [
+        "api-handler",
+        "chat",
+        "authentication",
+        "context-analysis"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:app/models/chat_models.py",
+      "type": "file",
+      "name": "chat_models.py",
+      "filePath": "app/models/chat_models.py",
+      "summary": "Defines the core data model classes for the chat subsystem: query/role enums, chat messages, chat sessions, and chat context, including serialization to and from dictionaries.",
+      "tags": [
+        "data-model",
+        "serialization",
+        "chat"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:app/models/chat_models.py:QueryType",
+      "type": "class",
+      "name": "QueryType",
+      "filePath": "app/models/chat_models.py",
+      "lineRange": [
+        16,
+        23
+      ],
+      "summary": "Enumeration of supported chat query categories used to classify and route messages.",
+      "tags": [
+        "data-model",
+        "enum"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/models/chat_models.py:MessageRole",
+      "type": "class",
+      "name": "MessageRole",
+      "filePath": "app/models/chat_models.py",
+      "lineRange": [
+        25,
+        29
+      ],
+      "summary": "Enumeration of chat message roles (e.g., user/assistant/system) used throughout the chat history model.",
+      "tags": [
+        "data-model",
+        "enum"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:app/models/chat_models.py:ChatMessage",
+      "type": "class",
+      "name": "ChatMessage",
+      "filePath": "app/models/chat_models.py",
+      "lineRange": [
+        32,
+        136
+      ],
+      "summary": "Represents a single chat message with metadata such as role, content, query type, token count, and optional image caption; supports dict serialization for persistence.",
+      "tags": [
+        "data-model",
+        "chat",
+        "serialization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:app/models/chat_models.py:ChatSession",
+      "type": "class",
+      "name": "ChatSession",
+      "filePath": "app/models/chat_models.py",
+      "lineRange": [
+        139,
+        272
+      ],
+      "summary": "Represents a full chat session containing an ordered list of messages, with helpers to fetch recent messages, conversation pairs, and serialize/deserialize the session.",
+      "tags": [
+        "data-model",
+        "chat",
+        "session-management",
+        "serialization"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:app/models/chat_models.py:ChatContext",
+      "type": "class",
+      "name": "ChatContext",
+      "filePath": "app/models/chat_models.py",
+      "lineRange": [
+        275,
+        310
+      ],
+      "summary": "Represents derived context (relevant prior messages, summary, confidence score) used to enrich answer generation with conversational history.",
+      "tags": [
+        "data-model",
+        "chat",
+        "context-analysis"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:app/api/auth.py",
+      "target": "function:app/api/auth.py:healthcheck",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/auth.py",
+      "target": "function:app/api/auth.py:healthcheck",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/auth.py",
+      "target": "file:app/services/auth_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/api/auth.py",
+      "target": "function:app/services/auth_service.py:get_auth_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:free_trial",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:upload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:add_upload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:fetch_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:update_timestamp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:rename_container_route",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:get_containers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:delete_container_route",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:free_trial",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:upload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:add_upload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:fetch_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:update_timestamp",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:rename_container_route",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:get_containers",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "function:app/api/documents.py:delete_container_route",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "file:app/services/auth_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/api/documents.py",
+      "target": "file:app/services/document_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/documents.py:upload",
+      "target": "class:app/services/auth_service.py:AuthService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:app/api/documents.py:free_trial",
+      "target": "class:app/services/document_service.py:DocumentService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:get_limiter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:get_image_caption",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:trial_ask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:ask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:ask_stream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:ask_tts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:synthesize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:tts_health",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:stt_transcribe",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:stt_health",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:toggle_note",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:list_notes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:get_chat_history",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:list_chats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:rename_chat",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:get_chat_history_stats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:clear_chat_history",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:clear_all_chats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:demo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:analyze_chat_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:trial_ask",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:ask",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:ask_stream",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:ask_tts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:synthesize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:tts_health",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:stt_transcribe",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:stt_health",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:toggle_note",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:list_notes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:get_chat_history",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:list_chats",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:rename_chat",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:get_chat_history_stats",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:clear_chat_history",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:clear_all_chats",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:demo",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "function:app/api/queries.py:analyze_chat_context",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "file:app/models/chat_models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "file:app/services/auth_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "file:app/services/chat_history_manager.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "file:app/services/query_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "file:app/services/stt_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/api/queries.py",
+      "target": "file:app/services/tts_service.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:trial_ask",
+      "target": "class:app/services/query_service.py:QueryService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:ask",
+      "target": "class:app/services/query_service.py:QueryService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:ask_stream",
+      "target": "class:app/services/query_service.py:QueryService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:ask_tts",
+      "target": "class:app/services/query_service.py:QueryService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:ask_tts",
+      "target": "function:app/services/tts_service.py:get_tts_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/api/queries.py:synthesize",
+      "target": "function:app/services/tts_service.py:get_tts_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/api/queries.py:tts_health",
+      "target": "function:app/services/tts_service.py:get_tts_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/api/queries.py:stt_transcribe",
+      "target": "function:app/services/stt_service.py:get_stt_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/api/queries.py:stt_health",
+      "target": "function:app/services/stt_service.py:get_stt_service",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app/api/queries.py:toggle_note",
+      "target": "class:app/services/chat_history_manager.py:ChatHistoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:list_notes",
+      "target": "class:app/services/chat_history_manager.py:ChatHistoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:get_chat_history",
+      "target": "class:app/services/chat_history_manager.py:ChatHistoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:list_chats",
+      "target": "class:app/services/chat_history_manager.py:ChatHistoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:rename_chat",
+      "target": "class:app/services/chat_history_manager.py:ChatHistoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:get_chat_history_stats",
+      "target": "class:app/services/chat_history_manager.py:ChatHistoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:clear_chat_history",
+      "target": "class:app/services/chat_history_manager.py:ChatHistoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:clear_all_chats",
+      "target": "class:app/services/chat_history_manager.py:ChatHistoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:demo",
+      "target": "class:app/services/query_service.py:QueryService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:app/api/queries.py:analyze_chat_context",
+      "target": "class:app/services/chat_history_manager.py:ChatHistoryManager",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:QueryType",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:MessageRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:ChatMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:ChatSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:ChatContext",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:QueryType",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:MessageRole",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:ChatMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:ChatSession",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app/models/chat_models.py",
+      "target": "class:app/models/chat_models.py:ChatContext",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:app/models/chat_models.py:ChatSession",
+      "target": "class:app/models/chat_models.py:ChatMessage",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

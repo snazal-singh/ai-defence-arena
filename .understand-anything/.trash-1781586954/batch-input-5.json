@@ -1,0 +1,212 @@
+{
+  "batchIndex": 5,
+  "files": [
+    {
+      "path": "app/config.py",
+      "language": "python",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "elastic/client.py",
+      "language": "python",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "elastic/document_manager.py",
+      "language": "python",
+      "sizeLines": 82,
+      "fileCategory": "code"
+    },
+    {
+      "path": "elastic/index_manager.py",
+      "language": "python",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "elastic/retriever.py",
+      "language": "python",
+      "sizeLines": 188,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "app/config.py": [],
+    "elastic/client.py": [
+      "app/config.py"
+    ],
+    "elastic/document_manager.py": [
+      "app/config.py",
+      "elastic/client.py",
+      "elastic/index_manager.py"
+    ],
+    "elastic/index_manager.py": [
+      "elastic/client.py"
+    ],
+    "elastic/retriever.py": [
+      "app/config.py",
+      "app/services/llm_service.py",
+      "elastic/client.py",
+      "elastic/index_manager.py"
+    ]
+  },
+  "neighborMap": {
+    "app/config.py": [
+      {
+        "path": "app/__init__.py",
+        "batchIndex": 7,
+        "symbols": [
+          "create_app",
+          "register_error_handlers"
+        ]
+      },
+      {
+        "path": "app/services/chat_history_manager.py",
+        "batchIndex": 2,
+        "symbols": [
+          "ChatHistoryManager",
+          "get_chat_history_manager"
+        ]
+      },
+      {
+        "path": "app/services/llm_service.py",
+        "batchIndex": 1,
+        "symbols": [
+          "GPUServerChatModel",
+          "LLMType",
+          "_make_llm",
+          "get_fast_llm",
+          "get_standard_llm",
+          "get_comprehensive_llm",
+          "get_creative_llm",
+          "get_code_llm",
+          "get_streaming_llm"
+        ]
+      },
+      {
+        "path": "app/services/stt_service.py",
+        "batchIndex": 2,
+        "symbols": [
+          "_to_vexyl_lang",
+          "_ws_to_http",
+          "STTService",
+          "_async_stream_stt",
+          "get_stt_service"
+        ]
+      },
+      {
+        "path": "app/services/tts_service.py",
+        "batchIndex": 2,
+        "symbols": [
+          "_to_vexyl_lang",
+          "_ws_to_http",
+          "_clean_text_for_tts",
+          "_async_generate_audio_stream",
+          "_run_async_generator_to_queue",
+          "TTSService",
+          "get_tts_service"
+        ]
+      },
+      {
+        "path": "controllers/database.py",
+        "batchIndex": 4,
+        "symbols": [
+          "check_trial_status",
+          "create_fingerprint_entry",
+          "is_trial_limit_over",
+          "is_user_limit_over",
+          "upgrade_account",
+          "get_account_status",
+          "sha512",
+          "salt_hash_password",
+          "validate_user",
+          "create_session",
+          "add_files_to_session",
+          "rename_session",
+          "update_session_timestamp",
+          "delete_session_from_db",
+          "get_user_sessions"
+        ]
+      },
+      {
+        "path": "controllers/doc_summary.py",
+        "batchIndex": 1,
+        "symbols": [
+          "DocumentSummaryService",
+          "get_summary_service",
+          "create_abstractive_summary",
+          "summarize_document"
+        ]
+      },
+      {
+        "path": "controllers/sql_db.py",
+        "batchIndex": 1,
+        "symbols": [
+          "sanitize_identifier",
+          "get_db_engine",
+          "process_file",
+          "create_database_with_tables",
+          "add_tables_to_existing_db",
+          "execute_safe_query",
+          "clean_sql_query",
+          "generate_sql_query",
+          "query_database",
+          "store_table_info"
+        ]
+      }
+    ],
+    "elastic/client.py": [
+      {
+        "path": "controllers/delete_session.py",
+        "batchIndex": 3,
+        "symbols": [
+          "delete_directory",
+          "delete_elastic_index",
+          "delete_chat_history",
+          "delete_session",
+          "delete_session_legacy",
+          "delete_session_original"
+        ]
+      }
+    ],
+    "elastic/document_manager.py": [
+      {
+        "path": "controllers/upload.py",
+        "batchIndex": 3,
+        "symbols": [
+          "process_file_content",
+          "get_hierarchical_chunks",
+          "process_single_file",
+          "store_vector"
+        ]
+      }
+    ],
+    "elastic/retriever.py": [
+      {
+        "path": "app/services/llm_service.py",
+        "batchIndex": 1,
+        "symbols": [
+          "GPUServerChatModel",
+          "LLMType",
+          "_make_llm",
+          "get_fast_llm",
+          "get_standard_llm",
+          "get_comprehensive_llm",
+          "get_creative_llm",
+          "get_code_llm",
+          "get_streaming_llm"
+        ]
+      },
+      {
+        "path": "app/services/context_provider_service.py",
+        "batchIndex": 1,
+        "symbols": [
+          "ContextProviderService",
+          "get_context_provider_service"
+        ]
+      }
+    ]
+  }
+}

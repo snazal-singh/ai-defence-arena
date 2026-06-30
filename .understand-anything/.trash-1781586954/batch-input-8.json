@@ -1,0 +1,43 @@
+{
+  "batchIndex": 8,
+  "files": [
+    {
+      "path": ".env.example",
+      "language": "config",
+      "sizeLines": 26,
+      "fileCategory": "config"
+    },
+    {
+      "path": "api-documentation.md",
+      "language": "markdown",
+      "sizeLines": 701,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "readme.md",
+      "language": "markdown",
+      "sizeLines": 278,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "requirements.txt",
+      "language": "txt",
+      "sizeLines": 45,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "results.csv",
+      "language": "csv",
+      "sizeLines": 170,
+      "fileCategory": "data"
+    }
+  ],
+  "batchImportData": {
+    ".env.example": [],
+    "api-documentation.md": [],
+    "readme.md": [],
+    "requirements.txt": [],
+    "results.csv": []
+  },
+  "neighborMap": {}
+}

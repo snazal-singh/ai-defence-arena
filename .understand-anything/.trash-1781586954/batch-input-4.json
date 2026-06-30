@@ -1,0 +1,144 @@
+{
+  "batchIndex": 4,
+  "files": [
+    {
+      "path": "app/api/accounts.py",
+      "language": "python",
+      "sizeLines": 95,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/services/account_service.py",
+      "language": "python",
+      "sizeLines": 138,
+      "fileCategory": "code"
+    },
+    {
+      "path": "app/services/query_service.py",
+      "language": "python",
+      "sizeLines": 296,
+      "fileCategory": "code"
+    },
+    {
+      "path": "controllers/database.py",
+      "language": "python",
+      "sizeLines": 405,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/guardrails.py",
+      "language": "python",
+      "sizeLines": 404,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "app/api/accounts.py": [
+      "app/services/account_service.py"
+    ],
+    "app/services/account_service.py": [
+      "controllers/database.py"
+    ],
+    "app/services/query_service.py": [
+      "app/services/query_agent_service.py",
+      "controllers/ask.py",
+      "controllers/database.py",
+      "utils/guardrails.py"
+    ],
+    "controllers/database.py": [
+      "app/config.py"
+    ],
+    "utils/guardrails.py": [
+      "app/services/llm_service.py"
+    ]
+  },
+  "neighborMap": {
+    "app/services/query_service.py": [
+      {
+        "path": "app/services/query_agent_service.py",
+        "batchIndex": 6,
+        "symbols": [
+          "QueryAgentService",
+          "get_query_agent_service"
+        ]
+      },
+      {
+        "path": "controllers/ask.py",
+        "batchIndex": 1,
+        "symbols": [
+          "checkPreviousQn",
+          "get_demo_response"
+        ]
+      },
+      {
+        "path": "app/api/queries.py",
+        "batchIndex": 2,
+        "symbols": [
+          "get_limiter",
+          "serve_file",
+          "get_image_caption",
+          "trial_ask",
+          "ask",
+          "ask_stream",
+          "ask_tts",
+          "synthesize",
+          "tts_health",
+          "stt_transcribe",
+          "stt_health",
+          "toggle_note",
+          "list_notes",
+          "get_chat_history",
+          "list_chats",
+          "rename_chat",
+          "get_chat_history_stats",
+          "clear_chat_history",
+          "clear_all_chats",
+          "demo",
+          "analyze_chat_context"
+        ]
+      }
+    ],
+    "controllers/database.py": [
+      {
+        "path": "app/config.py",
+        "batchIndex": 5,
+        "symbols": [
+          "BaseConfig",
+          "DevelopmentConfig",
+          "TestingConfig",
+          "ProductionConfig",
+          "ConfigFactory"
+        ]
+      },
+      {
+        "path": "app/services/document_service.py",
+        "batchIndex": 3,
+        "symbols": [
+          "classify_files",
+          "process_document_files",
+          "process_data_files",
+          "process_urls",
+          "DocumentService",
+          "get_document_service"
+        ]
+      }
+    ],
+    "utils/guardrails.py": [
+      {
+        "path": "app/services/llm_service.py",
+        "batchIndex": 1,
+        "symbols": [
+          "GPUServerChatModel",
+          "LLMType",
+          "_make_llm",
+          "get_fast_llm",
+          "get_standard_llm",
+          "get_comprehensive_llm",
+          "get_creative_llm",
+          "get_code_llm",
+          "get_streaming_llm"
+        ]
+      }
+    ]
+  }
+}

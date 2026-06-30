@@ -1,0 +1,675 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "app/config.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 149,
+      "nonEmptyLines": 114,
+      "classes": [
+        {
+          "name": "BaseConfig",
+          "startLine": 14,
+          "endLine": 78,
+          "methods": [
+            "validate"
+          ],
+          "properties": []
+        },
+        {
+          "name": "DevelopmentConfig",
+          "startLine": 80,
+          "endLine": 83,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "TestingConfig",
+          "startLine": 85,
+          "endLine": 98,
+          "methods": [
+            "validate"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ProductionConfig",
+          "startLine": 100,
+          "endLine": 110,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "ConfigFactory",
+          "startLine": 112,
+          "endLine": 145,
+          "methods": [
+            "get_config"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BaseConfig",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "DevelopmentConfig",
+          "line": 80,
+          "isDefault": false
+        },
+        {
+          "name": "TestingConfig",
+          "line": 85,
+          "isDefault": false
+        },
+        {
+          "name": "ProductionConfig",
+          "line": 100,
+          "isDefault": false
+        },
+        {
+          "name": "ConfigFactory",
+          "line": 112,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "validate",
+          "callee": "os.getenv",
+          "lineNumber": 74
+        },
+        {
+          "caller": "validate",
+          "callee": "EnvironmentError",
+          "lineNumber": 76
+        },
+        {
+          "caller": "validate",
+          "callee": "', '.join",
+          "lineNumber": 77
+        },
+        {
+          "caller": "get_config",
+          "callee": "ValueError",
+          "lineNumber": 137
+        },
+        {
+          "caller": "get_config",
+          "callee": "config_class.validate",
+          "lineNumber": 143
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 0,
+        "classCount": 5
+      }
+    },
+    {
+      "path": "elastic/client.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 28,
+      "classes": [
+        {
+          "name": "ElasticClient",
+          "startLine": 7,
+          "endLine": 34,
+          "methods": [
+            "__new__",
+            "_initialize_client",
+            "ping",
+            "index_exists"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ElasticClient",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__new__",
+          "callee": "super(ElasticClient, cls).__new__",
+          "lineNumber": 12
+        },
+        {
+          "caller": "__new__",
+          "callee": "super",
+          "lineNumber": 12
+        },
+        {
+          "caller": "__new__",
+          "callee": "cls._instance._initialize_client",
+          "lineNumber": 13
+        },
+        {
+          "caller": "_initialize_client",
+          "callee": "Elasticsearch",
+          "lineNumber": 18
+        },
+        {
+          "caller": "_initialize_client",
+          "callee": "logging.info",
+          "lineNumber": 22
+        },
+        {
+          "caller": "ping",
+          "callee": "self.client.ping",
+          "lineNumber": 25
+        },
+        {
+          "caller": "index_exists",
+          "callee": "self.client.indices.exists",
+          "lineNumber": 29
+        },
+        {
+          "caller": "index_exists",
+          "callee": "logging.error",
+          "lineNumber": 33
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "elastic/document_manager.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 83,
+      "nonEmptyLines": 70,
+      "classes": [
+        {
+          "name": "ElasticDocumentManager",
+          "startLine": 12,
+          "endLine": 83,
+          "methods": [
+            "__init__",
+            "store_documents",
+            "_preprocess_documents",
+            "update_documents",
+            "delete_documents"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ElasticDocumentManager",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "ElasticClient",
+          "lineNumber": 15
+        },
+        {
+          "caller": "__init__",
+          "callee": "ElasticIndexManager",
+          "lineNumber": 16
+        },
+        {
+          "caller": "__init__",
+          "callee": "OllamaEmbeddings",
+          "lineNumber": 17
+        },
+        {
+          "caller": "store_documents",
+          "callee": "self._preprocess_documents",
+          "lineNumber": 25
+        },
+        {
+          "caller": "store_documents",
+          "callee": "self.index_manager.create_index",
+          "lineNumber": 28
+        },
+        {
+          "caller": "store_documents",
+          "callee": "ElasticsearchStore.from_documents",
+          "lineNumber": 31
+        },
+        {
+          "caller": "store_documents",
+          "callee": "self.index_manager.refresh_index",
+          "lineNumber": 40
+        },
+        {
+          "caller": "store_documents",
+          "callee": "logging.info",
+          "lineNumber": 41
+        },
+        {
+          "caller": "store_documents",
+          "callee": "len",
+          "lineNumber": 41
+        },
+        {
+          "caller": "store_documents",
+          "callee": "logging.error",
+          "lineNumber": 44
+        },
+        {
+          "caller": "_preprocess_documents",
+          "callee": "unicodedata.normalize",
+          "lineNumber": 57
+        },
+        {
+          "caller": "_preprocess_documents",
+          "callee": "isinstance",
+          "lineNumber": 60
+        },
+        {
+          "caller": "_preprocess_documents",
+          "callee": "content.decode",
+          "lineNumber": 61
+        },
+        {
+          "caller": "_preprocess_documents",
+          "callee": "Document",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_preprocess_documents",
+          "callee": "processed.append",
+          "lineNumber": 68
+        },
+        {
+          "caller": "_preprocess_documents",
+          "callee": "logging.error",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_preprocess_documents",
+          "callee": "processed.append",
+          "lineNumber": 73
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "elastic/index_manager.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 112,
+      "nonEmptyLines": 104,
+      "classes": [
+        {
+          "name": "ElasticIndexManager",
+          "startLine": 5,
+          "endLine": 112,
+          "methods": [
+            "__init__",
+            "create_index",
+            "delete_index",
+            "refresh_index",
+            "index_exists"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ElasticIndexManager",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "ElasticClient",
+          "lineNumber": 7
+        },
+        {
+          "caller": "create_index",
+          "callee": "self.client.indices.exists",
+          "lineNumber": 60
+        },
+        {
+          "caller": "create_index",
+          "callee": "self.client.indices.create",
+          "lineNumber": 64
+        },
+        {
+          "caller": "create_index",
+          "callee": "logging.info",
+          "lineNumber": 68
+        },
+        {
+          "caller": "create_index",
+          "callee": "range",
+          "lineNumber": 71
+        },
+        {
+          "caller": "create_index",
+          "callee": "self.client.indices.exists",
+          "lineNumber": 72
+        },
+        {
+          "caller": "create_index",
+          "callee": "logging.info",
+          "lineNumber": 73
+        },
+        {
+          "caller": "create_index",
+          "callee": "logging.warning",
+          "lineNumber": 75
+        },
+        {
+          "caller": "create_index",
+          "callee": "time.sleep",
+          "lineNumber": 76
+        },
+        {
+          "caller": "create_index",
+          "callee": "RuntimeError",
+          "lineNumber": 78
+        },
+        {
+          "caller": "create_index",
+          "callee": "logging.info",
+          "lineNumber": 81
+        },
+        {
+          "caller": "create_index",
+          "callee": "logging.error",
+          "lineNumber": 84
+        },
+        {
+          "caller": "delete_index",
+          "callee": "self.client.indices.exists",
+          "lineNumber": 89
+        },
+        {
+          "caller": "delete_index",
+          "callee": "self.client.indices.delete",
+          "lineNumber": 90
+        },
+        {
+          "caller": "delete_index",
+          "callee": "logging.info",
+          "lineNumber": 91
+        },
+        {
+          "caller": "delete_index",
+          "callee": "logging.error",
+          "lineNumber": 95
+        },
+        {
+          "caller": "refresh_index",
+          "callee": "self.client.indices.refresh",
+          "lineNumber": 100
+        },
+        {
+          "caller": "refresh_index",
+          "callee": "logging.error",
+          "lineNumber": 103
+        },
+        {
+          "caller": "index_exists",
+          "callee": "self.client.indices.exists",
+          "lineNumber": 109
+        },
+        {
+          "caller": "index_exists",
+          "callee": "logging.error",
+          "lineNumber": 111
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "elastic/retriever.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 188,
+      "nonEmptyLines": 167,
+      "classes": [
+        {
+          "name": "ElasticRetriever",
+          "startLine": 17,
+          "endLine": 188,
+          "methods": [
+            "__init__",
+            "search",
+            "get_full_table_chunks",
+            "_create_ensemble_retriever",
+            "_create_filtered_query",
+            "query_enrichment"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ElasticRetriever",
+          "line": 17,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "ElasticClient",
+          "lineNumber": 20
+        },
+        {
+          "caller": "__init__",
+          "callee": "ElasticIndexManager",
+          "lineNumber": 21
+        },
+        {
+          "caller": "__init__",
+          "callee": "OllamaEmbeddings",
+          "lineNumber": 22
+        },
+        {
+          "caller": "search",
+          "callee": "self._create_ensemble_retriever",
+          "lineNumber": 38
+        },
+        {
+          "caller": "search",
+          "callee": "retriever.invoke",
+          "lineNumber": 41
+        },
+        {
+          "caller": "search",
+          "callee": "logging.error",
+          "lineNumber": 44
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "self.client.search",
+          "lineNumber": 59
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "response.get(\"hits\", {}).get",
+          "lineNumber": 71
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "response.get",
+          "lineNumber": 71
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "hit.get",
+          "lineNumber": 74
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "source.get",
+          "lineNumber": 75
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "source.get",
+          "lineNumber": 75
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "source.get",
+          "lineNumber": 76
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "docs.append",
+          "lineNumber": 77
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "Document",
+          "lineNumber": 77
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "logging.info",
+          "lineNumber": 78
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "len",
+          "lineNumber": 78
+        },
+        {
+          "caller": "get_full_table_chunks",
+          "callee": "logging.error",
+          "lineNumber": 81
+        },
+        {
+          "caller": "_create_ensemble_retriever",
+          "callee": "self.index_manager.index_exists",
+          "lineNumber": 90
+        },
+        {
+          "caller": "_create_ensemble_retriever",
+          "callee": "ElasticsearchRetriever",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_create_ensemble_retriever",
+          "callee": "ElasticsearchStore",
+          "lineNumber": 100
+        },
+        {
+          "caller": "_create_ensemble_retriever",
+          "callee": "vector_store.as_retriever",
+          "lineNumber": 105
+        },
+        {
+          "caller": "_create_ensemble_retriever",
+          "callee": "EnsembleRetriever",
+          "lineNumber": 107
+        },
+        {
+          "caller": "_create_ensemble_retriever",
+          "callee": "list",
+          "lineNumber": 109
+        },
+        {
+          "caller": "_create_ensemble_retriever",
+          "callee": "logging.error",
+          "lineNumber": 112
+        },
+        {
+          "caller": "_create_filtered_query",
+          "callee": "unicodedata.normalize",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_create_filtered_query",
+          "callee": "self.query_enrichment",
+          "lineNumber": 118
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "unicodedata.normalize",
+          "lineNumber": 146
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "chat_context.get",
+          "lineNumber": 148
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "chat_context.get",
+          "lineNumber": 149
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "chat_context.get",
+          "lineNumber": 150
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "get_fast_llm().invoke",
+          "lineNumber": 178
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "get_fast_llm",
+          "lineNumber": 178
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "response.strip",
+          "lineNumber": 179
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "response.strip",
+          "lineNumber": 182
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "logging.info",
+          "lineNumber": 183
+        },
+        {
+          "caller": "query_enrichment",
+          "callee": "logging.error",
+          "lineNumber": 187
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

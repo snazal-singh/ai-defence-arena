@@ -82,7 +82,7 @@ GPU_SERVER_MODEL: str = settings.GPU_SERVER_MODEL
 GPU_SERVER_DEFAULT_MAX_TOKENS: int = settings.GPU_SERVER_DEFAULT_MAX_TOKENS
 GPU_SERVER_VERIFY_SSL: bool = settings.GPU_SERVER_VERIFY_SSL
 
-CHAT_ENDPOINT = f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
+CHAT_ENDPOINT = settings.GPU_SERVER_CHAT_ENDPOINT or f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
 
 
 # ---------------------------------------------------------------------------

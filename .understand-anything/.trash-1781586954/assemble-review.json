@@ -1,0 +1,16 @@
+{
+  "fixedSectionOk": true,
+  "nodesRecovered": 0,
+  "edgesRestored": 0,
+  "crossBatchEdgesAdded": 0,
+  "typesRemapped": 0,
+  "complexityRemapped": 0,
+  "notes": [
+    "Verified the 'unrecognized filenames' warning is a harmless false positive: batch-input-1.json through batch-input-9.json contain {batchIndex, files, batchImportData, neighborMap} input file-list payloads, not analysis output with nodes/edges. No data was actually lost.",
+    "Independently confirmed input==output counts: summed raw nodes/edges across all 11 batch-*.json output files = 253 nodes / 653 edges, matching assembled-graph.json exactly. Every raw node id from the batch files was found verbatim (byte-for-byte) in the assembled graph, confirming the merge script genuinely found nothing to normalize (no double prefixes, no func: aliases, no complexity typos).",
+    "Checked all 253 nodes for: missing/empty id (0 found), duplicate ids (0 found), unknown type (types are file/class/function/config/document/table - all valid, 'table' is a legitimate type used once for results.csv), unknown complexity (only simple/moderate/complex present, 113/77/63 split).",
+    "Checked all 653 edges for missing source/target/type fields (0 found) and dangling references to non-existent node ids (0 found). Edge type distribution (contains, exports, calls, imports, depends_on, related, inherits, documents) all look like expected types.",
+    "Cross-checked the full 35-entry non-empty importMap from scan-result.json against the 80 existing 'imports' edges in assembled-graph.json: every single import relationship already has a corresponding edge with the correct file: node ids, direction: forward, weight: 0.7. Zero gaps found, so zero edges were added.",
+    "Conclusion: the assembled graph is clean and complete. No fixes were necessary in this review pass."
+  ]
+}
