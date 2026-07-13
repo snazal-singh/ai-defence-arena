@@ -57,7 +57,7 @@ class QueryAgentService:
             logger.info("Creative reasoning service not available")
     
     def process_no_context_query(self, user_query: str, user_email: str,
-                          input_language: int = 23, output_language: int = 23) -> Dict[str, Any]:
+                          input_language: str = "en", output_language: str = "en") -> Dict[str, Any]:
         """
         Process a query when no document context is available.
         """
@@ -71,8 +71,8 @@ class QueryAgentService:
         # Generate a response that guides the user to upload files or select a session
         return self._generate_no_context_response(user_query, user_email, available_sessions, language)
         
-    def process_query(self, user_query: str, user_session: str, 
-                    input_language: int = 23, output_language: int = 23,
+    def process_query(self, user_query: str, user_session: str,
+                    input_language: str = "en", output_language: str = "en",
                     filenames: Optional[List[str]] = None,
                     has_csvxl: bool = False, mode: str = 'default',
                     is_trial: bool = False, chat_id: str = None,

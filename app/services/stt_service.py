@@ -27,7 +27,32 @@ logger = logging.getLogger(__name__)
 
 # ─── Language mapping ──────────────────────────────────────────────────────────
 _LANG_MAP: dict[str, str] = {
-    # Text names
+    # ISO 639-1/3 codes (sent by frontend)
+    "en":  "en-IN",
+    "hi":  "hi-IN",
+    "ml":  "ml-IN",
+    "ta":  "ta-IN",
+    "te":  "te-IN",
+    "kn":  "kn-IN",
+    "bn":  "bn-IN",
+    "gu":  "gu-IN",
+    "mr":  "mr-IN",
+    "pa":  "pa-IN",
+    "or":  "or-IN",
+    "as":  "as-IN",
+    "ur":  "ur-IN",
+    "ne":  "ne-IN",
+    "sa":  "sa-IN",
+    "kok": "kok-IN",
+    "brx": "brx-IN",
+    "doi": "doi-IN",
+    "mai": "mai-IN",
+    "mni": "mni-IN",
+    "sat": "sat-IN",
+    "sd":  "sd-IN",
+    "ks":  "ks-IN",
+    "auto": "auto",
+    # Full text names (fallback)
     "english":   "en-IN",
     "hindi":     "hi-IN",
     "malayalam": "ml-IN",
@@ -41,7 +66,6 @@ _LANG_MAP: dict[str, str] = {
     "odia":      "or-IN",
     "assamese":  "as-IN",
     "urdu":      "ur-IN",
-    "auto":      "auto",
     "nepali":    "ne-IN",
     "sanskrit":  "sa-IN",
     "konkani":   "kok-IN",
@@ -51,38 +75,11 @@ _LANG_MAP: dict[str, str] = {
     "manipuri":  "mni-IN",
     "santali":   "sat-IN",
     "sindhi":    "sd-IN",
-    
-    # Numeric Sachet codes matching frontend data.js
-    "23": "en-IN",  # English
-    "1":  "hi-IN",  # Hindi
-    "2":  "kok-IN", # Konkani
-    "3":  "kn-IN",  # Kannada
-    "4":  "doi-IN", # Dogri
-    "5":  "brx-IN", # Bodo
-    "6":  "ur-IN",  # Urdu
-    "7":  "ta-IN",  # Tamil
-    "8":  "ks-IN",  # Kashmiri
-    "9":  "as-IN",  # Assamese
-    "10": "bn-IN",  # Bengali
-    "11": "mr-IN",  # Marathi
-    "12": "sd-IN",  # Sindhi
-    "13": "mai-IN", # Maithili
-    "14": "pa-IN",  # Punjabi
-    "15": "ml-IN",  # Malayalam
-    "16": "mni-IN", # Manipuri
-    "17": "te-IN",  # Telugu
-    "18": "sa-IN",  # Sanskrit
-    "19": "ne-IN",  # Nepali
-    "20": "sat-IN", # Santali
-    "21": "gu-IN",  # Gujarati
-    "22": "or-IN",  # Odia
 }
 
 
 def _to_vexyl_lang(language) -> str:
-    """Normalize Sachet language identifier to Vexyl BCP-47 code."""
-    if isinstance(language, int):
-        language = str(language)
+    """Normalize an ISO 639-1 code or language name to a Vexyl BCP-47 locale tag."""
     key = str(language).lower().strip()
     return _LANG_MAP.get(key, "auto")
 
