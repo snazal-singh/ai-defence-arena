@@ -649,16 +649,17 @@ class QueryAgentService:
                 "topics": "various"
             }
             
-    def _get_language(self, language_code: int) -> str:
-        """Get the language name from its code."""
+    def _get_language(self, language_code: str) -> str:
+        """Get the language name from its ISO 639-1 code."""
         languages = {
-            1: "Hindi", 2: "Gom", 3: "Kannada", 4: "Dogri", 5: "Bodo",
-            6: "Urdu", 7: "Tamil", 8: "Kashmiri", 9: "Assamese", 10: "Bengali",
-            11: "Marathi", 12: "Sindhi", 13: "Maithili", 14: "Punjabi", 15: "Malayalam",
-            16: "Manipuri", 17: "Telugu", 18: "Sanskrit", 19: "Nepali", 20: "Santali",
-            21: "Gujarati", 22: "Odia", 23: "English"
+            "hi": "Hindi",  "kok": "Gom",    "kn": "Kannada",  "doi": "Dogri",
+            "brx": "Bodo",  "ur": "Urdu",    "ta": "Tamil",    "ks": "Kashmiri",
+            "as": "Assamese","bn": "Bengali", "mr": "Marathi",  "sd": "Sindhi",
+            "mai": "Maithili","pa": "Punjabi","ml": "Malayalam","mni": "Manipuri",
+            "te": "Telugu", "sa": "Sanskrit","ne": "Nepali",   "sat": "Santali",
+            "gu": "Gujarati","or": "Odia",   "en": "English",
         }
-        return languages.get(language_code, 'English')
+        return languages.get(str(language_code), 'English')
     
     def get_supported_modes(self) -> Dict[str, Any]:
         """Get information about supported query processing modes."""

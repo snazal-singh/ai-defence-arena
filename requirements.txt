@@ -16,14 +16,12 @@ elasticsearch>=8.13.1
 langchain==0.3.26
 langchain-core==0.3.66
 langchain-community==0.3.16
-langchain-ollama
 langchain-elasticsearch==0.3.2
 
 # AI Services
 bert-extractive-summarizer==0.10.1  # NOTE: potential runtime compatibility issue with torch>=2.1.0 and transformers==4.47.1
 torch>=2.1.0
 transformers==4.47.1
-IndicTransToolkit
 
 # Database
 motor==3.3.2

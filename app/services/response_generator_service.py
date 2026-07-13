@@ -549,7 +549,10 @@ Documents available:
         """
         if not language or language.strip().lower() == "english":
             return text
-        return translate_to_indic(text, language)
+        logger.info(f"[TRANSLATION] English response: {text}")
+        translated = translate_to_indic(text, language)
+        logger.info(f"[TRANSLATION] Output ({language}): {translated}")
+        return translated
 
     def _validate_structure(self, parsed):
         """

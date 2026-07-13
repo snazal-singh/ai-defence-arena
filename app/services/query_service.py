@@ -248,8 +248,8 @@ class QueryService:
         if user_query is None or (not user_query and not data.get('image_id')):
             raise ValueError("Query message is missing")
             
-        input_language = int(data.get('inputLanguage', 23))
-        output_language = int(data.get('outputLanguage', 23))
+        input_language = str(data.get('inputLanguage', 'en'))
+        output_language = str(data.get('outputLanguage', 'en'))
         context = True if data.get('context', False) or data.get('sessionId') else False
         hascsvxl = data.get('hasCsvOrXlsx', False)
         mode = data.get('mode', 'default')
@@ -271,16 +271,17 @@ class QueryService:
             "image_caption": data.get("image_caption")
         }
 
-    # Language code → name map (same as QueryAgentService._get_language)
+    # Language code → name map (ISO 639-1 keys)
     LANGUAGE_MAP = {
-        1: "Hindi", 2: "Gom", 3: "Kannada", 4: "Dogri", 5: "Bodo",
-        6: "Urdu", 7: "Tamil", 8: "Kashmiri", 9: "Assamese", 10: "Bengali",
-        11: "Marathi", 12: "Sindhi", 13: "Maithili", 14: "Punjabi", 15: "Malayalam",
-        16: "Manipuri", 17: "Telugu", 18: "Sanskrit", 19: "Nepali", 20: "Santali",
-        21: "Gujarati", 22: "Odia", 23: "English"
+        "hi": "Hindi",  "kok": "Gom",    "kn": "Kannada",  "doi": "Dogri",
+        "brx": "Bodo",  "ur": "Urdu",    "ta": "Tamil",    "ks": "Kashmiri",
+        "as": "Assamese","bn": "Bengali", "mr": "Marathi",  "sd": "Sindhi",
+        "mai": "Maithili","pa": "Punjabi","ml": "Malayalam","mni": "Manipuri",
+        "te": "Telugu", "sa": "Sanskrit","ne": "Nepali",   "sat": "Santali",
+        "gu": "Gujarati","or": "Odia",   "en": "English",
     }
 
-    def _translate_input_to_english(self, message: str, input_language: int) -> str:
+    def _translate_input_to_english(self, message: str, input_language: str) -> str:
         """
         Translate an Indic-language input query to English so that
         RAG retrieval (which indexes English documents) works correctly.
@@ -292,9 +293,9 @@ class QueryService:
         if language_name == "English":
             return message
 
-        logger.info(f"Translating input from {language_name} to English for RAG")
+        logger.info(f"[TRANSLATION] Input query ({language_name}): {message}")
         translated = translate_to_english(message, language_name)
-        logger.info(f"Translated query: {translated}")
+        logger.info(f"[TRANSLATION] English query: {translated}")
         return translated
 
 

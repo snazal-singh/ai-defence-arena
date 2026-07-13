@@ -22,19 +22,9 @@ from app.services.query_service import get_query_service
 from app.services.tts_service import get_tts_service
 from app.services.stt_service import get_stt_service
 
-# Maps data.js numeric string language IDs → ISO 639-1/3 codes for tts_service._to_vexyl_lang()
-_APP_LANG_TO_ISO: dict[str, str] = {
-    "23": "en",  "1":  "hi",  "2":  "kok", "3":  "kn",  "4":  "doi",
-    "5":  "brx", "6":  "ur",  "7":  "ta",  "8":  "ks",  "9":  "as",
-    "10": "bn",  "11": "mr",  "12": "sd",  "13": "mai", "14": "pa",
-    "15": "ml",  "16": "mni", "17": "te",  "18": "sa",  "19": "ne",
-    "20": "sat", "21": "gu",  "22": "or",
-}
-
-
 class SynthesizeRequest(BaseModel):
     text: str
-    language: str = "23"
+    language: str = "en"
 
 logger = logging.getLogger(__name__)
 
@@ -76,16 +66,8 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
         session_id = form.get("sessionId")
         context = form.get("context", "")
         
-        # Convert types carefully
-        try:
-            input_language = int(form.get("inputLanguage", 23))
-        except (ValueError, TypeError):
-            input_language = 23
-            
-        try:
-            output_language = int(form.get("outputLanguage", 23))
-        except (ValueError, TypeError):
-            output_language = 23
+        input_language = str(form.get("inputLanguage", "en"))
+        output_language = str(form.get("outputLanguage", "en"))
             
         has_csv_or_xlsx = form.get("hasCsvOrXlsx", "false").lower() == "true"
         mode = form.get("mode", "default")
@@ -173,8 +155,8 @@ def ask_stream(
     chat_id: str = Query(default="default", alias="chatId"),
     message: str = Query(...),
     mode: str = Query(default="creative"),
-    input_language: int = Query(default=23, alias="inputLanguage"),
-    output_language: int = Query(default=23, alias="outputLanguage"),
+    input_language: str = Query(default="en", alias="inputLanguage"),
+    output_language: str = Query(default="en", alias="outputLanguage"),
     has_csv_or_xlsx: bool = Query(default=False, alias="hasCsvOrXlsx"),
     filenames: List[str] = Query(default=[]),
 ):
@@ -278,7 +260,7 @@ def ask_tts(request: Request, body: QueryRequest, user_email: str = Depends(get_
     if not answer_text or not answer_text.strip():
         raise HTTPException(status_code=500, detail="Empty response generated.")
 
-    iso_code = _APP_LANG_TO_ISO.get(str(body.outputLanguage or 23), "en")
+    iso_code = str(body.outputLanguage or "en")
 
     tts_service = get_tts_service()
 
@@ -312,7 +294,7 @@ def synthesize_text(request: Request, body: SynthesizeRequest, user_email: str =
     if not text:
         raise HTTPException(status_code=400, detail="text is required")
 
-    iso_code = _APP_LANG_TO_ISO.get(str(body.language), "en")
+    iso_code = str(body.language or "en")
     tts = get_tts_service()
 
     def generate_audio():
