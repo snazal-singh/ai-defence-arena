@@ -63,7 +63,7 @@ class VisionService:
             "Content-Type": "application/json"
         }
 
-        response = requests.post(self.gemma_url, json=payload, headers=headers, timeout=None)
+        response = requests.post(self.gemma_url, json=payload, headers=headers, timeout=120)
         response.raise_for_status()
         data = response.json()
         if self.gemma_api_format == "openai":

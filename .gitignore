@@ -46,3 +46,7 @@ dist/
 
 opencode.json
 CLAUDE.md
+
+# Tool-generated indexes
+.codegraph/
+.understand-anything/

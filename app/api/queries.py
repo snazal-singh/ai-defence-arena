@@ -60,7 +60,7 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
 
     if "multipart/form-data" in content_type:
         form = await request.form()
-        logger.info(f"📋 Form keys: {list(form.keys())} | Image object: {form.get('image')} | Image type: {type(form.get('image'))}")
+        logger.debug(f"Form keys: {list(form.keys())} | Image object: {form.get('image')} | Image type: {type(form.get('image'))}")
         message = form.get("message", "")
         chat_id = form.get("chatId", "default")
         session_id = form.get("sessionId")
@@ -77,7 +77,7 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
         
         # Process image file
         image = form.get("image")
-        logger.info(f"Checking image: image={bool(image)}, type={type(image).__name__}, filename={getattr(image, 'filename', None)}")
+        logger.debug(f"Checking image: image={bool(image)}, type={type(image).__name__}, filename={getattr(image, 'filename', None)}")
         if image and (type(image).__name__ == "UploadFile" or hasattr(image, "filename")) and getattr(image, "filename", None):
             import base64, os
             ext = (os.path.splitext(image.filename)[1] or ".jpg").lstrip(".")
