@@ -65,11 +65,16 @@ class Settings(BaseSettings):
     GPU_SERVER_CHAT_ENDPOINT: str = ""
     GPU_SERVER_DEFAULT_MAX_TOKENS: int = 8000
     GPU_SERVER_VERIFY_SSL: bool = False
+    # "ollama" = Ollama /api/chat format; "openai" = OpenAI /v1/chat/completions format (Cerebras, etc.)
+    GPU_SERVER_API_FORMAT: str = "ollama"
 
     # Gemma server
     GEMMA_SERVER_BASE_URL: str = ""
     GEMMA4_API_KEY: str = ""
     GEMMA4_MODEL: str = "gemma4:26b"
+    GEMMA4_CHAT_ENDPOINT: str = ""  # overrides the default /cdot/ollama2/api/chat path
+    # "ollama" = Ollama format (images as base64 array); "openai" = OpenAI vision format
+    GEMMA4_API_FORMAT: str = "ollama"
 
     # NuMarkdown
     NUMARKDOWN_API_URL: str = ""

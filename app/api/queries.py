@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import BaseModel
 
 from app.api.deps import get_current_user, get_current_user_sse
 from app.core.limiter import limiter
@@ -20,6 +21,20 @@ from app.services.chat_history_manager import get_chat_history_manager
 from app.services.query_service import get_query_service
 from app.services.tts_service import get_tts_service
 from app.services.stt_service import get_stt_service
+
+# Maps data.js numeric string language IDs → ISO 639-1/3 codes for tts_service._to_vexyl_lang()
+_APP_LANG_TO_ISO: dict[str, str] = {
+    "23": "en",  "1":  "hi",  "2":  "kok", "3":  "kn",  "4":  "doi",
+    "5":  "brx", "6":  "ur",  "7":  "ta",  "8":  "ks",  "9":  "as",
+    "10": "bn",  "11": "mr",  "12": "sd",  "13": "mai", "14": "pa",
+    "15": "ml",  "16": "mni", "17": "te",  "18": "sa",  "19": "ne",
+    "20": "sat", "21": "gu",  "22": "or",
+}
+
+
+class SynthesizeRequest(BaseModel):
+    text: str
+    language: str = "23"
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +65,9 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
     """Process a document query with full chat-history context for an authenticated user."""
     content_type = request.headers.get("content-type", "")
     
-    image_url = None
+    image_id = None
     caption = None
-    
+
     if "multipart/form-data" in content_type:
         form = await request.form()
         logger.info(f"📋 Form keys: {list(form.keys())} | Image object: {form.get('image')} | Image type: {type(form.get('image'))}")
@@ -82,34 +97,29 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
         image = form.get("image")
         logger.info(f"Checking image: image={bool(image)}, type={type(image).__name__}, filename={getattr(image, 'filename', None)}")
         if image and (type(image).__name__ == "UploadFile" or hasattr(image, "filename")) and getattr(image, "filename", None):
-            import os, uuid, time
-            BASE_USERS_DIR = "chat_images"
-            session_id_for_path = session_id or 'default'
-            ext = os.path.splitext(image.filename)[1] or ".jpg"
-            image_filename = f"img_{int(time.time())}_{uuid.uuid4().hex[:8]}{ext}"
-            image_dir = os.path.join(BASE_USERS_DIR, session_id_for_path)
-            os.makedirs(image_dir, exist_ok=True)
-            image_save_path = os.path.join(image_dir, image_filename)
-            
-            # Read and write chunks
+            import base64, os
+            ext = (os.path.splitext(image.filename)[1] or ".jpg").lstrip(".")
+            mime = f"image/{ext}" if ext else "image/jpeg"
+
             image_bytes = await image.read()
             if image_bytes:
-                with open(image_save_path, "wb") as f:
-                    f.write(image_bytes)
-                
-                # Get caption from vision service
                 from app.services.vision_service import get_vision_service
                 vision_service = get_vision_service()
                 try:
-                    caption = vision_service.get_image_caption(image_save_path)
+                    caption = vision_service.get_image_caption_from_bytes(image_bytes, mime)
                     if message:
                         message = f"{message}\n\nImage Description: {caption}"
                     else:
                         message = f"Image Description: {caption}"
-                    image_url = f"/chat_images/{session_id_for_path}/{image_filename}"
                     logger.info(f"Generated caption for uploaded image: {caption}")
                 except Exception as e:
                     logger.error(f"Error calling vision service for caption: {e}")
+
+                # Store image in MongoDB
+                data_uri = f"data:{mime};base64,{base64.b64encode(image_bytes).decode()}"
+                user_session_for_img = user_email + (session_id or "").lower()
+                image_id = chat_history_manager.save_image(user_session_for_img, chat_id, data_uri)
+                logger.info(f"Stored image in MongoDB with id: {image_id}")
             
         data = {
             "message": message,
@@ -139,17 +149,14 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
             raise HTTPException(status_code=400, detail="sessionId is required when context=true.")
         session_name = user_email + session_id.lower()
 
-    # Pre-populate image metadata if available
-    data['image_url'] = image_url
+    data['image_id'] = image_id
     data['image_caption'] = caption
     data['skip_user_message_storage'] = False
 
     response, status_code = query_service.process_authenticated_query(data, user_email, session_name, chat_id)
-    
-    # Return image url in JSONResponse content so the frontend has it immediately
-    if image_url and isinstance(response, dict):
-        response["image_url"] = image_url
-        response["image_caption"] = caption
+
+    if image_id and isinstance(response, dict):
+        response["image_id"] = image_id
         
     return JSONResponse(content=response, status_code=status_code)
 
@@ -271,27 +278,54 @@ def ask_tts(request: Request, body: QueryRequest, user_email: str = Depends(get_
     if not answer_text or not answer_text.strip():
         raise HTTPException(status_code=500, detail="Empty response generated.")
 
-    output_language = body.outputLanguage or 23
-    language_map = {1: "hindi", 23: "english"}
-    lang_str = language_map.get(output_language, "english") if isinstance(output_language, int) else output_language
+    iso_code = _APP_LANG_TO_ISO.get(str(body.outputLanguage or 23), "en")
 
     tts_service = get_tts_service()
 
     def generate_audio():
         try:
-            for chunk in tts_service.generate_audio_stream(answer_text, lang_str):
+            for chunk in tts_service.generate_audio_stream(answer_text, iso_code):
                 yield chunk
         except Exception as e:
             logger.error(f"TTS streaming error: {e}")
 
     return StreamingResponse(
         generate_audio(),
-        media_type="audio/mpeg",
+        media_type="audio/wav",
         headers={
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
             "Connection": "keep-alive",
         },
+    )
+
+
+# ---------------------------------------------------------------------------
+# TTS synthesis (text → WAV) — used by the UI's per-sentence play button
+# ---------------------------------------------------------------------------
+
+@router.post("/synthesize")
+@limiter.limit("30/minute")
+def synthesize_text(request: Request, body: SynthesizeRequest, user_email: str = Depends(get_current_user)):
+    """Convert text to WAV audio via Vexyl-TTS. Returns a streaming WAV response."""
+    text = body.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text is required")
+
+    iso_code = _APP_LANG_TO_ISO.get(str(body.language), "en")
+    tts = get_tts_service()
+
+    def generate_audio():
+        try:
+            for chunk in tts.generate_audio_stream(text, iso_code):
+                yield chunk
+        except Exception as e:
+            logger.error(f"TTS synthesis error: {e}")
+
+    return StreamingResponse(
+        generate_audio(),
+        media_type="audio/wav",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 
@@ -484,6 +518,8 @@ def get_chat_history(
     for msg in recent:
         d = msg.to_dict()
         metadata = d.get("metadata") or {}
+        image_id = metadata.get("image_id")
+        image_data = chat_history_manager.get_image(image_id) if image_id else None
         messages.append({
             "message_id": d.get("message_id"),
             "timestamp": d.get("timestamp"),
@@ -491,8 +527,8 @@ def get_chat_history(
             "content": d.get("content"),
             "query_type": d.get("query_type"),
             "save_to_note": d.get("save_to_note", False),
-            "image": metadata.get("image_url"),
-            "image_caption": metadata.get("image_caption")
+            "image": image_data,
+            "image_caption": metadata.get("image_caption"),
         })
 
     return {

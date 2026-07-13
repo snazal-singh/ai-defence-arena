@@ -97,8 +97,6 @@ app.include_router(accounts_router, prefix=PREFIX)
 app.include_router(documents_router, prefix=PREFIX)
 app.include_router(queries_router, prefix=PREFIX)
 
-from fastapi.staticfiles import StaticFiles
-app.mount("/chat_images", StaticFiles(directory="chat_images"), name="chat_images")
 
 if __name__ == "__main__":
     import uvicorn

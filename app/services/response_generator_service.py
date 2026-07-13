@@ -422,7 +422,7 @@ Generate ONLY the answer. No preamble, no commentary.
 """
 
         return prompt
-    
+
     def _create_hybrid_prompt(self, user_query: str, document_context: str, sql_context: str,
                             language: Optional[str] = None, chat_context: Optional[Dict[str, Any]] = None) -> str:
         """Create prompt for hybrid queries with adaptive formatting."""

@@ -76,7 +76,7 @@ class QueryAgentService:
                     filenames: Optional[List[str]] = None,
                     has_csvxl: bool = False, mode: str = 'default',
                     is_trial: bool = False, chat_id: str = None,
-                    image_url: str = None, image_caption: str = None) -> Dict[str, Any]:
+                    image_id: str = None, image_caption: str = None) -> Dict[str, Any]:
         """
         Process a user query with support for both standard and creative modes.
         
@@ -145,8 +145,8 @@ class QueryAgentService:
             "processing_time": response.get("processing_metadata", {}).get("processing_time"),
             "mode": response.get("creative_reasoning", {}).get("strategy_used", "standard")
         }
-        if image_url:
-            chat_metadata["image_url"] = image_url
+        if image_id:
+            chat_metadata["image_id"] = image_id
         if image_caption:
             chat_metadata["image_caption"] = image_caption
 

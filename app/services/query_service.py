@@ -181,7 +181,7 @@ class QueryService:
                     user_query["mode"],
                     is_trial=False,
                     chat_id=chat_id,
-                    image_url=user_query.get("image_url"),
+                    image_id=user_query.get("image_id"),
                     image_caption=user_query.get("image_caption")
                 )
 
@@ -245,7 +245,7 @@ class QueryService:
             ValueError: If required parameters are missing
         """
         user_query = data.get('message')
-        if user_query is None or (not user_query and not data.get('image_url')):
+        if user_query is None or (not user_query and not data.get('image_id')):
             raise ValueError("Query message is missing")
             
         input_language = int(data.get('inputLanguage', 23))
@@ -267,7 +267,7 @@ class QueryService:
             "filenames": filenames,
             "chat_id": chat_id,
             "session_id": session_id,
-            "image_url": data.get("image_url"),
+            "image_id": data.get("image_id"),
             "image_caption": data.get("image_caption")
         }
 
