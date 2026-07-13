@@ -56,7 +56,9 @@ LANGUAGE_TO_FLORES: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # Remote server config (read once at import time)
 # ---------------------------------------------------------------------------
-_SERVER_URL: Optional[str] = os.getenv("TRANSLATION_SERVER_URL", "localhost").rstrip("/") or None
+from app.core.config import settings as _settings
+
+_SERVER_URL: Optional[str] = (_settings.TRANSLATION_SERVER_URL or "").rstrip("/") or None
 _API_KEY: Optional[str] = os.getenv("TRANSLATION_API_KEY")
 
 _REQUEST_TIMEOUT: int = int(os.getenv("TRANSLATION_REQUEST_TIMEOUT", "120"))  # seconds

@@ -6,6 +6,7 @@ Added support for chat names stored in a separate collection.
 """
 
 import logging
+import uuid
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 import re
@@ -28,7 +29,8 @@ class ChatHistoryManager:
         self.client = None
         self.db = None
         self.collection = None
-        self.chat_names_collection = None  # New collection for chat names
+        self.chat_names_collection = None
+        self.chat_images_collection = None
         self.llm = get_fast_llm()
         
         # Configuration limits
@@ -60,7 +62,8 @@ class ChatHistoryManager:
             # Use a dedicated database for chat history
             self.db = self.client.chat_history
             self.collection = self.db.sessions
-            self.chat_names_collection = self.db.chat_names  # New collection for chat names
+            self.chat_names_collection = self.db.chat_names
+            self.chat_images_collection = self.db.chat_images
             
             # Create indexes for efficient queries
             self._create_indexes()
@@ -74,12 +77,14 @@ class ChatHistoryManager:
             self.db = None
             self.collection = None
             self.chat_names_collection = None
+            self.chat_images_collection = None
         except Exception as e:
             logger.error(f"Unexpected MongoDB init error (type={type(e).__name__}): {e}")
             self.client = None
             self.db = None
             self.collection = None
             self.chat_names_collection = None
+            self.chat_images_collection = None
     
     def _create_indexes(self):
         """Create MongoDB indexes for efficient queries."""
@@ -111,7 +116,14 @@ class ChatHistoryManager:
                     IndexModel([("updated_at", DESCENDING)], name="chat_name_updated_at_desc")
                 ]
                 self.chat_names_collection.create_indexes(chat_name_indexes)
-            
+
+            if self.chat_images_collection is not None:
+                chat_image_indexes = [
+                    IndexModel([("image_id", ASCENDING)], unique=True, name="chat_images_image_id_unique"),
+                    IndexModel([("created_at", ASCENDING)], expireAfterSeconds=self.MAX_SESSION_AGE_DAYS * 24 * 3600, name="chat_images_ttl")
+                ]
+                self.chat_images_collection.create_indexes(chat_image_indexes)
+
             logger.debug("MongoDB indexes created successfully with chat_id support")
         except Exception as e:
             logger.error(f"Error creating indexes: {e}")
@@ -138,6 +150,36 @@ class ChatHistoryManager:
         """Generate a default chat name based on current time."""
         now = datetime.utcnow()
         return f"Chat {now.strftime('%Y-%m-%d %H:%M')}"
+
+    def save_image(self, user_session: str, chat_id: str, data_uri: str) -> Optional[str]:
+        """Store a base64 data URI image in the chat_images collection. Returns image_id or None."""
+        if not self._is_available() or self.chat_images_collection is None:
+            return None
+        try:
+            image_id = str(uuid.uuid4())
+            self.chat_images_collection.insert_one({
+                "image_id": image_id,
+                "user_session": user_session,
+                "chat_id": chat_id or self.DEFAULT_CHAT_ID,
+                "created_at": datetime.utcnow(),
+                "data": data_uri,
+            })
+            logger.debug(f"Saved image {image_id} for session {user_session}")
+            return image_id
+        except Exception as e:
+            logger.error(f"Error saving image to MongoDB: {e}")
+            return None
+
+    def get_image(self, image_id: str) -> Optional[str]:
+        """Retrieve image data URI by image_id. Returns None if not found."""
+        if not self._is_available() or self.chat_images_collection is None:
+            return None
+        try:
+            doc = self.chat_images_collection.find_one({"image_id": image_id}, {"data": 1, "_id": 0})
+            return doc.get("data") if doc else None
+        except Exception as e:
+            logger.error(f"Error fetching image {image_id}: {e}")
+            return None
 
     def _create_chat_name_entry(self, user_session: str, chat_id: str, chat_name: str = None) -> bool:
         """Create a chat name entry in the chat_names collection."""
