@@ -11,6 +11,11 @@ class Settings(BaseSettings):
         
     # MongoDB
     MONGO_URL: str
+
+    # Symmetric key (Fernet, 32 url-safe base64-encoded bytes) used to encrypt
+    # user-supplied external MongoDB connection strings at rest. Generate with
+    # `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
+    EXTERNAL_MONGO_ENCRYPTION_KEY: str = ""
     
     # MySQL
     MYSQL_HOST: str
