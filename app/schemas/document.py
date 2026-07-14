@@ -6,6 +6,15 @@ class RenameContainerBody(BaseModel):
     new_name: str
 
 
+class ExternalMongoConnectionRequest(BaseModel):
+    connectionUri: str
+    databaseName: str
+    # Optional allowlist restricting which collections in databaseName this
+    # container can see/query. Omitted or empty means "all collections in
+    # databaseName are visible" -- see controllers/external_mongo_connection.py.
+    collections: Optional[List[str]] = None
+
+
 class ContainerItem(BaseModel):
     session_id: str
     name: str

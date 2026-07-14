@@ -23,6 +23,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from app.core.config import settings
 from app.services.llm_service import get_standard_llm
+from controllers import external_mongo_connection
 from controllers.sql_db import sanitize_identifier
 
 logger = logging.getLogger(__name__)
@@ -68,9 +69,28 @@ def _get_client() -> pymongo.MongoClient:
 
 
 def get_mongo_db_for_session(user_session: str) -> pymongo.database.Database:
-    """Get this session's isolated MongoDB database (never shared across sessions)."""
+    """Get this session's MongoDB database. If the session has an externally
+    attached Mongo server configured (see controllers/external_mongo_connection.py),
+    resolves to that instead of this session's own isolated app-managed
+    database (db_{session}, never shared across sessions)."""
+    external_db = external_mongo_connection.get_external_db_for_session(user_session)
+    if external_db is not None:
+        return external_db
     sanitized_db = f"db_{sanitize_identifier(user_session)}"
     return _get_client()[sanitized_db]
+
+
+def _get_collection_names_for_session(user_session: str, db: pymongo.database.Database) -> List[str]:
+    """All collection names visible to this session, filtered down to the
+    configured allowlist if this session uses an externally attached server
+    (so a container is never able to see/query collections in the user's
+    external database beyond what they explicitly opted to expose)."""
+    all_names = db.list_collection_names()
+    allowed = external_mongo_connection.get_allowed_collections(user_session)
+    if allowed is None:
+        return all_names
+    allowed_set = set(allowed)
+    return [name for name in all_names if name in allowed_set]
 
 
 def _metadata_path(user_session: str) -> str:
@@ -93,8 +113,13 @@ def _save_metadata(user_session: str, metadata: Dict[str, List[str]]) -> None:
 
 
 def has_mongo_data(user_session: str) -> bool:
-    """Whether this session has any uploaded JSON data in its own Mongo database."""
-    return os.path.exists(_metadata_path(user_session))
+    """Whether this session has any Mongo data available -- either uploaded
+    JSON ingested into its own app-managed database, or an externally
+    attached Mongo server (see controllers/external_mongo_connection.py)."""
+    return (
+        os.path.exists(_metadata_path(user_session))
+        or external_mongo_connection.has_external_connection(user_session)
+    )
 
 
 def _normalize_json_payload(payload: Any) -> List[Dict[str, Any]]:
@@ -228,7 +253,7 @@ def describe_session_schema(user_session: str) -> str:
         return ""
     try:
         db = get_mongo_db_for_session(user_session)
-        collection_names = db.list_collection_names()
+        collection_names = _get_collection_names_for_session(user_session, db)
         return describe_collections_schema(db, collection_names)
     except Exception as e:
         logger.warning(f"Failed to describe Mongo schema for session {user_session}: {e}")
@@ -440,9 +465,7 @@ def query_mongodb(user_session: str, natural_language_query: str) -> Tuple[Optio
             return None, "No MongoDB data uploaded for this session"
 
         db = get_mongo_db_for_session(user_session)
-        collection_names = [
-            name for name in db.list_collection_names()
-        ]
+        collection_names = _get_collection_names_for_session(user_session, db)
         if not collection_names:
             return None, "No MongoDB collections found for this session"
 
