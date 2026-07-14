@@ -15,11 +15,13 @@ import glob
 
 from elastic.retriever import ElasticRetriever
 from controllers.sql_db import query_database
+from controllers.mongodb_db import has_mongo_data, query_mongodb
 from controllers.doc_summary import get_summary_service
 from utils.extractText import clean_filename
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
 
 class ContextProviderService:
     """Service for providing context from different sources with chat history support."""
@@ -252,23 +254,32 @@ class ContextProviderService:
         
         return query
             
-    def get_data_context(self, user_session: str, user_query: str) -> str:
+    def get_data_context(self, user_session: str, user_query: str,
+                        source: Optional[str] = None) -> str:
         """
-        Get data context from structured databases (SQL and MongoDB).
-        
+        Get data context from structured databases (SQL and/or MongoDB).
+
         Args:
             user_session: User's session identifier
             user_query: User's query
-            
+            source: Which source(s) to query — "sql", "mongo", "both", or
+                None (defaults to "both" for backward compatibility). Lets
+                callers that already know which source a query needs (e.g.
+                intent classification's data_source hint) skip querying the
+                irrelevant one instead of always hitting both.
+
         Returns:
             Structured query results formatted as context
         """
         sql_doc = ""
         mongo_doc = ""
+        source = source or "both"
+        query_sql = source in ("sql", "both")
+        query_mongo = source in ("mongo", "both")
 
         # 1. Fetch context from SQL Database if sheet metadata exists
         sheet_metadata_path = os.path.join('users', user_session, "files", "sheet_metadata.json")
-        if os.path.exists(sheet_metadata_path):
+        if query_sql and os.path.exists(sheet_metadata_path):
             try:
                 logger.info(f"Querying SQL database for session: {user_session}")
                 res, error = query_database(user_session, user_query)
@@ -280,18 +291,20 @@ class ContextProviderService:
             except Exception as e:
                 logger.error(f"Error querying SQL: {e}")
 
-        # 2. Fetch context from MongoDB Database (e.g. disaster_alerts alerts)
-        try:
-            logger.info("Querying MongoDB database...")
-            from controllers.mongodb_db import query_mongodb
-            res, error = query_mongodb(user_query)
-            if error:
-                logger.error(f"MongoDB query error: {error}")
-            elif res:
-                mongo_doc = res
-                logger.info("MongoDB query results added to context")
-        except Exception as e:
-            logger.error(f"Error querying MongoDB: {e}")
+        # 2. Fetch context from this session's own MongoDB data, if any was
+        # uploaded. Gated the same way as SQL above — never queried for a
+        # session that has no Mongo data of its own.
+        if query_mongo and has_mongo_data(user_session):
+            try:
+                logger.info(f"Querying MongoDB database for session: {user_session}")
+                res, error = query_mongodb(user_session, user_query)
+                if error:
+                    logger.error(f"MongoDB query error: {error}")
+                elif res:
+                    mongo_doc = res
+                    logger.info("MongoDB query results added to context")
+            except Exception as e:
+                logger.error(f"Error querying MongoDB: {e}")
 
         # Combine SQL and MongoDB context results
         combined_doc = ""
@@ -376,25 +389,19 @@ class ContextProviderService:
             
         # Check for database tables by looking for sheet_metadata.json
         sheet_metadata_path = os.path.join('users', user_session, "files", "sheet_metadata.json")
-        has_data_tables = os.path.exists(sheet_metadata_path)
+        has_sql_tables = os.path.exists(sheet_metadata_path)
 
-        # Also check if MongoDB structured alerts database exists and is populated
-        has_mongodb_tables = False
-        try:
-            import pymongo
-            from app.core.config import settings
-            mongo_url = getattr(settings, "MONGO_URL", "mongodb://localhost:27017/")
-            client = pymongo.MongoClient(mongo_url)
-            if client["disaster_alerts"]["alerts"].count_documents({}) > 0:
-                has_mongodb_tables = True
-        except Exception:
-            pass
+        # Check for this session's own uploaded Mongo data (mirrors the SQL
+        # check above — no global/shared dataset check anymore).
+        has_mongo_tables = has_mongo_data(user_session)
 
-        has_data_tables = has_data_tables or has_mongodb_tables
+        has_data_tables = has_sql_tables or has_mongo_tables
         
         return {
             "has_documents": has_documents,
             "has_data_tables": has_data_tables,
+            "has_sql_tables": has_sql_tables,
+            "has_mongo_tables": has_mongo_tables,
             "has_summaries": summary_exists
         }
 

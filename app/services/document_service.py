@@ -15,6 +15,7 @@ import time
 from typing import Dict, Any, List, Tuple
 
 from controllers.sql_db import create_database_with_tables, store_table_info, add_tables_to_existing_db
+from controllers.mongodb_db import create_mongo_collections, add_collections_to_existing_db
 from controllers.doc_summary import create_abstractive_summary
 from controllers.upload import store_vector
 from controllers.delete_session import delete_session
@@ -26,35 +27,40 @@ from elastic.document_manager import ElasticDocumentManager
 
 logger = logging.getLogger(__name__)
 
-def classify_files(file_list) -> Tuple[List, List, List]:
+def classify_files(file_list) -> Tuple[List, List, List, List]:
     """
-    Separate files into document files, data files, and unsupported files.
-    
+    Separate files into document files, SQL data files, Mongo data files,
+    and unsupported files.
+
     Returns:
-        Tuple of (document_files, data_files, unsupported_files)
+        Tuple of (document_files, data_files, mongo_files, unsupported_files)
     """
     document_extensions = {'.pdf', '.docx', '.txt', '.pptx', '.doc'}
     data_extensions = {'.csv', '.xlsx', '.xls'}
-    
+    mongo_extensions = {'.json'}
+
     document_files = []
     data_files = []
+    mongo_files = []
     unsupported_files = []
-    
+
     for file in file_list:
         if not file.filename:
             unsupported_files.append(file)
             continue
-        
+
         ext = os.path.splitext(file.filename)[1].lower()
-        
+
         if ext in document_extensions:
             document_files.append(file)
         elif ext in data_extensions:
             data_files.append(file)
+        elif ext in mongo_extensions:
+            mongo_files.append(file)
         else:
             unsupported_files.append(file)
-    
-    return document_files, data_files, unsupported_files
+
+    return document_files, data_files, mongo_files, unsupported_files
 
 def process_document_files(doc_files: List, user_session: str, is_new_container: bool) -> Dict[str, Any]:
     """
@@ -151,6 +157,51 @@ def process_data_files(data_files: List, user_session: str, is_new_container: bo
             "success": False,
             "message": f"Error processing data files: {str(e)}",
             "files_processed": len(data_files),
+            "file_details": []
+        }
+
+def process_mongo_files(mongo_files: List, user_session: str, is_new_container: bool) -> Dict[str, Any]:
+    """
+    Process uploaded JSON files into this session's own MongoDB database
+    (mirrors process_data_files, but for MongoDB instead of MySQL).
+
+    Returns:
+        Dict with processing results
+    """
+    if not mongo_files:
+        return {"success": True, "files_processed": 0, "file_details": []}
+
+    try:
+        logger.info(f"Processing {len(mongo_files)} Mongo data files")
+
+        if is_new_container:
+            success, message = create_mongo_collections(user_session, mongo_files)
+        else:
+            success, message = add_collections_to_existing_db(user_session, mongo_files)
+
+        if not success:
+            return {
+                "success": False,
+                "message": f"Failed to create Mongo collections: {message}",
+                "files_processed": len(mongo_files),
+                "file_details": []
+            }
+
+        file_details = [{"filename": f.filename, "success": True} for f in mongo_files]
+
+        return {
+            "success": True,
+            "files_processed": len(mongo_files),
+            "files_successful": len(mongo_files),
+            "file_details": file_details
+        }
+
+    except Exception as e:
+        logger.error(f"Error processing Mongo files: {e}")
+        return {
+            "success": False,
+            "message": f"Error processing Mongo files: {str(e)}",
+            "files_processed": len(mongo_files),
             "file_details": []
         }
 
@@ -271,29 +322,29 @@ class DocumentService:
             logger.info(f"URL {i+1}: {url}")
 
         # Classify files by type (no more URL files)
-        document_files, data_files, unsupported_files = classify_files(file_list)
-        
-        logger.info(f"File classification: {len(document_files)} documents, {len(data_files)} data files, {len(unsupported_files)} unsupported")
-        
+        document_files, data_files, mongo_files, unsupported_files = classify_files(file_list)
+
+        logger.info(f"File classification: {len(document_files)} documents, {len(data_files)} data files, {len(mongo_files)} Mongo (JSON) files, {len(unsupported_files)} unsupported")
+
         # Check for unsupported files
         if unsupported_files:
             unsupported_names = [f.filename for f in unsupported_files]
             logger.warning(f"Unsupported files: {unsupported_names}")
-        
+
         # Validate trial restrictions
-        if is_trial and data_files:
+        if is_trial and (data_files or mongo_files):
             return {
                 "status": "error",
-                "message": "CSV files are not supported in free trial mode."
+                "message": "CSV/JSON data files are not supported in free trial mode."
             }
-        
+
         # Check if we have any processable content
-        if not document_files and not data_files and not urls:
+        if not document_files and not data_files and not mongo_files and not urls:
             return {
                 "status": "error",
-                "message": "No valid files or URLs found. Please upload files in PDF, DOC, DOCX, TXT, CSV, XLSX format or provide valid URLs."
+                "message": "No valid files or URLs found. Please upload files in PDF, DOC, DOCX, TXT, CSV, XLSX, JSON format or provide valid URLs."
             }
-        
+
         # Delete previous session if needed for trial users
         if is_trial and is_new_container:
             try:
@@ -301,28 +352,34 @@ class DocumentService:
                 delete_session(user_session)
             except Exception as e:
                 logger.warning(f"Error deleting previous session: {e}")
-        
+
         # Process data files first (CSV/Excel)
         data_result = process_data_files(data_files, user_session, is_new_container)
-        
+
+        # Process Mongo data files (JSON)
+        mongo_result = process_mongo_files(mongo_files, user_session, is_new_container)
+
         # Process document files (PDF, DOCX, TXT)
-        doc_result = process_document_files(document_files, user_session, 
-                                          is_new_container and not data_result.get("files_successful", 0))
-        
+        doc_result = process_document_files(document_files, user_session,
+                                          is_new_container and not data_result.get("files_successful", 0)
+                                          and not mongo_result.get("files_successful", 0))
+
         # Process URLs
-        url_result = process_urls(urls, user_session, 
-                                is_new_container and not data_result.get("files_successful", 0) and not doc_result.get("files_successful", 0))
-        
+        url_result = process_urls(urls, user_session,
+                                is_new_container and not data_result.get("files_successful", 0)
+                                and not mongo_result.get("files_successful", 0)
+                                and not doc_result.get("files_successful", 0))
+
         # Log processing results
-        logger.info(f"Processing results - Data: {data_result['success']}, Documents: {doc_result['success']}, URLs: {url_result['success']}")
-        
+        logger.info(f"Processing results - Data: {data_result['success']}, Mongo: {mongo_result['success']}, Documents: {doc_result['success']}, URLs: {url_result['success']}")
+
         # Combine results
-        total_files_processed = data_result["files_processed"] + doc_result["files_processed"]
-        total_files_successful = data_result.get("files_successful", 0) + doc_result.get("files_successful", 0)
+        total_files_processed = data_result["files_processed"] + mongo_result["files_processed"] + doc_result["files_processed"]
+        total_files_successful = data_result.get("files_successful", 0) + mongo_result.get("files_successful", 0) + doc_result.get("files_successful", 0)
         total_urls_processed = url_result.get("urls_processed", 0)
         total_urls_successful = url_result.get("urls_successful", 0)
-        
-        all_details = (data_result["file_details"] + doc_result["file_details"] + 
+
+        all_details = (data_result["file_details"] + mongo_result["file_details"] + doc_result["file_details"] +
                       url_result.get("url_details", []))
         
         # Add unsupported files to details
@@ -334,7 +391,7 @@ class DocumentService:
             })
         
         # Determine overall success
-        overall_success = data_result["success"] and doc_result["success"] and url_result["success"]
+        overall_success = data_result["success"] and mongo_result["success"] and doc_result["success"] and url_result["success"]
         
         if overall_success and (total_files_successful > 0 or total_urls_successful > 0):
             response_data = {
@@ -360,6 +417,8 @@ class DocumentService:
             error_messages = []
             if not data_result["success"]:
                 error_messages.append(data_result.get("message", "Data file processing failed"))
+            if not mongo_result["success"]:
+                error_messages.append(mongo_result.get("message", "Mongo file processing failed"))
             if not doc_result["success"]:
                 error_messages.append(doc_result.get("message", "Document file processing failed"))
             if not url_result["success"]:

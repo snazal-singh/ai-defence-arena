@@ -61,6 +61,14 @@ class Settings(BaseSettings):
     GPU_SERVER_DEFAULT_MAX_TOKENS: int = 8000
     GPU_SERVER_VERIFY_SSL: bool = False
 
+    # Temporary local fallback while GPU_SERVER_BASE_URL is unreachable.
+    # Set USE_LOCAL_LLM=true in .env to route get_fast_llm()/get_standard_llm()
+    # etc. to a local Ollama model instead. Revert by setting it back to false
+    # (or removing it) once the remote GPU server is back up.
+    USE_LOCAL_LLM: bool = False
+    LOCAL_LLM_BASE_URL: str = "http://127.0.0.1:11434"
+    LOCAL_LLM_MODEL: str = "mistral:latest"
+
     # Gemma server
     GEMMA_SERVER_BASE_URL: str = ""
     GEMMA4_API_KEY: str = ""

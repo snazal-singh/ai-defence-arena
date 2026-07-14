@@ -82,7 +82,24 @@ GPU_SERVER_MODEL: str = settings.GPU_SERVER_MODEL
 GPU_SERVER_DEFAULT_MAX_TOKENS: int = settings.GPU_SERVER_DEFAULT_MAX_TOKENS
 GPU_SERVER_VERIFY_SSL: bool = settings.GPU_SERVER_VERIFY_SSL
 
-CHAT_ENDPOINT = f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
+# TEMPORARY: the remote GPU server is unreachable, so USE_LOCAL_LLM routes all
+# factory helpers below to a local Ollama instance instead. Set
+# USE_LOCAL_LLM=false in .env (or remove it) to revert to the remote server —
+# no other code changes needed.
+if settings.USE_LOCAL_LLM:
+    CHAT_ENDPOINT = f"{settings.LOCAL_LLM_BASE_URL.rstrip('/')}/api/chat"
+    _ACTIVE_MODEL = settings.LOCAL_LLM_MODEL
+    _ACTIVE_API_KEY = ""
+    _ACTIVE_VERIFY_SSL = True
+    logger.warning(
+        f"USE_LOCAL_LLM=true — routing LLM calls to local model "
+        f"'{_ACTIVE_MODEL}' at {CHAT_ENDPOINT} instead of the GPU server"
+    )
+else:
+    CHAT_ENDPOINT = f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
+    _ACTIVE_MODEL = GPU_SERVER_MODEL
+    _ACTIVE_API_KEY = GPU_SERVER_API_KEY
+    _ACTIVE_VERIFY_SSL = GPU_SERVER_VERIFY_SSL
 
 
 # ---------------------------------------------------------------------------
@@ -103,12 +120,12 @@ class GPUServerChatModel(BaseChatModel):
     """
 
     # ---- Pydantic fields (LangChain v0.1+ uses pydantic v1 model) ----------
-    model: str = GPU_SERVER_MODEL
-    api_key: str = GPU_SERVER_API_KEY
+    model: str = _ACTIVE_MODEL
+    api_key: str = _ACTIVE_API_KEY
     endpoint: str = CHAT_ENDPOINT
     max_tokens: int = GPU_SERVER_DEFAULT_MAX_TOKENS
     temperature: float = 0.7
-    verify_ssl: bool = GPU_SERVER_VERIFY_SSL
+    verify_ssl: bool = _ACTIVE_VERIFY_SSL
     timeout: int = 120          # seconds
 
     class Config:
