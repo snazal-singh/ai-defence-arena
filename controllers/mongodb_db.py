@@ -69,28 +69,13 @@ def _get_client() -> pymongo.MongoClient:
 
 
 def get_mongo_db_for_session(user_session: str) -> pymongo.database.Database:
-    """Get this session's MongoDB database. If the session has an externally
-    attached Mongo server configured (see controllers/external_mongo_connection.py),
-    resolves to that instead of this session's own isolated app-managed
-    database (db_{session}, never shared across sessions)."""
-    external_db = external_mongo_connection.get_external_db_for_session(user_session)
-    if external_db is not None:
-        return external_db
+    """Get this session's own app-managed MongoDB database (db_{session},
+    never shared across sessions) -- i.e. data ingested from uploaded JSON
+    files. Externally attached servers (see
+    controllers/external_mongo_connection.py) are resolved separately, since
+    a session can have several of those at once alongside this one."""
     sanitized_db = f"db_{sanitize_identifier(user_session)}"
     return _get_client()[sanitized_db]
-
-
-def _get_collection_names_for_session(user_session: str, db: pymongo.database.Database) -> List[str]:
-    """All collection names visible to this session, filtered down to the
-    configured allowlist if this session uses an externally attached server
-    (so a container is never able to see/query collections in the user's
-    external database beyond what they explicitly opted to expose)."""
-    all_names = db.list_collection_names()
-    allowed = external_mongo_connection.get_allowed_collections(user_session)
-    if allowed is None:
-        return all_names
-    allowed_set = set(allowed)
-    return [name for name in all_names if name in allowed_set]
 
 
 def _metadata_path(user_session: str) -> str:
@@ -114,11 +99,11 @@ def _save_metadata(user_session: str, metadata: Dict[str, List[str]]) -> None:
 
 def has_mongo_data(user_session: str) -> bool:
     """Whether this session has any Mongo data available -- either uploaded
-    JSON ingested into its own app-managed database, or an externally
-    attached Mongo server (see controllers/external_mongo_connection.py)."""
+    JSON ingested into its own app-managed database, or one or more
+    externally attached Mongo servers (see controllers/external_mongo_connection.py)."""
     return (
         os.path.exists(_metadata_path(user_session))
-        or external_mongo_connection.has_external_connection(user_session)
+        or external_mongo_connection.has_external_servers(user_session)
     )
 
 
@@ -245,23 +230,68 @@ def describe_collections_schema(db: pymongo.database.Database, collection_names:
 
 def describe_session_schema(user_session: str) -> str:
     """
-    Convenience wrapper: get this session's Mongo schema summary in one call
-    (used to ground intent classification's SQL-vs-Mongo routing decision in
-    real field names rather than guessing from question phrasing).
+    Convenience wrapper: get this session's combined Mongo schema summary in
+    one call (used to ground intent classification's SQL-vs-Mongo routing
+    decision in real field names rather than guessing from question
+    phrasing). Combines this session's own app-managed collections (from
+    uploaded JSON) with the cached catalogs of every externally attached
+    Mongo server, in 'Server: [ID] | DB: [Name] | Collection: [Name] |
+    Fields: [Types]' form for the latter.
     """
     if not has_mongo_data(user_session):
         return ""
+    parts = []
     try:
-        db = get_mongo_db_for_session(user_session)
-        collection_names = _get_collection_names_for_session(user_session, db)
-        return describe_collections_schema(db, collection_names)
+        if os.path.exists(_metadata_path(user_session)):
+            db = get_mongo_db_for_session(user_session)
+            collection_names = db.list_collection_names()
+            own_schema = describe_collections_schema(db, collection_names)
+            if own_schema:
+                parts.append(own_schema)
     except Exception as e:
-        logger.warning(f"Failed to describe Mongo schema for session {user_session}: {e}")
-        return ""
+        logger.warning(f"Failed to describe app-managed Mongo schema for session {user_session}: {e}")
+
+    try:
+        external_schema = external_mongo_connection.get_combined_schema_text(user_session)
+        if external_schema:
+            parts.append(external_schema)
+    except Exception as e:
+        logger.warning(f"Failed to describe external Mongo server schemas for session {user_session}: {e}")
+
+    return "\n".join(parts)
+
+
+def _build_query_targets(user_session: str) -> Tuple[str, List[Tuple[Optional[str], Optional[str], str]]]:
+    """Combined schema text (see describe_session_schema) plus the set of
+    valid (server_id, database_name, collection_name) targets a generated
+    query plan is allowed to hit -- server_id/database_name are None for
+    this session's own app-managed collections."""
+    schema_text = describe_session_schema(user_session)
+    targets: List[Tuple[Optional[str], Optional[str], str]] = []
+
+    try:
+        if os.path.exists(_metadata_path(user_session)):
+            db = get_mongo_db_for_session(user_session)
+            for name in db.list_collection_names():
+                targets.append((None, None, name))
+    except Exception as e:
+        logger.warning(f"Failed to list app-managed Mongo collections for session {user_session}: {e}")
+
+    for server in external_mongo_connection.list_servers(user_session):
+        server_id = server["server_id"]
+        for db_name, collections in server.get("schema_catalog", {}).items():
+            for coll_name in collections:
+                targets.append((server_id, db_name, coll_name))
+
+    return schema_text, targets
 
 
 def _build_system_prompt(schema_description: str) -> str:
     return f"""You are a MongoDB expert. Given a user's natural language question and the MongoDB schema below, translate the question into a valid MongoDB query JSON document.
+
+The schema below may describe two kinds of sources:
+- Lines like "Collection '<name>': fields: ..." are this session's own uploaded-data collections.
+- Lines like "Server: [ID] | DB: [Name] | Collection: [Name] | Fields: [Types]" are externally attached MongoDB servers -- there may be several, each with its own ID, and each may have multiple databases/collections.
 
 {schema_description}
 
@@ -269,7 +299,9 @@ Guidelines:
 1. ONLY return a valid JSON object. Do not wrap it in markdown code blocks or add any explanations.
 2. The JSON object must strictly conform to this structure:
    {{
-     "collection": "<one of the collection names listed above>",
+     "server_id": <the exact Server ID string from a "Server: [ID] | ..." line if the target collection belongs to an externally attached server, otherwise null for this session's own uploaded-data collections>,
+     "database": <the exact DB name from that same line if server_id is set, otherwise null>,
+     "collection": "<the exact collection name to query, matching one of the collections listed above under the chosen server_id/database (or one of this session's own collections if server_id is null)>",
      "operation": "find" | "aggregate" | "count_documents" | "distinct",
      "query": <dict for query filters, or distinct format {{"key": "<field_name>", "filter": <query_dict>}}>,
      "projection": <dict of fields to return, optional>,
@@ -346,18 +378,35 @@ def _clamp_pipeline_limits(pipeline: List[Dict[str, Any]], max_limit: int) -> Li
     return pipeline
 
 
-def execute_safe_mongo_query(db: pymongo.database.Database, query_plan: Dict[str, Any],
-                            allowed_collections: Optional[List[str]] = None) -> List[Dict[str, Any]]:
-    """Safely executes read-only MongoDB operations based on generated plan,
-    restricted to this session's own collections."""
+def execute_safe_mongo_query(
+    user_session: str,
+    query_plan: Dict[str, Any],
+    allowed_targets: Optional[List[Tuple[Optional[str], Optional[str], str]]] = None,
+) -> List[Dict[str, Any]]:
+    """Safely executes read-only MongoDB operations based on a generated plan.
+
+    Resolves the target database from query_plan's server_id/database (an
+    externally attached server, fetched via a pooled client keyed by
+    server_id) if server_id is set, otherwise this session's own
+    app-managed database. allowed_targets, if given, restricts execution to
+    a specific set of (server_id, database_name, collection_name) tuples --
+    scoped per-server/database rather than by bare collection name, since
+    different attached servers may happen to have same-named collections."""
+    server_id = query_plan.get("server_id")
+    database_name = query_plan.get("database")
     collection_name = query_plan.get("collection")
     operation = query_plan.get("operation", "find")
 
-    if allowed_collections is not None and collection_name not in allowed_collections:
+    if allowed_targets is not None and (server_id, database_name, collection_name) not in allowed_targets:
         raise ValueError(
-            f"Collection {collection_name!r} is not part of this session's data "
-            f"(available: {allowed_collections})"
+            f"Target (server_id={server_id!r}, database={database_name!r}, "
+            f"collection={collection_name!r}) is not part of this session's data"
         )
+
+    if server_id:
+        db = external_mongo_connection.get_database_for_server(user_session, server_id, database_name)
+    else:
+        db = get_mongo_db_for_session(user_session)
 
     query_dict = parse_mongodb_types(query_plan.get("query", {}))
     projection = query_plan.get("projection")
@@ -418,10 +467,13 @@ def _extract_json_object(raw_text: str) -> Dict[str, Any]:
     return json.loads(match.group(0))
 
 
-def _fallback_query_plan(collection_names: List[str]) -> Dict[str, Any]:
+def _fallback_query_plan(targets: List[Tuple[Optional[str], Optional[str], str]]) -> Dict[str, Any]:
     """Deterministic safe fallback used only if the LLM pipeline fails entirely."""
+    server_id, database_name, collection_name = targets[0]
     return {
-        "collection": collection_names[0],
+        "server_id": server_id,
+        "database": database_name,
+        "collection": collection_name,
         "operation": "find",
         "query": {},
         "limit": 5,
@@ -429,9 +481,9 @@ def _fallback_query_plan(collection_names: List[str]) -> Dict[str, Any]:
 
 
 def generate_mongo_query(natural_language_query: str, schema_description: str,
-                        collection_names: List[str]) -> Dict[str, Any]:
+                        targets: List[Tuple[Optional[str], Optional[str], str]]) -> Dict[str, Any]:
     """Uses LLM to translate natural language into a structured MongoDB query plan
-    scoped to this session's own schema."""
+    scoped to this session's own schema and every attached external server."""
     llm = get_standard_llm()
     system_prompt = _build_system_prompt(schema_description)
 
@@ -453,29 +505,28 @@ def generate_mongo_query(natural_language_query: str, schema_description: str,
             )
 
     logger.error("MongoDB query generation failed after retries; using safe fallback plan")
-    return _fallback_query_plan(collection_names)
+    return _fallback_query_plan(targets)
 
 
 def query_mongodb(user_session: str, natural_language_query: str) -> Tuple[Optional[str], Optional[str]]:
-    """Runs a natural language query against this session's own MongoDB
-    database and formats the context output. Returns (None, error) if the
-    session has no uploaded Mongo data."""
+    """Runs a natural language query against this session's Mongo data --
+    its own app-managed collections and/or any externally attached servers
+    -- and formats the context output. Returns (None, error) if the session
+    has no Mongo data of either kind."""
     try:
         if not has_mongo_data(user_session):
             return None, "No MongoDB data uploaded for this session"
 
-        db = get_mongo_db_for_session(user_session)
-        collection_names = _get_collection_names_for_session(user_session, db)
-        if not collection_names:
+        schema_description, targets = _build_query_targets(user_session)
+        if not targets:
             return None, "No MongoDB collections found for this session"
 
-        schema_description = describe_collections_schema(db, collection_names)
+        # 1. Translate question to query plan, scoped to this session's
+        # combined schema (own collections + every attached server).
+        query_plan = generate_mongo_query(natural_language_query, schema_description, targets)
 
-        # 1. Translate question to query plan, scoped to this session's schema
-        query_plan = generate_mongo_query(natural_language_query, schema_description, collection_names)
-
-        # 2. Execute safely, restricted to this session's own collections
-        results = execute_safe_mongo_query(db, query_plan, allowed_collections=collection_names)
+        # 2. Execute safely, restricted to this session's own known targets
+        results = execute_safe_mongo_query(user_session, query_plan, allowed_targets=targets)
 
         # 3. Format context using json_util to serialize BSON types cleanly
         formatted_results = json.loads(json_util.dumps(results))

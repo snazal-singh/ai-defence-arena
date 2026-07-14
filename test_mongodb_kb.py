@@ -87,14 +87,15 @@ def run_tests():
         "Show distinct disaster types",
     ]
 
+    targets = [(None, None, name) for name in collection_names]
     for q in questions:
         print(f"\nUser Question: '{q}'")
         try:
-            plan = generate_mongo_query(q, schema_description, collection_names)
+            plan = generate_mongo_query(q, schema_description, targets)
             print("Generated Query Plan:")
             print(json.dumps(plan, indent=2))
 
-            results = execute_safe_mongo_query(db, plan, allowed_collections=collection_names)
+            results = execute_safe_mongo_query(TEST_SESSION, plan, allowed_targets=targets)
             print(f"Executed query successfully. Found {len(results)} matches.")
         except Exception as e:
             print(f"Error for question '{q}': {e}")

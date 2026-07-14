@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from app.api.adapters import UploadFileList
 from app.api.deps import get_current_user
-from app.schemas.document import ExternalMongoConnectionRequest, RenameContainerBody
+from app.schemas.document import MongoServerConnectRequest, RenameContainerBody
 from app.services.document_service import get_document_service
 from controllers import external_mongo_connection
 
@@ -183,78 +183,61 @@ def delete_container(
 
 
 # ---------------------------------------------------------------------------
-# External MongoDB connection
+# External MongoDB servers (multi-server)
 #
-# Lets a user attach their own externally-hosted MongoDB server (e.g. Atlas)
-# to a container instead of only querying data ingested from uploaded JSON
-# files. Only publicly reachable Mongo servers are supported -- this backend
-# has no network path to a server on the user's own local machine/LAN. See
-# controllers/external_mongo_connection.py for the connection/validation
-# logic; once attached, schema introspection and query routing for this
-# container work exactly as they do for uploaded JSON data.
+# Lets a user attach one or more of their own externally-hosted MongoDB
+# servers (e.g. Atlas) to a container, as an additional structured data
+# source alongside data ingested from uploaded JSON files. Only publicly
+# reachable Mongo servers are supported -- this backend has no network path
+# to a server on the user's own local machine/LAN. See
+# controllers/external_mongo_connection.py for the connection/validation/
+# introspection logic; once attached, schema-aware SQL-vs-Mongo intent
+# routing and query generation for this container automatically include
+# every attached server's cached schema catalog.
 # ---------------------------------------------------------------------------
 
-@router.post("/containers/{session_id}/mongo-connection")
-def attach_external_mongo(
+@router.post("/containers/{session_id}/mongodb/connect")
+def connect_mongo_server(
     session_id: str,
-    body: ExternalMongoConnectionRequest,
+    body: MongoServerConnectRequest,
     user_email: str = Depends(get_current_user),
 ):
-    """Test and attach an external MongoDB connection to this container."""
+    """Verify connectivity, introspect every database/collection on the
+    server, and attach it to this container."""
     user_session = user_email + session_id.lower()
 
-    ok, message, collections = external_mongo_connection.test_connection(
-        body.connectionUri, body.databaseName
+    ok, message, server = external_mongo_connection.attach_server(
+        user_session, body.connectionUri, body.serverName
     )
     if not ok:
         raise HTTPException(status_code=400, detail=message)
 
-    if body.collections:
-        unknown = set(body.collections) - set(collections)
-        if unknown:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Collection(s) not found in database '{body.databaseName}': {', '.join(sorted(unknown))}",
-            )
-
-    external_mongo_connection.save_external_connection(
-        user_session, body.connectionUri, body.databaseName, body.collections
-    )
-    return {
-        "message": "External MongoDB connection attached successfully",
-        "databaseName": body.databaseName,
-        "availableCollections": collections,
-        "exposedCollections": body.collections or collections,
-    }
+    return {"message": message, "server": server}
 
 
-@router.get("/containers/{session_id}/mongo-connection")
-def get_external_mongo_status(
+@router.get("/containers/{session_id}/mongodb/servers")
+def list_mongo_servers(
     session_id: str,
     user_email: str = Depends(get_current_user),
 ):
-    """Return this container's external MongoDB connection config, if any
-    (never returns the connection string itself)."""
+    """List every external MongoDB server attached to this container
+    (metadata + cached schema catalog only, never the connection string)."""
     user_session = user_email + session_id.lower()
-    config = external_mongo_connection.load_external_connection(user_session)
-    if config is None:
-        return {"connected": False}
-    return {
-        "connected": True,
-        "databaseName": config["database_name"],
-        "exposedCollections": config.get("collections") or [],
-    }
+    return {"servers": external_mongo_connection.list_servers(user_session)}
 
 
-@router.delete("/containers/{session_id}/mongo-connection")
-def remove_external_mongo(
+@router.delete("/containers/{session_id}/mongodb/servers/{server_id}")
+def remove_mongo_server(
     session_id: str,
+    server_id: str,
     user_email: str = Depends(get_current_user),
 ):
-    """Detach this container's external MongoDB connection."""
+    """Detach a single external MongoDB server from this container."""
     user_session = user_email + session_id.lower()
-    external_mongo_connection.remove_external_connection(user_session)
-    return {"message": "External MongoDB connection removed"}
+    removed = external_mongo_connection.remove_server(user_session, server_id)
+    if not removed:
+        raise HTTPException(status_code=404, detail=f"No server '{server_id}' attached to this container")
+    return {"message": "Server removed successfully"}
 
 
 # ---------------------------------------------------------------------------

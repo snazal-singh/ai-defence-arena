@@ -157,7 +157,9 @@ class QueryIntentService:
 
 {schema_block}
 
-When you choose data_query or hybrid, also include a "data_source" field: "sql" if the question's terms (e.g. specific fields, entities, or record types it mentions) match the SQL schema above, "mongo" if they match the MongoDB schema above, or "both" if the question could plausibly match either or you can't tell from the schemas. Users describe what they want in plain language and never say "SQL" or "JSON" or "spreadsheet" — you MUST decide by matching their wording against the actual field names shown above, not by looking for words like "database" or "file format" in the question."""
+When you choose data_query or hybrid, also include a "data_source" field: "sql" if the question's terms (e.g. specific fields, entities, or record types it mentions) match the SQL schema above, "mongo" if they match the MongoDB schema above, or "both" if the question could plausibly match either or you can't tell from the schemas. Users describe what they want in plain language and never say "SQL" or "JSON" or "spreadsheet" — you MUST decide by matching their wording against the actual field names shown above, not by looking for words like "database" or "file format" in the question.
+
+The MongoDB schema above may include lines like "Server: [ID] | DB: [Name] | Collection: [Name] | Fields: [Types]" -- these describe one or more externally attached MongoDB servers, each with its own ID and possibly multiple databases. If data_source is "mongo" or "both" and the question matches one of these lines, also include "mongoServerId" (the exact Server ID) and "mongoDatabase" (the exact DB name) from that line as a hint for which server/database to query; set both to null if the match is this session's own uploaded-data collections instead (the lines without a Server ID), or if you can't tell which server applies."""
             else:
                 routing_rule = """5. This session has BOTH SQL (spreadsheet/CSV) data AND MongoDB (uploaded JSON) data, but their schemas could not be retrieved. When you choose data_query or hybrid, include a "data_source" field set to "both" — there isn't enough information here to route more precisely."""
 
@@ -182,7 +184,7 @@ Important rules:
 {routing_rule}
 
 Respond with ONLY a JSON object and nothing else — no markdown fences, no explanation outside the JSON:
-{{"intent": "<general_chat|summary|document|data_query|hybrid>", "confidence": <float between 0 and 1>, "data_source": "<sql|mongo|both, only if both sources are available>", "reasoning": "<one short sentence>"}}"""
+{{"intent": "<general_chat|summary|document|data_query|hybrid>", "confidence": <float between 0 and 1>, "data_source": "<sql|mongo|both, only if both sources are available>", "mongoServerId": "<Server ID from the MongoDB schema above, or null>", "mongoDatabase": "<DB name from the MongoDB schema above, or null>", "reasoning": "<one short sentence>"}}"""
 
     def _classify_with_llm(self, query: str, has_documents: bool, has_sql_tables: bool,
                           has_mongo_tables: bool,
@@ -244,13 +246,21 @@ Respond with ONLY a JSON object and nothing else — no markdown fences, no expl
                 # between, so keep it None (get_data_context treats None as
                 # "query whichever source(s) exist").
                 data_source = None
+                mongo_server_hint = parsed.get("mongoServerId")
+                mongo_database_hint = parsed.get("mongoDatabase")
                 if both_sources_available and intent in (QueryIntent.DATA_QUERY, QueryIntent.HYBRID):
                     raw_source = str(parsed.get("data_source", "")).strip().lower()
                     data_source = raw_source if raw_source in ("sql", "mongo", "both") else "both"
 
+                # mongoServerId/mongoDatabase are a classification-time hint only
+                # -- the authoritative server/database pick happens one level
+                # down in generate_mongo_query (controllers/mongodb_db.py),
+                # which has the full combined schema catalog available. Logged
+                # here for observability/debugging rather than threaded further.
                 logger.info(
                     f"Intent classified as {intent.name} (confidence={confidence}, "
-                    f"data_source={data_source}, reasoning={parsed.get('reasoning', '')!r})"
+                    f"data_source={data_source}, mongo_server_hint={mongo_server_hint}, "
+                    f"mongo_database_hint={mongo_database_hint}, reasoning={parsed.get('reasoning', '')!r})"
                 )
                 return intent, confidence, data_source
 
