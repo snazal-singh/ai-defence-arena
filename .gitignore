@@ -43,6 +43,9 @@ elasticsearch-*/
 build/
 dist/
 *.egg-info/
+files/
+chat_images/
+telegram_bot.py
 
 opencode.json
 CLAUDE.md

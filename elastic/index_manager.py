@@ -35,7 +35,15 @@ class ElasticIndexManager:
             "mappings": {
                 "properties": {
                     "vector": {"type": "dense_vector", "dims": 1024},
-                    "content": {"type": "text"},
+                    "text": {
+                        "type": "text",
+                        "fields": {
+                            "hindi": {
+                                "type": "text",
+                                "analyzer": "hindi_analyzer"
+                            }
+                        }
+                    },
                     "keyword_content": {"type": "keyword"},
                     "metadata": {
                         "properties": {

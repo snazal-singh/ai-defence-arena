@@ -12,16 +12,22 @@ import logging
 import os
 import threading
 import time
+import io
 from typing import Dict, Any, List, Tuple
+
+from pdf2image import convert_from_path
+from langchain.schema import Document
 
 from controllers.sql_db import create_database_with_tables, store_table_info, add_tables_to_existing_db
 from controllers.doc_summary import create_abstractive_summary
 from controllers.upload import store_vector
 from controllers.delete_session import delete_session
 from controllers.database import delete_session_from_db, rename_session, update_session_timestamp, create_session, get_user_sessions, add_files_to_session, remove_file_from_session
-from utils.extractText import get_text_from_files
+from utils.extractText import get_text_from_files, clean_text, clean_filename
 from app.services.url_content_service import get_url_content_service
 from app.services.file_storage_service import get_file_storage_service
+from app.services.vision_service import get_vision_service
+from app.core.config import settings
 from elastic.document_manager import ElasticDocumentManager
 
 logger = logging.getLogger(__name__)
@@ -56,9 +62,44 @@ def classify_files(file_list) -> Tuple[List, List, List]:
     
     return document_files, data_files, unsupported_files
 
+def extract_pdf_with_vision(file_path: str, filename: str) -> List[Document]:
+    """Extract text from PDF using NuMarkdown vision-based parser."""
+    logger.info(f"Extracting PDF with NuMarkdown vision parser: {file_path}")
+    
+    # Convert PDF pages to images
+    images = convert_from_path(file_path, dpi=150)
+    images = images[:50]  # Hard limit to 50 pages
+    
+    documents = []
+    vision_service = get_vision_service()
+    
+    for page_num, image in enumerate(images):
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        image_bytes = buffer.getvalue()
+        
+        # Call vision service to parse page
+        markdown = vision_service.parse_document_image(image_bytes)
+        
+        if markdown and markdown.strip():
+            cleaned = clean_text(markdown)
+            if cleaned.strip():
+                documents.append(Document(
+                    page_content=cleaned,
+                    metadata={
+                        "source": filename,
+                        "filename": filename,
+                        "page": page_num,
+                        "content_type": "text",
+                    }
+                ))
+                
+    return documents
+
 def process_document_files(doc_files: List, user_session: str, is_new_container: bool) -> Dict[str, Any]:
     """
-    Process document files using the enhanced extractText.py system
+    Process document files using the enhanced extractText.py system or NuMarkdown vision parser.
+    Automatically falls back to PyMuPDF if NuMarkdown vision parsing fails.
     
     Returns:
         Dict with processing results
@@ -66,12 +107,71 @@ def process_document_files(doc_files: List, user_session: str, is_new_container:
     if not doc_files:
         return {"success": True, "files_processed": 0, "file_details": []}
     
+    logger.info(f"Processing {len(doc_files)} document files")
+    all_docs = []
+    file_infos = []
+    
+    for file in doc_files:
+        filename = clean_filename(file.filename)
+        file_path = f"files/{user_session}/{filename}"
+        
+        is_pdf = filename.lower().endswith(".pdf")
+        use_numarkdown = settings.USE_NUMARKDOWN_PARSER and is_pdf
+        
+        documents = []
+        success = False
+        error_msg = ""
+        
+        if use_numarkdown:
+            try:
+                documents = extract_pdf_with_vision(file_path, filename)
+                if documents:
+                    logger.info(f"Successfully parsed {filename} with NuMarkdown vision parser.")
+                    success = True
+                else:
+                    logger.warning(f"NuMarkdown returned empty content for {filename}. Falling back to standard parser.")
+                    error_msg = "NuMarkdown returned empty content. Fell back to PyMuPDF."
+            except Exception as e:
+                logger.error(f"NuMarkdown vision parser failed for {filename}: {e}. Falling back to standard parser.")
+                error_msg = f"NuMarkdown failed: {e}. Fell back to PyMuPDF."
+        
+        # Parse via standard local parser if not processed yet (or if NuMarkdown failed/is disabled)
+        if not success:
+            try:
+                docs, infos = get_text_from_files([file], user_session)
+                if docs:
+                    documents = docs
+                    success = True
+                    if error_msg:
+                        logger.info(f"Fallback successful for {filename}")
+                else:
+                    error_msg = f"{error_msg}; Standard parser returned no text content." if error_msg else "No text content extracted."
+            except Exception as e:
+                logger.error(f"Standard parser failed for {filename}: {e}")
+                error_msg = f"{error_msg}; Standard parser failed: {e}" if error_msg else f"Standard parser failed: {e}"
+        
+        if success:
+            all_docs.extend(documents)
+            page_count = len(documents)
+            content_length = sum(len(d.page_content) for d in documents)
+            
+            info = {
+                "filename": file.filename,
+                "success": True,
+                "page_count": page_count,
+                "content_length": content_length
+            }
+            if error_msg:
+                info["warning"] = error_msg
+            file_infos.append(info)
+        else:
+            file_infos.append({
+                "filename": file.filename,
+                "success": False,
+                "error": error_msg or "Failed to extract content."
+            })
+            
     try:
-        logger.info(f"Processing {len(doc_files)} document files")
-        
-        # Use the enhanced extractText system for batch processing
-        all_docs, file_infos = get_text_from_files(doc_files, user_session)
-        
         if not all_docs:
             return {
                 "success": False,
@@ -97,12 +197,12 @@ def process_document_files(doc_files: List, user_session: str, is_new_container:
         }
         
     except Exception as e:
-        logger.error(f"Error processing document files: {e}")
+        logger.error(f"Error storing vector / creating summary: {e}")
         return {
             "success": False,
-            "message": f"Error processing document files: {str(e)}",
+            "message": f"Error storing extracted documents: {str(e)}",
             "files_processed": len(doc_files),
-            "file_details": []
+            "file_details": file_infos
         }
 
 def process_data_files(data_files: List, user_session: str, is_new_container: bool) -> Dict[str, Any]:

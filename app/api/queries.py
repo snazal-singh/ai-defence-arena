@@ -1,13 +1,17 @@
 import json
 import logging
 import time
+import os
+import uuid
+import base64
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 from pydantic import BaseModel
 
 from app.api.deps import get_current_user, get_current_user_sse
+from app.core.config import settings
 from app.core.limiter import limiter
 from app.schemas.query import (
     AnalyzeContextRequest,
@@ -26,6 +30,7 @@ class SynthesizeRequest(BaseModel):
     text: str
     language: str = "en"
 
+# Configure logging
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Queries"])
@@ -35,14 +40,91 @@ chat_history_manager = get_chat_history_manager()
 
 
 # ---------------------------------------------------------------------------
+# Gemma 4 Image Captioning
+# ---------------------------------------------------------------------------
+
+from app.services.vision_service import get_vision_service
+
+
+def get_image_caption(image_path: str) -> str:
+    """Query the Gemma4 vision server to generate a detailed caption for the image."""
+    return get_vision_service().get_image_caption(image_path)
+
+
+# ---------------------------------------------------------------------------
+# Static serving for chat images
+# ---------------------------------------------------------------------------
+
+@router.get("/chat_images/{filepath:path}")
+def serve_file(filepath: str):
+    """Serve saved chat images from the local chat_images directory."""
+    base_dir = os.path.abspath("chat_images")
+    file_path = os.path.join(base_dir, filepath)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path)
+
+
+
+
+
+# ---------------------------------------------------------------------------
 # Trial query (no auth)
 # ---------------------------------------------------------------------------
 
 @router.post("/trial-ask")
 @limiter.limit("20/minute")
-def trial_ask(request: Request, body: TrialQueryRequest):
-    """Process a document query for a fingerprint-identified trial user."""
-    response, status_code = query_service.process_trial_query(body.model_dump())
+async def trial_ask(
+    request: Request,
+    fingerprint: Optional[str] = Form(None),
+    message: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None),
+    filenames: Optional[str] = Form(None),
+    body: Optional[TrialQueryRequest] = None,
+):
+    """Process a document query for a fingerprint-identified trial user with optional image uploads."""
+    if "multipart/form-data" in request.headers.get("content-type", ""):
+        data = {
+            'fingerprint': fingerprint or '',
+            'message': message or ''
+        }
+        if filenames:
+            try:
+                import json
+                data['filenames'] = json.loads(filenames)
+            except Exception:
+                data['filenames'] = []
+        else:
+            data['filenames'] = []
+
+        if image and image.filename:
+            image_path = f"/tmp/{image.filename}"
+            content = await image.read()
+            with open(image_path, "wb") as f:
+                f.write(content)
+                
+            caption = get_image_caption(image_path)
+            
+            if data['message']:
+                data['message'] = f"{data['message']}\n\nImage Description: {caption}"
+            else:
+                data['message'] = f"Image Description: {caption}"
+            logger.info(f"📨 FINAL TRIAL MESSAGE SENT TO RAG:\n{data['message']}")
+            
+            os.remove(image_path)
+    else:
+        if body:
+            data = body.model_dump()
+        else:
+            try:
+                data = await request.json()
+            except Exception:
+                data = {}
+
+    if not data or not data.get('fingerprint'):
+        raise HTTPException(status_code=400, detail="Missing required 'fingerprint' parameter in request body or form.")
+
+    response, status_code = query_service.process_trial_query(data)
     return JSONResponse(content=response, status_code=status_code)
 
 
@@ -54,7 +136,7 @@ def trial_ask(request: Request, body: TrialQueryRequest):
 async def ask(request: Request, user_email: str = Depends(get_current_user)):
     """Process a document query with full chat-history context for an authenticated user."""
     content_type = request.headers.get("content-type", "")
-    
+
     image_id = None
     caption = None
 
@@ -65,16 +147,16 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
         chat_id = form.get("chatId", "default")
         session_id = form.get("sessionId")
         context = form.get("context", "")
-        
+
         input_language = str(form.get("inputLanguage", "en"))
         output_language = str(form.get("outputLanguage", "en"))
-            
+
         has_csv_or_xlsx = form.get("hasCsvOrXlsx", "false").lower() == "true"
         mode = form.get("mode", "default")
-        
+
         # form.getlist returns a list of strings
         filenames = form.getlist("filenames")
-        
+
         # Process image file
         image = form.get("image")
         logger.debug(f"Checking image: image={bool(image)}, type={type(image).__name__}, filename={getattr(image, 'filename', None)}")
@@ -102,7 +184,7 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
                 user_session_for_img = user_email + (session_id or "").lower()
                 image_id = chat_history_manager.save_image(user_session_for_img, chat_id, data_uri)
                 logger.info(f"Stored image in MongoDB with id: {image_id}")
-            
+
         data = {
             "message": message,
             "chatId": chat_id,
@@ -117,7 +199,7 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
     else:
         # Standard JSON body
         body_json = await request.json()
-        
+
         # Validate body_json against QueryRequest model attributes
         body = QueryRequest(**body_json)
         data = body.model_dump()
@@ -229,15 +311,14 @@ def ask_stream(
 
 
 # ---------------------------------------------------------------------------
-# Query with TTS audio streaming
+# Query with local offline TTS audio response
 # ---------------------------------------------------------------------------
 
 @router.post("/ask-tts")
 @limiter.limit("10/minute")
 def ask_tts(request: Request, body: QueryRequest, user_email: str = Depends(get_current_user)):
     """
-    Process a document query and stream the answer as an audio/mpeg response via TTS.
-    The query is resolved synchronously first; audio is then streamed chunk by chunk.
+    Process a document query and return the answer as a local multilingual Indic Parler TTS audio buffer.
     """
     data = body.model_dump()
     session_name = user_email
@@ -377,7 +458,7 @@ def stt_health(user_email: str = Depends(get_current_user)):
 
 
 # ---------------------------------------------------------------------------
-# Demo query (public, no auth)
+# Public Demo query
 # ---------------------------------------------------------------------------
 
 @router.post("/demo")

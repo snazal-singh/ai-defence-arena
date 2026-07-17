@@ -130,7 +130,7 @@ class QueryAgentService:
 
         # Save conversation turn to chat history with chat_id
         assistant_response_text = response.get("answer", "")
-        
+
         # Determine query type based on response structure
         query_type = "general"
         if "fileName" in response:
@@ -317,17 +317,25 @@ class QueryAgentService:
                               filenames: Optional[List[str]], has_csvxl: bool,
                               chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Process query using standard mode."""
-        
-        # Enhance query with chat context if available
         enhanced_query = user_query
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
             enhanced_query = f"{user_query}\n\nContext from previous conversation:\n{context_text}"
             logger.info("Enhanced query with chat context for intent classification")
-        
+
+        # Force DOCUMENT intent if image description is in the query or chat context
+        has_image_in_query = "\n\nImage Description:" in user_query
+        has_image_in_context = (
+            chat_context and chat_context.get("context_used")
+            and "[Image Description:" in chat_context.get("context", "")
+        )
+        if has_image_in_query or has_image_in_context:
+            logger.info("Image detected in query or context — forcing DOCUMENT intent")
+            return self._process_document_query(enhanced_query, user_session, language, chat_context)
+
         # Classify query intent using the enhanced query
         intent, confidence = self.intent_service.classify_intent(
-            enhanced_query, 
+            enhanced_query,
             has_documents=resources.get('has_documents', False),
             has_data_tables=has_csvxl
         )

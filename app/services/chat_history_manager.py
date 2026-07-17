@@ -247,7 +247,31 @@ class ChatHistoryManager:
         except Exception as e:
             logger.error(f"Error getting all chat names: {e}")
             return {}
-    
+
+    def store_user_message(self,
+                           user_session: str,
+                           chat_id: str,
+                           role: MessageRole,
+                           content: str,
+                           image_caption: Optional[str] = None,
+                           image_url: Optional[str] = None) -> bool:
+        """Store a user or system message in the current chat session."""
+        try:
+            session = self._get_or_create_session(user_session, chat_id)
+            msg = ChatMessage(
+                role=role,
+                content=content,
+                image_caption=image_caption,
+                image_url=image_url,
+                timestamp=datetime.utcnow()
+            )
+            session.add_message(msg)
+            self._apply_session_limits(session)
+            return self._save_session(session)
+        except Exception as e:
+            logger.error(f"Error storing user message: {e}")
+            return False
+
     def save_conversation_turn(self, user_session: str, user_query: str, assistant_response: str,
                               chat_id: str = None, query_type: str = "general",
                               context_used: bool = False, metadata: Dict = None) -> str:
