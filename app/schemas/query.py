@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 
 class TrialQueryRequest(BaseModel):
@@ -16,7 +16,7 @@ class QueryRequest(BaseModel):
     message: str
     chatId: str
     sessionId: Optional[str] = None
-    context: Optional[str] = ""
+    context: Optional[Union[str, bool]] = ""
     inputLanguage: Optional[str] = "en"
     outputLanguage: Optional[str] = "en"
     hasCsvOrXlsx: Optional[bool] = False
