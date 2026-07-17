@@ -81,6 +81,12 @@ class Settings(BaseSettings):
     NUMARKDOWN_MODEL: str = ""
     NUMARKDOWN_API_KEY: str = ""
 
+    # NuMarkdown server
+    NUMARKDOWN_API_URL: str = ""
+    NUMARKDOWN_API_KEY: str = ""
+    NUMARKDOWN_MODEL: str = "maternion/NuMarkdown-Thinking:8b"
+    USE_NUMARKDOWN_PARSER: bool = True
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 settings = Settings()

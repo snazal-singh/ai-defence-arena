@@ -27,7 +27,7 @@ transformers==4.47.1
 motor==3.3.2
 beanie==1.25.0
 pymongo==4.6.1
-sqlalchemy==2.0.23
+sqlalchemy>=2.0.36
 
 # Authentication
 PyJWT==2.8.0
