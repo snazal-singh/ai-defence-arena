@@ -14,10 +14,12 @@ import re
 import glob
 
 from elastic.retriever import ElasticRetriever
+from elastic.reranker import get_reranker
 from controllers.sql_db import query_database
 from controllers.mongodb_db import has_mongo_data, query_mongodb
 from controllers.doc_summary import get_summary_service
 from utils.extractText import clean_filename
+from app.core.config import settings
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -47,7 +49,9 @@ class ContextProviderService:
             enhanced_query = self._create_enhanced_search_query(user_query, chat_context)
 
             retriever = ElasticRetriever(user_session)
-            docs = retriever.search(enhanced_query, chat_context=chat_context)
+            candidate_k = settings.RERANKER_CANDIDATE_K if settings.ENABLE_RERANKER else None
+            docs = retriever.search(enhanced_query, chat_context=chat_context,
+                                     candidate_k=candidate_k)
 
             logger.info(f"Retrieved {len(docs) if docs else 0} documents for query: {user_query}")
             if chat_context and chat_context.get("context_used"):
@@ -55,6 +59,15 @@ class ContextProviderService:
 
             if not docs:
                 return ""
+
+            # Re-score the fused candidates against the query directly (rank
+            # fusion above only combines keyword/vector rank positions, it
+            # never looks at content) and cut down to the chunks actually
+            # worth keeping before the table augmentation/formatting below.
+            reranker = get_reranker()
+            if reranker:
+                docs = reranker.rerank(enhanced_query, docs, top_n=settings.RERANKER_TOP_N)
+                logger.info(f"Reranked to {len(docs)} documents")
 
             # Augment results with complete table content when tables are found
             docs = self._augment_with_full_tables(docs, retriever)

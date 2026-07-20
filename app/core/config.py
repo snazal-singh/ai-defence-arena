@@ -36,6 +36,21 @@ class Settings(BaseSettings):
     OLLAMA_LLM_MODEL: str = "qwen2.5:7b"
     OLLAMA_EMBEDDING_MODEL: str = "bge-m3:latest"
 
+    # Reranking: a cross-encoder re-scores each (query, chunk) pair directly
+    # after hybrid retrieval, before chunks are capped/formatted into the LLM
+    # context. Unlike EnsembleRetriever's rank fusion (which only combines
+    # keyword/vector ranks without looking at content), this actually scores
+    # relevance. bge-reranker-v2-m3 is multilingual and pairs with the
+    # bge-m3 embedding model already used for vector search.
+    ENABLE_RERANKER: bool = True
+    RERANKER_MODEL: str = "BAAI/bge-reranker-v2-m3"
+    # Candidates pulled from each retrieval branch before reranking (wider
+    # than the final context so the reranker has real material to sort).
+    RERANKER_CANDIDATE_K: int = 20
+    # Chunks kept after reranking, handed off to the existing table-first
+    # sort + 5-text/15-total cap in context_provider_service.
+    RERANKER_TOP_N: int = 15
+
     # Document summary tuning
     SUMMARY_FALLBACK_CHAR_LIMIT: int = 5000
     SUMMARY_MIN_SENTENCES: int = 60
