@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from app.api.adapters import UploadFileList
 from app.api.deps import get_current_user
-from app.schemas.document import MongoServerConnectRequest, RenameContainerBody
+from app.schemas.document import MongoServerConnectRequest, MongoCollectionSelectRequest, RenameContainerBody
 from app.services.document_service import get_document_service
 from controllers import external_mongo_connection
 
@@ -238,6 +238,44 @@ def remove_mongo_server(
     if not removed:
         raise HTTPException(status_code=404, detail=f"No server '{server_id}' attached to this container")
     return {"message": "Server removed successfully"}
+
+
+@router.get("/containers/{session_id}/mongodb/servers/{server_id}/collections")
+def list_mongo_server_collections(
+    session_id: str,
+    server_id: str,
+    user_email: str = Depends(get_current_user),
+):
+    """Database name (taken from the connection URI) + every collection in
+    it, for populating a collection-selection dropdown after connecting.
+    Read from the schema catalog cached at attach-time -- no live server
+    round-trip."""
+    user_session = user_email + session_id.lower()
+    ok, message, database_name, collections = external_mongo_connection.list_collections_for_server(
+        user_session, server_id
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail=message)
+    return {"database": database_name, "collections": collections}
+
+
+@router.put("/containers/{session_id}/mongodb/servers/{server_id}/collection")
+def select_mongo_server_collection(
+    session_id: str,
+    server_id: str,
+    body: MongoCollectionSelectRequest,
+    user_email: str = Depends(get_current_user),
+):
+    """Lock this server to the single collection the user picked from the
+    dropdown. All subsequent queries against this server target only that
+    collection."""
+    user_session = user_email + session_id.lower()
+    ok, message = external_mongo_connection.select_collection(
+        user_session, server_id, body.collection
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail=message)
+    return {"message": message}
 
 
 # ---------------------------------------------------------------------------

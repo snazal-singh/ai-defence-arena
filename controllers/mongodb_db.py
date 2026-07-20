@@ -285,6 +285,16 @@ def _build_query_targets(user_session: str) -> Tuple[str, List[Tuple[Optional[st
 
     for server in external_mongo_connection.list_servers(user_session):
         server_id = server["server_id"]
+        database_name = server.get("database_name")
+        selected = server.get("selected_collection")
+
+        if selected and database_name:
+            # Locked to one collection via the dropdown -- this is the only
+            # valid target for this server, matching the single line
+            # format_server_schema shows the LLM for it.
+            targets.append((server_id, database_name, selected))
+            continue
+
         for db_name, collections in server.get("schema_catalog", {}).items():
             for coll_name in collections:
                 targets.append((server_id, db_name, coll_name))

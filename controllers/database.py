@@ -486,6 +486,26 @@ def get_mongo_servers(user_session: str) -> list:
         return []
 
 
+def set_mongo_server_selected_collection(user_session: str, server_id: str, collection_name: str) -> bool:
+    """Lock a previously attached server to a single collection the user
+    picked (e.g. from a dropdown populated by its cached schema_catalog).
+    Once set, query routing restricts this server to just this collection
+    instead of choosing among every collection in its catalog."""
+    try:
+        result = mongo_servers_collection.update_one(
+            {"user_session": user_session, "servers.server_id": server_id},
+            {"$set": {"servers.$.selected_collection": collection_name}},
+        )
+        if result.matched_count == 0:
+            logging.warning(f"No Mongo server '{server_id}' found for session {user_session}")
+            return False
+        logging.info(f"Set selected collection '{collection_name}' on server '{server_id}' for session {user_session}")
+        return True
+    except Exception as e:
+        logging.error(f"Error setting selected collection on server '{server_id}' for session {user_session}: {e}")
+        return False
+
+
 def remove_mongo_server(user_session: str, server_id: str) -> bool:
     """Detach a single external Mongo server from this session by server_id."""
     try:

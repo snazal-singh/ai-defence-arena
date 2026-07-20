@@ -155,27 +155,59 @@ def _infer_type_name(value: Any) -> str:
     return type(value).__name__
 
 
+def _describe_collections(db: pymongo.database.Database, collection_names: List[str]) -> Dict[str, Dict[str, str]]:
+    db_catalog: Dict[str, Dict[str, str]] = {}
+    for coll_name in collection_names:
+        fields: Dict[str, str] = {}
+        for doc in db[coll_name].find({}, limit=_SCHEMA_SAMPLE_SIZE):
+            for key, value in doc.items():
+                if key == "_id":
+                    continue
+                if key not in fields:
+                    fields[key] = _infer_type_name(value)
+        db_catalog[coll_name] = fields
+    return db_catalog
+
+
 def build_schema_catalog(client: pymongo.MongoClient) -> Dict[str, Dict[str, Dict[str, str]]]:
     """{database_name: {collection_name: {field_name: type}}} across every
-    non-system database/collection this connection can see."""
+    non-system database/collection this connection can see.
+
+    Used as a fallback for connection URIs with no database segment in the
+    path (nothing for get_default_database() to resolve) -- when the URI
+    does name a database, build_scoped_schema_catalog is used instead so a
+    server isn't fully scanned when the user already told us which database
+    they want."""
     catalog: Dict[str, Dict[str, Dict[str, str]]] = {}
     for db_name in client.list_database_names():
         if db_name in _SYSTEM_DATABASES:
             continue
         db = client[db_name]
-        db_catalog: Dict[str, Dict[str, str]] = {}
-        for coll_name in db.list_collection_names():
-            fields: Dict[str, str] = {}
-            for doc in db[coll_name].find({}, limit=_SCHEMA_SAMPLE_SIZE):
-                for key, value in doc.items():
-                    if key == "_id":
-                        continue
-                    if key not in fields:
-                        fields[key] = _infer_type_name(value)
-            db_catalog[coll_name] = fields
+        db_catalog = _describe_collections(db, db.list_collection_names())
         if db_catalog:
             catalog[db_name] = db_catalog
     return catalog
+
+
+def get_default_database_name(client: pymongo.MongoClient) -> Optional[str]:
+    """The database named in the connection URI's path segment
+    (e.g. '...mongodb.net/mydb'), if any. None for a URI with no database
+    segment, in which case every database on the server is in play."""
+    try:
+        return client.get_default_database().name
+    except pymongo.errors.ConfigurationError:
+        return None
+
+
+def build_scoped_schema_catalog(
+    client: pymongo.MongoClient, database_name: str
+) -> Dict[str, Dict[str, Dict[str, str]]]:
+    """Same shape as build_schema_catalog, but introspects only the one
+    database named in the connection URI instead of scanning the whole
+    server."""
+    db = client[database_name]
+    db_catalog = _describe_collections(db, db.list_collection_names())
+    return {database_name: db_catalog} if db_catalog else {}
 
 
 def format_schema_catalog(server_id: str, catalog: Dict[str, Dict[str, Dict[str, str]]]) -> str:
@@ -189,6 +221,35 @@ def format_schema_catalog(server_id: str, catalog: Dict[str, Dict[str, Dict[str,
                 f"Server: {server_id} | DB: {db_name} | Collection: {coll_name} | Fields: {field_desc}"
             )
     return "\n".join(lines)
+
+
+def format_server_schema(server: Dict[str, Any]) -> str:
+    """Schema lines for one attached server, honoring a locked
+    selected_collection if the user picked one from the collection dropdown
+    -- in that case only that single collection's line is shown, so query
+    routing has no other collection on this server to (mis)pick."""
+    catalog = server.get("schema_catalog", {})
+    selected = server.get("selected_collection")
+    database_name = server.get("database_name")
+
+    if selected and database_name:
+        fields = catalog.get(database_name, {}).get(selected)
+        if fields is None:
+            # Selected collection no longer in the cached catalog (e.g. the
+            # server changed since attach) -- fall back to the full catalog
+            # rather than silently showing nothing for this server.
+            logger.warning(
+                f"Selected collection '{selected}' not found in cached catalog "
+                f"for server '{server.get('server_id')}'; showing full catalog"
+            )
+            return format_schema_catalog(server["server_id"], catalog)
+        field_desc = ", ".join(f"{k} ({v})" for k, v in fields.items()) if fields else "(empty)"
+        return (
+            f"Server: {server['server_id']} | DB: {database_name} | "
+            f"Collection: {selected} | Fields: {field_desc}"
+        )
+
+    return format_schema_catalog(server["server_id"], catalog)
 
 
 # ---------------------------------------------------------------------------
@@ -228,7 +289,16 @@ def attach_server(
         return False, msg, None
 
     try:
-        catalog = build_schema_catalog(client)
+        database_name = get_default_database_name(client)
+        # If the connection URI names a specific database (the normal case
+        # -- e.g. '...mongodb.net/mydb'), scope introspection to just that
+        # database instead of scanning every database on the server. Falls
+        # back to a full-server scan only for a URI with no database segment.
+        catalog = (
+            build_scoped_schema_catalog(client, database_name)
+            if database_name
+            else build_schema_catalog(client)
+        )
     except Exception as e:
         logger.error(f"Schema introspection failed for new external Mongo server: {e}")
         return False, f"Connected, but failed to introspect databases/collections: {e}", None
@@ -243,7 +313,12 @@ def attach_server(
         "server_id": server_id,
         "server_name": server_name,
         "encrypted_uri": _encrypt(connection_uri),
+        "database_name": database_name,
         "schema_catalog": catalog,
+        # Set later via select_collection() once the user picks from the
+        # collection dropdown; None means "not yet chosen, all collections
+        # in scope" until then.
+        "selected_collection": None,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -278,13 +353,70 @@ def remove_server(user_session: str, server_id: str) -> bool:
 def get_combined_schema_text(user_session: str) -> str:
     """All attached servers' cached catalogs, formatted for the intent
     classification prompt. Uses the cache built at attach-time -- does not
-    re-sample the live server on every question."""
+    re-sample the live server on every question. A server with a locked
+    selected_collection only contributes that one collection's line (see
+    format_server_schema)."""
     lines = []
     for server in database.get_mongo_servers(user_session):
-        formatted = format_schema_catalog(server["server_id"], server.get("schema_catalog", {}))
+        formatted = format_server_schema(server)
         if formatted:
             lines.append(formatted)
     return "\n".join(lines)
+
+
+def list_collections_for_server(
+    user_session: str, server_id: str
+) -> Tuple[bool, str, Optional[str], List[str]]:
+    """Database name + collection names available for the dropdown shown
+    after a server is attached. Reads the cache built at attach-time --
+    no live server round-trip needed."""
+    server = _find_server_config(user_session, server_id)
+    if server is None:
+        return False, f"No server '{server_id}' attached to this session", None, []
+
+    database_name = server.get("database_name")
+    catalog = server.get("schema_catalog", {})
+
+    if database_name:
+        collections = sorted(catalog.get(database_name, {}).keys())
+        return True, "OK", database_name, collections
+
+    # URI had no database segment -- catalog spans multiple databases, so
+    # there's no single database's collections to hand back for a dropdown.
+    return (
+        False,
+        "This server's connection URI doesn't specify a database, so there's "
+        "no single database to list collections for. Reconnect with a URI "
+        "that includes a database name (e.g. '...mongodb.net/mydb').",
+        None,
+        [],
+    )
+
+
+def select_collection(user_session: str, server_id: str, collection_name: str) -> Tuple[bool, str]:
+    """Lock an attached server to one collection the user picked from the
+    dropdown. All subsequent queries against this server target only this
+    collection (see format_server_schema / mongodb_db._build_query_targets)."""
+    server = _find_server_config(user_session, server_id)
+    if server is None:
+        return False, f"No server '{server_id}' attached to this session"
+
+    database_name = server.get("database_name")
+    if not database_name:
+        return False, "This server has no single database scope to select a collection within"
+
+    available = server.get("schema_catalog", {}).get(database_name, {})
+    if collection_name not in available:
+        return False, (
+            f"Collection '{collection_name}' was not found in database "
+            f"'{database_name}' on this server (available: {sorted(available.keys())})"
+        )
+
+    if not database.set_mongo_server_selected_collection(user_session, server_id, collection_name):
+        return False, "Failed to save collection selection"
+
+    logger.info(f"Locked server '{server_id}' to collection '{collection_name}' for session {user_session}")
+    return True, f"Collection '{collection_name}' selected"
 
 
 # ---------------------------------------------------------------------------

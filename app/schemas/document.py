@@ -11,6 +11,10 @@ class MongoServerConnectRequest(BaseModel):
     serverName: str
 
 
+class MongoCollectionSelectRequest(BaseModel):
+    collection: str
+
+
 class ContainerItem(BaseModel):
     session_id: str
     name: str
