@@ -12,7 +12,7 @@ import logging
 import re
 from typing import Dict, Any, Optional
 
-from app.services.llm_service import get_standard_llm
+from app.services.llm_service import get_standard_llm, get_code_llm
 from utils.translation import translate_to_indic
 
 # Configure logging
@@ -26,6 +26,11 @@ class ResponseGeneratorService:
         logger.info("Initializing response generator service")
         # Use standard LLM for most response generation tasks
         self.llm = get_standard_llm()
+        # Data-query responses must report figures exactly as retrieved, with
+        # no embellishment -- a low, near-deterministic temperature reduces
+        # the model inventing plausible-sounding values not actually present
+        # in the query results.
+        self.data_llm = get_code_llm()
         
         # Question type patterns for intelligent detection
         self._init_question_patterns()
@@ -150,7 +155,7 @@ class ResponseGeneratorService:
         # Generate response from LLM
         try:
             logger.info(f'Generating data response with approx token count: {len(prompt.split()) * 1.33}')
-            llm_response = self.llm.invoke(prompt)
+            llm_response = self.data_llm.invoke(prompt)
             logger.info(f'Generated data response')
             response_text = str(llm_response.content)
             response_text = self._translate_response(response_text, language)

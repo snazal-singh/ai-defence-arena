@@ -65,6 +65,8 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, System
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain.base_language import BaseLanguageModel
 from langchain.callbacks.base import BaseCallbackHandler
+from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 
 from app.core.config import settings
 
@@ -303,32 +305,49 @@ class LLMType(Enum):
 # Factory helpers — same public API as before, now backed by GPUServerChatModel
 # ---------------------------------------------------------------------------
 
-def _make_llm(**kwargs) -> GPUServerChatModel:
-    """Internal factory. Pass any GPUServerChatModel field overrides via kwargs."""
+def _make_llm(**kwargs) -> BaseChatModel:
+    """Internal factory. Pass any GPUServerChatModel field overrides via kwargs
+    (max_tokens/temperature apply to all providers; the rest are ignored by
+    ChatGroq/ChatOpenAI)."""
+    common_kwargs = {}
+    if "max_tokens" in kwargs:
+        common_kwargs["max_tokens"] = kwargs["max_tokens"]
+    if "temperature" in kwargs:
+        common_kwargs["temperature"] = kwargs["temperature"]
+
+    if settings.USE_NVIDIA:
+        return ChatOpenAI(
+            model=settings.NVIDIA_MODEL,
+            api_key=settings.NVIDIA_API_KEY,
+            base_url=settings.NVIDIA_BASE_URL,
+            **common_kwargs,
+        )
+    if settings.USE_GROQ:
+        return ChatGroq(model=settings.GROQ_MODEL, api_key=settings.GROQ_API_KEY, **common_kwargs)
     return GPUServerChatModel(**kwargs)
 
 
-def get_fast_llm() -> GPUServerChatModel:
+def get_fast_llm() -> BaseChatModel:
     """Get a fast LLM for quick responses (lower max_tokens)."""
     return _make_llm(max_tokens=512, temperature=0.3)
 
 
-def get_standard_llm() -> GPUServerChatModel:
+def get_standard_llm() -> BaseChatModel:
     """Get a standard LLM for general use."""
     return _make_llm()
 
 
-def get_comprehensive_llm() -> GPUServerChatModel:
+def get_comprehensive_llm() -> BaseChatModel:
     """Get a comprehensive LLM for complex tasks (higher max_tokens)."""
     return _make_llm(max_tokens=2048, temperature=0.5)
 
 
-def get_creative_llm() -> GPUServerChatModel:
+def get_creative_llm() -> BaseChatModel:
     """Get a creative LLM for reasoning and creative tasks."""
     return _make_llm(max_tokens=1500, temperature=0.9)
 
 
-def get_code_llm() -> GPUServerChatModel:
+def get_code_llm() -> BaseChatModel:
     """Get a code-focused LLM (low temperature for determinism)."""
     return _make_llm(max_tokens=2048, temperature=0.1)
 
@@ -336,7 +355,7 @@ def get_code_llm() -> GPUServerChatModel:
 def get_streaming_llm(
     llm_type: LLMType = LLMType.STANDARD,
     callbacks: Optional[List[BaseCallbackHandler]] = None,
-) -> GPUServerChatModel:
+) -> BaseChatModel:
     """Get a streaming LLM with optional LangChain callbacks."""
     llm = _make_llm()
     if callbacks:

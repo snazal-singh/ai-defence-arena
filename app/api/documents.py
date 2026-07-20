@@ -204,8 +204,10 @@ def connect_mongo_server(
     body: MongoServerConnectRequest,
     user_email: str = Depends(get_current_user),
 ):
-    """Verify connectivity, introspect every database/collection on the
-    server, and attach it to this container."""
+    """Verify connectivity, introspect the database named in the connection
+    URI (or the whole server if it has none), and attach it to this
+    container. Which collection to actually query is chosen afterwards via
+    the /collections and /collection endpoints below."""
     user_session = user_email + session_id.lower()
 
     ok, message, server = external_mongo_connection.attach_server(

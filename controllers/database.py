@@ -517,6 +517,9 @@ def remove_mongo_server(user_session: str, server_id: str) -> bool:
         if result.matched_count == 0:
             logging.warning(f"No Mongo server config found for session {user_session}")
             return False
+        if result.modified_count == 0:
+            logging.warning(f"Server '{server_id}' not found in session {user_session}'s server list")
+            return False
         logging.info(f"Removed Mongo server '{server_id}' from session {user_session}")
         return True
     except Exception as e:

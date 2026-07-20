@@ -14,10 +14,11 @@ treats these servers as additional entries in the combined schema shown to
 the intent classifier, which picks a server_id + database_name alongside
 its data_source decision (see query_intent_service.py).
 
-Explicitly out of scope: connecting to a Mongo server on the user's own
-local machine/LAN. This backend has no network path to "localhost" as the
-user's browser understands it -- only to servers actually reachable from
-wherever this backend runs (i.e. cloud-hosted/publicly-reachable Mongo).
+By default, only publicly reachable Mongo servers (e.g. MongoDB Atlas) are
+allowed -- "localhost" as the user's browser understands it is generally not
+reachable from wherever this backend runs. Set ALLOW_LOCAL_MONGO=true (see
+app/core/config.py) to additionally allow localhost/private/loopback hosts,
+for dev or self-hosted setups where this backend genuinely can reach them.
 """
 
 import ipaddress
@@ -98,13 +99,38 @@ def _validate_host_is_public(hostname: str) -> Tuple[bool, str]:
             or ip.is_multicast
             or ip.is_unspecified
         ):
+            if settings.ALLOW_LOCAL_MONGO:
+                continue
             return False, (
                 f"Host '{hostname}' resolves to a non-public address ({ip_str}); "
                 "external connections must point at a publicly reachable Mongo "
                 "server (e.g. MongoDB Atlas). Locally-hosted Mongo servers on "
-                "your own machine/network are not reachable from this backend."
+                "your own machine/network are not reachable from this backend. "
+                "Set ALLOW_LOCAL_MONGO=true if this backend can actually reach "
+                "that address (e.g. local dev/self-hosted setups)."
             )
     return True, ""
+
+
+def _points_to_own_backend_mongo(hostname: str, port: Optional[int]) -> bool:
+    """True if hostname:port is the same server this app itself uses
+    internally (settings.MONGO_URL) -- every knowledge container's own
+    private data (db_<session> databases) lives there, so treating the
+    whole server as one "external" source would leak one container's data
+    into another's. Only the host/port are compared (not database), since
+    the whole point is to catch "the same physical server" regardless of
+    which database path was given."""
+    try:
+        own = urlparse(settings.MONGO_URL)
+    except Exception:
+        return False
+    own_port = own.port or 27017
+    target_port = port or 27017
+    own_host = (own.hostname or "").lower()
+    target_host = (hostname or "").lower()
+    if own_host in ("localhost", "127.0.0.1", "::1"):
+        return target_host in ("localhost", "127.0.0.1", "::1") and own_port == target_port
+    return own_host == target_host and own_port == target_port
 
 
 def validate_connection_uri(connection_uri: str) -> Tuple[bool, str]:
@@ -130,7 +156,7 @@ def validate_connection_uri(connection_uri: str) -> Tuple[bool, str]:
         ok, msg = _validate_host_is_public(parsed.hostname)
         if not ok:
             return False, msg
-    elif parsed.hostname in ("localhost", "127.0.0.1", "::1"):
+    elif parsed.hostname in ("localhost", "127.0.0.1", "::1") and not settings.ALLOW_LOCAL_MONGO:
         return False, f"Host '{parsed.hostname}' is not reachable from this backend"
 
     return True, ""
@@ -291,11 +317,40 @@ def test_connection(connection_uri: str) -> Tuple[bool, str, Optional[pymongo.Mo
 
 
 def attach_server(
-    user_session: str, connection_uri: str, server_name: str
+    user_session: str, connection_uri: str, server_name: str,
 ) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
-    """Full attach flow: validate, connect, introspect every DB/collection,
+    """Full attach flow: validate, connect, introspect the requested scope,
     encrypt the URI, and persist the server config for this session.
+
+    The database is taken from the connection URI's own path (e.g.
+    mongodb://host/mydb -> "mydb"); if the URI has no database segment, the
+    whole server is introspected instead. The collection to actually query
+    is chosen afterwards via select_collection(), once the caller has seen
+    what's available (see list_collections_for_server).
+
     Returns (ok, message, server_config_without_encrypted_uri)."""
+    parsed_host = urlparse(connection_uri)
+    uri_database = (parsed_host.path or "").lstrip("/") or None
+
+    if _points_to_own_backend_mongo(parsed_host.hostname, parsed_host.port):
+        if not uri_database:
+            return False, (
+                "This connection points at the same MongoDB server this app uses "
+                "internally, which also hosts every other knowledge container's "
+                "own private data. Introspecting the whole server would expose "
+                "other containers' data here. Include a database name in the "
+                "connection string (e.g. '...mongodb.net/mydb') to scope this to "
+                "just your own external data."
+            ), None
+        if uri_database.startswith("db_"):
+            return False, (
+                f"'{uri_database}' is this app's own internal per-container "
+                "database namespace (reserved for a knowledge container's own "
+                "uploaded data), not an external data source — attaching it here "
+                "would expose another container's private data. Point this at a "
+                "different database instead."
+            ), None
+
     ok, msg, client = test_connection(connection_uri)
     if not ok:
         return False, msg, None
@@ -318,7 +373,8 @@ def attach_server(
         client.close()
 
     if not catalog:
-        return False, "Connected, but no user databases/collections were found on this server", None
+        scope = f" for database '{database_name}'" if database_name else ""
+        return False, f"Connected, but no databases/collections were found{scope} on this server", None
 
     server_id = f"srv_{uuid.uuid4().hex[:8]}"
     server_config = {

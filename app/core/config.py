@@ -1,4 +1,15 @@
+import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Skip huggingface_hub's online freshness check for locally-cached models
+# (e.g. bert-large-uncased, used by controllers/doc_summary.py's Summarizer())
+# -- without this, every summarization call retries for ~30s when
+# huggingface.co is slow/unreachable before falling back to the local cache
+# it was going to use anyway. Doesn't affect model downloads that haven't
+# been cached yet; only respected if not already set by the environment.
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
+
 
 class Settings(BaseSettings):
     # App settings
@@ -17,14 +28,13 @@ class Settings(BaseSettings):
     # `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
     EXTERNAL_MONGO_ENCRYPTION_KEY: str = ""
 
-    # DEV/TESTING ONLY: the external-Mongo-connector SSRF guard
-    # (controllers/external_mongo_connection.py) normally rejects
-    # localhost/private/loopback hosts, since a real deployment's backend
-    # could otherwise be pointed at its own internal infrastructure. Set to
-    # true only for local development against a Mongo instance on the same
-    # machine — never enable this in a real deployment.
+    # Off by default (SSRF guard): when true, external Mongo connection
+    # strings pointing at localhost/private/loopback hosts are allowed,
+    # for dev/self-hosted setups where this backend can actually reach
+    # those addresses. Leave false for deployments where a local/private
+    # address is unreachable or untrusted.
     ALLOW_LOCAL_MONGO: bool = False
-    
+
     # MySQL
     MYSQL_HOST: str
     MYSQL_USERNAME: str
@@ -96,6 +106,21 @@ class Settings(BaseSettings):
     USE_LOCAL_LLM: bool = False
     LOCAL_LLM_BASE_URL: str = "http://127.0.0.1:11434"
     LOCAL_LLM_MODEL: str = "mistral:latest"
+
+    # Groq (free-tier, hosted). Takes priority over USE_LOCAL_LLM/GPU server
+    # when enabled — set USE_GROQ=true and GROQ_API_KEY in .env.
+    USE_GROQ: bool = False
+    GROQ_API_KEY: str = ""
+    # llama-3.1-8b-instant has a much higher free-tier daily token quota
+    # than the 70b model, which exhausts its 100k TPD limit quickly.
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
+
+    # NVIDIA's OpenAI-compatible hosted inference API (build.nvidia.com).
+    # Takes priority over USE_GROQ/USE_LOCAL_LLM when enabled.
+    USE_NVIDIA: bool = False
+    NVIDIA_API_KEY: str = ""
+    NVIDIA_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
+    NVIDIA_MODEL: str = "openai/gpt-oss-20b"
 
     # Gemma server
     GEMMA_SERVER_BASE_URL: str = ""
