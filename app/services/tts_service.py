@@ -115,7 +115,7 @@ async def _async_generate_audio_stream(text: str, lang_code: str):
     logger.info(f"[VexylTTS] Connecting to {ws_url} for request {request_id}")
 
     try:
-        async with websockets.connect(ws_url, open_timeout=10, close_timeout=5) as ws:
+        async with websockets.connect(ws_url, open_timeout=10, close_timeout=5, max_size=16 * 1024 * 1024) as ws:
             # Wait for "ready" handshake
             ready_raw = await asyncio.wait_for(ws.recv(), timeout=10)
             ready = json.loads(ready_raw)
