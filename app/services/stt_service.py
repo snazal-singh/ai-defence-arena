@@ -152,8 +152,8 @@ class STTService:
         try:
             resp = requests.post(
                 submit_url,
-                files={"audio": (filename, io.BytesIO(audio_bytes), mime_type)},
-                data={"language": lang_code},
+                files={"file": (filename, io.BytesIO(audio_bytes), mime_type)},
+                data={"language_code": lang_code},
                 timeout=30,
             )
         except requests.RequestException as exc:
@@ -180,7 +180,7 @@ class STTService:
         logger.info(f"[VexylSTT] Job queued: {job_id}, polling...")
 
         # Poll until complete
-        poll_url = f"{self.http_base}/batch/job/{job_id}"
+        poll_url = f"{self.http_base}/batch/status/{job_id}"
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             time.sleep(poll_interval)
@@ -207,7 +207,7 @@ class STTService:
                     "job_id":      job_id,
                 }
             elif status == "failed":
-                err = status_data.get("error", "Unknown transcription error")
+                err = status_data.get("error_message", status_data.get("error", "Unknown transcription error"))
                 logger.error(f"[VexylSTT] Job {job_id} failed: {err}")
                 raise RuntimeError(f"Transcription failed: {err}")
 

@@ -423,7 +423,7 @@ def get_user_sessions(email):
             if "_id" in user_sessions and isinstance(user_sessions["_id"], ObjectId):
                 user_sessions["_id"] = str(user_sessions["_id"])
             user_sessions["sessions"].sort(key=lambda s: s.get("timestamp", ""), reverse=True)
-            user_sessions["sessions"] = user_sessions["sessions"][:5]
+            # user_sessions["sessions"] = user_sessions["sessions"][:5]
             return user_sessions
         return []
     except Exception as e:
