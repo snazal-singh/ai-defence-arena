@@ -135,6 +135,7 @@ async def _async_generate_audio_stream(text: str, lang_code: str):
             logger.debug(f"[VexylTTS] Sent synthesize request for {len(text)} chars")
 
             chunk_count = 0
+            _MAX_CHUNK_BYTES = 50 * 1024 * 1024  # 50 MB decoded limit per chunk
             # Collect messages until audio_end or error
             while True:
                 try:
@@ -149,6 +150,9 @@ async def _async_generate_audio_stream(text: str, lang_code: str):
                 if msg_type == "audio_chunk":
                     audio_b64 = msg.get("audio_b64", "")
                     if audio_b64:
+                        if len(audio_b64) > (_MAX_CHUNK_BYTES * 4 // 3):
+                            logger.error(f"[VexylTTS] Chunk too large ({len(audio_b64)} b64 chars), skipping")
+                            break
                         wav_bytes = base64.b64decode(audio_b64)
                         chunk_count += 1
                         logger.debug(f"[VexylTTS] Chunk {chunk_count}: {len(wav_bytes)} bytes")
@@ -158,6 +162,9 @@ async def _async_generate_audio_stream(text: str, lang_code: str):
                     # Full (non-streaming) response — yield the whole buffer
                     audio_b64 = msg.get("audio_b64", "")
                     if audio_b64:
+                        if len(audio_b64) > (_MAX_CHUNK_BYTES * 4 // 3):
+                            logger.error(f"[VexylTTS] Full audio too large ({len(audio_b64)} b64 chars), skipping")
+                            break
                         yield base64.b64decode(audio_b64)
                     break
 
