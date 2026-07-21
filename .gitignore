@@ -53,3 +53,9 @@ CLAUDE.md
 # Tool-generated indexes
 .codegraph/
 .understand-anything/
+
+# Dev/evaluation artifacts
+docs/
+sample_data/
+results.csv
+*.csv

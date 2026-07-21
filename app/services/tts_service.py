@@ -237,6 +237,7 @@ class TTSService:
         # event loop, communicate results back via a thread-safe queue.
         import queue as _queue
 
+        stop_event = threading.Event()
         result_queue: _queue.Queue = _queue.Queue()
 
         def _thread_target():
@@ -246,6 +247,8 @@ class TTSService:
                 async def _drain():
                     try:
                         async for chunk in _async_generate_audio_stream(cleaned, lang_code):
+                            if stop_event.is_set():
+                                break
                             result_queue.put(chunk)
                     except Exception as exc:
                         result_queue.put(exc)
@@ -263,32 +266,34 @@ class TTSService:
 
         header_sent = False
 
-        while True:
-            item = result_queue.get()
-            if item is None:
-                break
-            if isinstance(item, Exception):
-                logger.error(f"[VexylTTS] Stream error in thread: {item}")
-                break
-            
-            if isinstance(item, bytes):
-                if not header_sent:
-                    if len(item) >= 44:
-                        # Construct a master infinite WAV header from the first chunk's parameters
-                        header = bytearray(item[:44])
-                        header[4:8] = (0x7f000024).to_bytes(4, 'little')   # ChunkSize (file size - 8)
-                        header[40:44] = (0x7f000000).to_bytes(4, 'little') # Subchunk2Size (data size)
-                        yield bytes(header)
-                        # Yield the actual PCM data of the first chunk
-                        yield item[44:]
-                        header_sent = True
-                    else:
-                        yield item
-                else:
-                    # Strip the 44-byte WAV header and yield only the raw PCM bytes
-                    yield item[44:]
+        try:
+            while True:
+                item = result_queue.get()
+                if item is None:
+                    break
+                if isinstance(item, Exception):
+                    logger.error(f"[VexylTTS] Stream error in thread: {item}")
+                    break
 
-        thread.join(timeout=5)
+                if isinstance(item, bytes):
+                    if not header_sent:
+                        if len(item) >= 44:
+                            # Construct a master infinite WAV header from the first chunk's parameters
+                            header = bytearray(item[:44])
+                            header[4:8] = (0x7f000024).to_bytes(4, 'little')   # ChunkSize (file size - 8)
+                            header[40:44] = (0x7f000000).to_bytes(4, 'little') # Subchunk2Size (data size)
+                            yield bytes(header)
+                            # Yield the actual PCM data of the first chunk
+                            yield item[44:]
+                            header_sent = True
+                        else:
+                            yield item
+                    else:
+                        # Strip the 44-byte WAV header and yield only the raw PCM bytes
+                        yield item[44:]
+        finally:
+            stop_event.set()
+            thread.join(timeout=2)
 
     def generate_audio_buffer(self, text: str, language: str = "english") -> Optional[bytes]:
         """
