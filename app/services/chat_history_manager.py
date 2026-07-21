@@ -5,12 +5,14 @@ This module handles storage, retrieval, and management of chat history using Mon
 Added support for chat names stored in a separate collection.
 """
 
+import base64
 import logging
 import uuid
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 import re
 import json
+from bson import Binary
 from pymongo import MongoClient, IndexModel, ASCENDING, DESCENDING
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
@@ -152,17 +154,28 @@ class ChatHistoryManager:
         return f"Chat {now.strftime('%Y-%m-%d %H:%M')}"
 
     def save_image(self, user_session: str, chat_id: str, data_uri: str) -> Optional[str]:
-        """Store a base64 data URI image in the chat_images collection. Returns image_id or None."""
+        """Store image as BSON Binary in the chat_images collection. Returns image_id or None."""
         if not self._is_available() or self.chat_images_collection is None:
             return None
         try:
+            # Strip data URI header and decode to raw bytes for efficient BSON Binary storage
+            mime_type = "image/jpeg"
+            raw_bytes = b""
+            if data_uri.startswith("data:"):
+                header, _, b64_data = data_uri.partition(",")
+                mime_type = header.split(":")[1].split(";")[0]
+                raw_bytes = base64.b64decode(b64_data)
+            else:
+                raw_bytes = base64.b64decode(data_uri)
+
             image_id = str(uuid.uuid4())
             self.chat_images_collection.insert_one({
                 "image_id": image_id,
                 "user_session": user_session,
                 "chat_id": chat_id or self.DEFAULT_CHAT_ID,
                 "created_at": datetime.utcnow(),
-                "data": data_uri,
+                "mime_type": mime_type,
+                "data": Binary(raw_bytes),
             })
             logger.debug(f"Saved image {image_id} for session {user_session}")
             return image_id
@@ -171,12 +184,21 @@ class ChatHistoryManager:
             return None
 
     def get_image(self, image_id: str) -> Optional[str]:
-        """Retrieve image data URI by image_id. Returns None if not found."""
+        """Retrieve image as data URI by image_id. Returns None if not found."""
         if not self._is_available() or self.chat_images_collection is None:
             return None
         try:
-            doc = self.chat_images_collection.find_one({"image_id": image_id}, {"data": 1, "_id": 0})
-            return doc.get("data") if doc else None
+            doc = self.chat_images_collection.find_one(
+                {"image_id": image_id}, {"data": 1, "mime_type": 1, "_id": 0}
+            )
+            if not doc:
+                return None
+            raw = doc.get("data")
+            # Handle both new BSON Binary format and legacy base64 string format
+            if isinstance(raw, (bytes, Binary)):
+                mime = doc.get("mime_type", "image/jpeg")
+                return f"data:{mime};base64,{base64.b64encode(bytes(raw)).decode()}"
+            return raw  # legacy string passthrough
         except Exception as e:
             logger.error(f"Error fetching image {image_id}: {e}")
             return None

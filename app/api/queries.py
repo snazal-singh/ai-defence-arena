@@ -404,7 +404,6 @@ def tts_health(user_email: str = Depends(get_current_user)):
     return {
         "status": "healthy" if ok else "degraded",
         "tts_available": ok,
-        "vexyl_url": tts_service.vexyl_url,
         "message": "Vexyl-TTS is ready" if ok else "Vexyl-TTS is not reachable",
     }
 
