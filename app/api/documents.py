@@ -260,18 +260,19 @@ def list_mongo_server_collections(
 
 
 @router.put("/containers/{session_id}/mongodb/servers/{server_id}/collection")
-def select_mongo_server_collection(
+def select_mongo_server_collections(
     session_id: str,
     server_id: str,
     body: MongoCollectionSelectRequest,
     user_email: str = Depends(get_current_user),
 ):
-    """Lock this server to the single collection the user picked from the
-    dropdown. All subsequent queries against this server target only that
-    collection."""
+    """Lock this server to one or more collections the user picked from the
+    dropdown, replacing any previous selection. All subsequent queries
+    against this server target only these collections. Pass an empty list
+    to clear the lock and put every collection back in scope."""
     user_session = user_email + session_id.lower()
-    ok, message = external_mongo_connection.select_collection(
-        user_session, server_id, body.collection
+    ok, message = external_mongo_connection.select_collections(
+        user_session, server_id, body.collections
     )
     if not ok:
         raise HTTPException(status_code=400, detail=message)

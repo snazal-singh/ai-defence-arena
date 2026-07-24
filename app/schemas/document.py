@@ -12,7 +12,7 @@ class MongoServerConnectRequest(BaseModel):
 
 
 class MongoCollectionSelectRequest(BaseModel):
-    collection: str
+    collections: List[str]
 
 
 class ContainerItem(BaseModel):

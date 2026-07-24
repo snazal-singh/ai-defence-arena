@@ -225,29 +225,38 @@ def format_schema_catalog(server_id: str, catalog: Dict[str, Dict[str, Dict[str,
 
 def format_server_schema(server: Dict[str, Any]) -> str:
     """Schema lines for one attached server, honoring a locked
-    selected_collection if the user picked one from the collection dropdown
-    -- in that case only that single collection's line is shown, so query
-    routing has no other collection on this server to (mis)pick."""
+    selected_collections list if the user picked one or more from the
+    collection dropdown -- in that case only those collections' lines are
+    shown, so query routing has no other collection on this server to
+    (mis)pick."""
     catalog = server.get("schema_catalog", {})
-    selected = server.get("selected_collection")
+    selected = server.get("selected_collections") or []
     database_name = server.get("database_name")
 
     if selected and database_name:
-        fields = catalog.get(database_name, {}).get(selected)
-        if fields is None:
-            # Selected collection no longer in the cached catalog (e.g. the
-            # server changed since attach) -- fall back to the full catalog
-            # rather than silently showing nothing for this server.
+        db_catalog = catalog.get(database_name, {})
+        lines = []
+        missing = []
+        for coll_name in selected:
+            fields = db_catalog.get(coll_name)
+            if fields is None:
+                missing.append(coll_name)
+                continue
+            field_desc = ", ".join(f"{k} ({v})" for k, v in fields.items()) if fields else "(empty)"
+            lines.append(
+                f"Server: {server['server_id']} | DB: {database_name} | "
+                f"Collection: {coll_name} | Fields: {field_desc}"
+            )
+        if missing:
+            # One or more selected collections no longer in the cached
+            # catalog (e.g. the server changed since attach) -- fall back to
+            # the full catalog rather than silently dropping them.
             logger.warning(
-                f"Selected collection '{selected}' not found in cached catalog "
+                f"Selected collections {missing} not found in cached catalog "
                 f"for server '{server.get('server_id')}'; showing full catalog"
             )
             return format_schema_catalog(server["server_id"], catalog)
-        field_desc = ", ".join(f"{k} ({v})" for k, v in fields.items()) if fields else "(empty)"
-        return (
-            f"Server: {server['server_id']} | DB: {database_name} | "
-            f"Collection: {selected} | Fields: {field_desc}"
-        )
+        return "\n".join(lines)
 
     return format_schema_catalog(server["server_id"], catalog)
 
@@ -315,10 +324,10 @@ def attach_server(
         "encrypted_uri": _encrypt(connection_uri),
         "database_name": database_name,
         "schema_catalog": catalog,
-        # Set later via select_collection() once the user picks from the
-        # collection dropdown; None means "not yet chosen, all collections
+        # Set later via select_collections() once the user picks from the
+        # collection dropdown; empty means "not yet chosen, all collections
         # in scope" until then.
-        "selected_collection": None,
+        "selected_collections": [],
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -353,8 +362,8 @@ def remove_server(user_session: str, server_id: str) -> bool:
 def get_combined_schema_text(user_session: str) -> str:
     """All attached servers' cached catalogs, formatted for the intent
     classification prompt. Uses the cache built at attach-time -- does not
-    re-sample the live server on every question. A server with a locked
-    selected_collection only contributes that one collection's line (see
+    re-sample the live server on every question. A server with locked
+    selected_collections only contributes those collections' lines (see
     format_server_schema)."""
     lines = []
     for server in database.get_mongo_servers(user_session):
@@ -393,30 +402,36 @@ def list_collections_for_server(
     )
 
 
-def select_collection(user_session: str, server_id: str, collection_name: str) -> Tuple[bool, str]:
-    """Lock an attached server to one collection the user picked from the
-    dropdown. All subsequent queries against this server target only this
-    collection (see format_server_schema / mongodb_db._build_query_targets)."""
+def select_collections(user_session: str, server_id: str, collection_names: List[str]) -> Tuple[bool, str]:
+    """Lock an attached server to one or more collections the user picked
+    from the dropdown -- replaces any previous selection wholesale. All
+    subsequent queries against this server target only these collections
+    (see format_server_schema / mongodb_db._build_query_targets). Passing an
+    empty list clears the lock, putting every collection in this server's
+    database back in scope."""
     server = _find_server_config(user_session, server_id)
     if server is None:
         return False, f"No server '{server_id}' attached to this session"
 
     database_name = server.get("database_name")
-    if not database_name:
-        return False, "This server has no single database scope to select a collection within"
+    if collection_names and not database_name:
+        return False, "This server has no single database scope to select collections within"
 
-    available = server.get("schema_catalog", {}).get(database_name, {})
-    if collection_name not in available:
+    available = server.get("schema_catalog", {}).get(database_name, {}) if database_name else {}
+    missing = [c for c in collection_names if c not in available]
+    if missing:
         return False, (
-            f"Collection '{collection_name}' was not found in database "
+            f"Collection(s) {missing} were not found in database "
             f"'{database_name}' on this server (available: {sorted(available.keys())})"
         )
 
-    if not database.set_mongo_server_selected_collection(user_session, server_id, collection_name):
+    if not database.set_mongo_server_selected_collections(user_session, server_id, collection_names):
         return False, "Failed to save collection selection"
 
-    logger.info(f"Locked server '{server_id}' to collection '{collection_name}' for session {user_session}")
-    return True, f"Collection '{collection_name}' selected"
+    logger.info(f"Locked server '{server_id}' to collections {collection_names} for session {user_session}")
+    if collection_names:
+        return True, f"{len(collection_names)} collection(s) selected"
+    return True, "Collection selection cleared"
 
 
 # ---------------------------------------------------------------------------

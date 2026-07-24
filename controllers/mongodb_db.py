@@ -286,13 +286,14 @@ def _build_query_targets(user_session: str) -> Tuple[str, List[Tuple[Optional[st
     for server in external_mongo_connection.list_servers(user_session):
         server_id = server["server_id"]
         database_name = server.get("database_name")
-        selected = server.get("selected_collection")
+        selected = server.get("selected_collections") or []
 
         if selected and database_name:
-            # Locked to one collection via the dropdown -- this is the only
-            # valid target for this server, matching the single line
+            # Locked to specific collections via the dropdown -- these are
+            # the only valid targets for this server, matching the lines
             # format_server_schema shows the LLM for it.
-            targets.append((server_id, database_name, selected))
+            for coll_name in selected:
+                targets.append((server_id, database_name, coll_name))
             continue
 
         for db_name, collections in server.get("schema_catalog", {}).items():
@@ -320,7 +321,8 @@ Guidelines:
      "database": <the exact DB name from that same line if server_id is set, otherwise null>,
      "collection": "<the exact collection name to query, matching one of the collections listed above under the chosen server_id/database (or one of this session's own collections if server_id is null)>",
      "operation": "find" | "aggregate" | "count_documents" | "distinct",
-     "query": <dict for query filters, or distinct format {{"key": "<field_name>", "filter": <query_dict>}}>,
+     "query": <dict of query filters, e.g. {{"field": "value"}}, or {{}} for no filter>,
+     "key": <required only when operation is "distinct" -- the exact field name to get distinct values of, as a top-level property alongside "operation", NOT nested inside "query">,
      "projection": <dict of fields to return, optional>,
      "pipeline": <list of aggregate pipeline stages, required if operation is aggregate>,
      "sort": <list of [field_name, direction] lists (e.g. [["field", -1]]), optional>,
@@ -465,7 +467,13 @@ def execute_safe_mongo_query(
         return [{"count": count}]
 
     elif operation == "distinct":
-        key = query_dict.get("key")
+        # The LLM is prompted to nest "key" inside "query" (e.g.
+        # {"key": "field", "filter": {...}}), but it doesn't reliably follow
+        # that -- it just as often puts "key" as a top-level sibling of
+        # "query" (mirroring pymongo's own collection.distinct(key, filter)
+        # signature, which takes them as separate args). Accept either shape
+        # rather than failing a plan the LLM otherwise got right.
+        key = query_dict.get("key") or query_plan.get("key")
         filter_dict = query_dict.get("filter", {})
         if not key:
             raise ValueError("Distinct operation requires a 'key' in query dictionary")
