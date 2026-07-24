@@ -1,4 +1,16 @@
-"""Shared BCP-47 locale mappings for Vexyl-STT and Vexyl-TTS."""
+"""Shared language code mappings used across STT, TTS, and query services."""
+
+# ISO 639-1/3 code → display name (used for translation service calls)
+ISO_TO_NAME: dict[str, str] = {
+    "en":  "English",   "hi":  "Hindi",     "kok": "Gom",
+    "kn":  "Kannada",   "doi": "Dogri",     "brx": "Bodo",
+    "ur":  "Urdu",      "ta":  "Tamil",     "ks":  "Kashmiri",
+    "as":  "Assamese",  "bn":  "Bengali",   "mr":  "Marathi",
+    "sd":  "Sindhi",    "mai": "Maithili",  "pa":  "Punjabi",
+    "ml":  "Malayalam", "mni": "Manipuri",  "te":  "Telugu",
+    "sa":  "Sanskrit",  "ne":  "Nepali",    "sat": "Santali",
+    "gu":  "Gujarati",  "or":  "Odia",
+}
 
 # ISO 639-1/3 codes and full language names → Vexyl BCP-47 locale tags.
 # "auto" passes through unchanged for STT language-detection mode.

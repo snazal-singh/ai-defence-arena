@@ -30,7 +30,10 @@ logger = logging.getLogger(__name__)
 
 def _to_vexyl_lang(language: str) -> str:
     """Normalize an ISO 639-1/3 code or language name to a Vexyl BCP-47 locale tag."""
-    return ISO_TO_BCP47.get(str(language).lower().strip(), "en-IN")
+    key = str(language).lower().strip()
+    if key == "auto":
+        return "en-IN"  # TTS has no auto-detection; fall back to English
+    return ISO_TO_BCP47.get(key, "en-IN")
 
 
 def _ws_to_http(ws_url: str) -> str:

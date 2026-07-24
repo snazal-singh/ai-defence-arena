@@ -13,6 +13,7 @@ from app.services.query_agent_service import get_query_agent_service
 from controllers.database import is_user_limit_over, is_trial_limit_over
 from utils.guardrails import input_guardrail_pipeline
 from utils.translation import translate_to_english
+from utils.language_codes import ISO_TO_NAME
 from controllers.ask import get_demo_response
 
 # Configure logging
@@ -271,15 +272,7 @@ class QueryService:
             "image_caption": data.get("image_caption")
         }
 
-    # Language code → name map (ISO 639-1 keys)
-    LANGUAGE_MAP = {
-        "hi": "Hindi",  "kok": "Gom",    "kn": "Kannada",  "doi": "Dogri",
-        "brx": "Bodo",  "ur": "Urdu",    "ta": "Tamil",    "ks": "Kashmiri",
-        "as": "Assamese","bn": "Bengali", "mr": "Marathi",  "sd": "Sindhi",
-        "mai": "Maithili","pa": "Punjabi","ml": "Malayalam","mni": "Manipuri",
-        "te": "Telugu", "sa": "Sanskrit","ne": "Nepali",   "sat": "Santali",
-        "gu": "Gujarati","or": "Odia",   "en": "English",
-    }
+    LANGUAGE_MAP = ISO_TO_NAME
 
     def _translate_input_to_english(self, message: str, input_language: str) -> str:
         """
