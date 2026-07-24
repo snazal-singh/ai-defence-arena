@@ -18,6 +18,7 @@ from app.services.adaptive_search_service import get_adaptive_search_service, Ad
 from app.services.result_synthesis_service import get_result_synthesis_service
 from app.services.context_provider_service import get_context_provider_service
 from app.services.llm_service import get_standard_llm
+from utils.language_codes import ISO_TO_NAME
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -488,15 +489,7 @@ Respond with JSON:
     
     def _get_language_name(self, language_code: str) -> str:
         """Get the language name from its ISO 639-1 code."""
-        languages = {
-            "hi": "Hindi",  "kok": "Gom",    "kn": "Kannada",  "doi": "Dogri",
-            "brx": "Bodo",  "ur": "Urdu",    "ta": "Tamil",    "ks": "Kashmiri",
-            "as": "Assamese","bn": "Bengali", "mr": "Marathi",  "sd": "Sindhi",
-            "mai": "Maithili","pa": "Punjabi","ml": "Malayalam","mni": "Manipuri",
-            "te": "Telugu", "sa": "Sanskrit","ne": "Nepali",   "sat": "Santali",
-            "gu": "Gujarati","or": "Odia",   "en": "English",
-        }
-        return languages.get(str(language_code), 'English')
+        return ISO_TO_NAME.get(str(language_code), "English")
     
     def should_use_creative_mode(self, mode: str, query_complexity: Optional[str] = None) -> bool:
         """Determine if creative mode should be used."""
