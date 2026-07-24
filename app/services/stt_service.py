@@ -22,66 +22,14 @@ import requests
 import websockets
 
 from app.core.config import settings as Config
+from utils.language_codes import ISO_TO_BCP47
 
 logger = logging.getLogger(__name__)
-
-# ─── Language mapping ──────────────────────────────────────────────────────────
-_LANG_MAP: dict[str, str] = {
-    # ISO 639-1/3 codes (sent by frontend)
-    "en":  "en-IN",
-    "hi":  "hi-IN",
-    "ml":  "ml-IN",
-    "ta":  "ta-IN",
-    "te":  "te-IN",
-    "kn":  "kn-IN",
-    "bn":  "bn-IN",
-    "gu":  "gu-IN",
-    "mr":  "mr-IN",
-    "pa":  "pa-IN",
-    "or":  "or-IN",
-    "as":  "as-IN",
-    "ur":  "ur-IN",
-    "ne":  "ne-IN",
-    "sa":  "sa-IN",
-    "kok": "kok-IN",
-    "brx": "brx-IN",
-    "doi": "doi-IN",
-    "mai": "mai-IN",
-    "mni": "mni-IN",
-    "sat": "sat-IN",
-    "sd":  "sd-IN",
-    "ks":  "ks-IN",
-    "auto": "auto",
-    # Full text names (fallback)
-    "english":   "en-IN",
-    "hindi":     "hi-IN",
-    "malayalam": "ml-IN",
-    "tamil":     "ta-IN",
-    "telugu":    "te-IN",
-    "kannada":   "kn-IN",
-    "bengali":   "bn-IN",
-    "gujarati":  "gu-IN",
-    "marathi":   "mr-IN",
-    "punjabi":   "pa-IN",
-    "odia":      "or-IN",
-    "assamese":  "as-IN",
-    "urdu":      "ur-IN",
-    "nepali":    "ne-IN",
-    "sanskrit":  "sa-IN",
-    "konkani":   "kok-IN",
-    "bodo":      "brx-IN",
-    "dogri":     "doi-IN",
-    "maithili":  "mai-IN",
-    "manipuri":  "mni-IN",
-    "santali":   "sat-IN",
-    "sindhi":    "sd-IN",
-}
 
 
 def _to_vexyl_lang(language) -> str:
     """Normalize an ISO 639-1 code or language name to a Vexyl BCP-47 locale tag."""
-    key = str(language).lower().strip()
-    return _LANG_MAP.get(key, "auto")
+    return ISO_TO_BCP47.get(str(language).lower().strip(), "auto")
 
 
 def _ws_to_http(ws_url: str) -> str:

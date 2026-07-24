@@ -3,7 +3,6 @@ import logging
 import time
 import os
 import uuid
-import base64
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
@@ -161,7 +160,7 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
         image = form.get("image")
         logger.debug(f"Checking image: image={bool(image)}, type={type(image).__name__}, filename={getattr(image, 'filename', None)}")
         if image and (type(image).__name__ == "UploadFile" or hasattr(image, "filename")) and getattr(image, "filename", None):
-            import base64, os
+            import os
             ext = (os.path.splitext(image.filename)[1] or ".jpg").lstrip(".")
             mime = f"image/{ext}" if ext else "image/jpeg"
 
@@ -179,10 +178,9 @@ async def ask(request: Request, user_email: str = Depends(get_current_user)):
                 except Exception as e:
                     logger.error(f"Error calling vision service for caption: {e}")
 
-                # Store image in MongoDB
-                data_uri = f"data:{mime};base64,{base64.b64encode(image_bytes).decode()}"
+                # Store image as BSON Binary in MongoDB
                 user_session_for_img = user_email + (session_id or "").lower()
-                image_id = chat_history_manager.save_image(user_session_for_img, chat_id, data_uri)
+                image_id = chat_history_manager.save_image(user_session_for_img, chat_id, image_bytes, mime)
                 logger.info(f"Stored image in MongoDB with id: {image_id}")
 
         data = {
@@ -267,7 +265,13 @@ def ask_stream(
 
     def generate():
         try:
+            from utils.translation import translate_to_indic
             user_query = query_service._extract_query_parameters(data)
+
+            # Translate input query to English for RAG retrieval
+            user_query["message"] = query_service._translate_input_to_english(
+                user_query["message"], user_query["input_language"]
+            )
 
             guardrail_response = query_service._guardrail.process_input(user_query["message"])
             if guardrail_response.get("status") == "blocked":
@@ -283,6 +287,9 @@ def ask_stream(
             from app.services.creative_reasoning_service import get_creative_reasoning_service
             creative_service = get_creative_reasoning_service()
 
+            out_lang = user_query["output_language"]
+            out_lang_name = query_service.LANGUAGE_MAP.get(out_lang, "English")
+
             for event in creative_service.process_creative_query_stream(
                 user_query["message"],
                 session_name,
@@ -293,6 +300,11 @@ def ask_stream(
                 chat_context,
                 chat_id,
             ):
+                # Translate the final answer to the requested output language
+                if event.get("type") == "complete" and out_lang_name != "English":
+                    content = event.get("content", {})
+                    if isinstance(content, dict) and content.get("answer"):
+                        content["answer"] = translate_to_indic(content["answer"], out_lang_name)
                 yield f"data: {json.dumps(event)}\n\n"
 
         except Exception as e:
@@ -414,14 +426,14 @@ def tts_health(user_email: str = Depends(get_current_user)):
 
 @router.post("/stt-transcribe")
 @limiter.limit("20/minute")
-def stt_transcribe(
+async def stt_transcribe(
     request: Request,
     audio: UploadFile = File(...),
     language: str = Query(default="auto"),
     user_email: str = Depends(get_current_user),
 ):
     """Transcribe an uploaded audio file via Vexyl-STT."""
-    audio_bytes = audio.file.read()
+    audio_bytes = await audio.read()
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Audio file is empty.")
 
@@ -451,7 +463,6 @@ def stt_health(user_email: str = Depends(get_current_user)):
     return {
         "status": "healthy" if ok else "degraded",
         "stt_available": ok,
-        "vexyl_url": stt_service.stt_url,
         "message": "Vexyl-STT is ready" if ok else "Vexyl-STT is not reachable",
     }
 
@@ -576,12 +587,14 @@ def get_chat_history(
         return {"success": True, "messages": [], "total_messages": 0, "session_exists": False, "chatId": chat_id, "chatName": chat_name}
 
     recent = chat_session.get_recent_messages(limit)
+    dicts = [msg.to_dict() for msg in recent]
+    image_ids = [(d.get("metadata") or {}).get("image_id") for d in dicts]
+    ids_to_fetch = [i for i in image_ids if i]
+    images = chat_history_manager.get_images_batch(ids_to_fetch) if ids_to_fetch else {}
+
     messages = []
-    for msg in recent:
-        d = msg.to_dict()
+    for d, image_id in zip(dicts, image_ids):
         metadata = d.get("metadata") or {}
-        image_id = metadata.get("image_id")
-        image_data = chat_history_manager.get_image(image_id) if image_id else None
         messages.append({
             "message_id": d.get("message_id"),
             "timestamp": d.get("timestamp"),
@@ -589,7 +602,7 @@ def get_chat_history(
             "content": d.get("content"),
             "query_type": d.get("query_type"),
             "save_to_note": d.get("save_to_note", False),
-            "image": image_data,
+            "image": images.get(image_id) if image_id else None,
             "image_caption": metadata.get("image_caption"),
         })
 
