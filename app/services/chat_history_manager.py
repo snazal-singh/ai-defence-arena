@@ -153,21 +153,12 @@ class ChatHistoryManager:
         now = datetime.utcnow()
         return f"Chat {now.strftime('%Y-%m-%d %H:%M')}"
 
-    def save_image(self, user_session: str, chat_id: str, data_uri: str) -> Optional[str]:
+    def save_image(self, user_session: str, chat_id: str, image_bytes: bytes, mime_type: str = "image/jpeg") -> Optional[str]:
         """Store image as BSON Binary in the chat_images collection. Returns image_id or None."""
         if not self._is_available() or self.chat_images_collection is None:
             return None
         try:
-            # Strip data URI header and decode to raw bytes for efficient BSON Binary storage
-            mime_type = "image/jpeg"
-            raw_bytes = b""
-            if data_uri.startswith("data:"):
-                header, _, b64_data = data_uri.partition(",")
-                mime_type = header.split(":")[1].split(";")[0]
-                raw_bytes = base64.b64decode(b64_data)
-            else:
-                raw_bytes = base64.b64decode(data_uri)
-
+            raw_bytes = image_bytes
             image_id = str(uuid.uuid4())
             self.chat_images_collection.insert_one({
                 "image_id": image_id,
@@ -202,6 +193,27 @@ class ChatHistoryManager:
         except Exception as e:
             logger.error(f"Error fetching image {image_id}: {e}")
             return None
+
+    def get_images_batch(self, image_ids: list) -> dict:
+        """Fetch multiple images in one query. Returns {image_id: data_uri_or_None}."""
+        result: dict = {id_: None for id_ in image_ids}
+        if not self._is_available() or self.chat_images_collection is None or not image_ids:
+            return result
+        try:
+            docs = self.chat_images_collection.find(
+                {"image_id": {"$in": image_ids}},
+                {"image_id": 1, "data": 1, "mime_type": 1, "_id": 0},
+            )
+            for doc in docs:
+                raw = doc.get("data")
+                if isinstance(raw, (bytes, Binary)):
+                    mime = doc.get("mime_type", "image/jpeg")
+                    result[doc["image_id"]] = f"data:{mime};base64,{base64.b64encode(bytes(raw)).decode()}"
+                elif raw:
+                    result[doc["image_id"]] = raw
+        except Exception as e:
+            logger.error(f"Error batch-fetching images: {e}")
+        return result
 
     def _create_chat_name_entry(self, user_session: str, chat_id: str, chat_name: str = None) -> bool:
         """Create a chat name entry in the chat_names collection."""

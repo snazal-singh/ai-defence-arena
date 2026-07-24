@@ -23,42 +23,14 @@ import requests
 import websockets
 
 from app.core.config import settings as Config
+from utils.language_codes import ISO_TO_BCP47
 
 logger = logging.getLogger(__name__)
 
-# ─── Language mapping ──────────────────────────────────────────────────────────
-# Maps ISO 639-1/3 codes → Vexyl BCP-47 locale tags
-_LANG_MAP: dict[str, str] = {
-    "en":  "en-IN",
-    "hi":  "hi-IN",
-    "kok": "kok-IN",
-    "kn":  "kn-IN",
-    "doi": "doi-IN",
-    "brx": "brx-IN",
-    "ur":  "ur-IN",
-    "ta":  "ta-IN",
-    "ks":  "ks-IN",
-    "as":  "as-IN",
-    "bn":  "bn-IN",
-    "mr":  "mr-IN",
-    "sd":  "sd-IN",
-    "mai": "mai-IN",
-    "pa":  "pa-IN",
-    "ml":  "ml-IN",
-    "mni": "mni-IN",
-    "te":  "te-IN",
-    "sa":  "sa-IN",
-    "ne":  "ne-IN",
-    "sat": "sat-IN",
-    "gu":  "gu-IN",
-    "or":  "or-IN",
-}
-
 
 def _to_vexyl_lang(language: str) -> str:
-    """Normalize an ISO 639-1/3 code to a Vexyl BCP-47 locale tag."""
-    key = str(language).lower().strip()
-    return _LANG_MAP.get(key, "en-IN")
+    """Normalize an ISO 639-1/3 code or language name to a Vexyl BCP-47 locale tag."""
+    return ISO_TO_BCP47.get(str(language).lower().strip(), "en-IN")
 
 
 def _ws_to_http(ws_url: str) -> str:
