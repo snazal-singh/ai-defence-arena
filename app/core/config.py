@@ -16,6 +16,14 @@ class Settings(BaseSettings):
     # user-supplied external MongoDB connection strings at rest. Generate with
     # `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
     EXTERNAL_MONGO_ENCRYPTION_KEY: str = ""
+
+    # DEV/TESTING ONLY: the external-Mongo-connector SSRF guard
+    # (controllers/external_mongo_connection.py) normally rejects
+    # localhost/private/loopback hosts, since a real deployment's backend
+    # could otherwise be pointed at its own internal infrastructure. Set to
+    # true only for local development against a Mongo instance on the same
+    # machine — never enable this in a real deployment.
+    ALLOW_LOCAL_MONGO: bool = False
     
     # MySQL
     MYSQL_HOST: str

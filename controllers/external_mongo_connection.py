@@ -120,6 +120,9 @@ def validate_connection_uri(connection_uri: str) -> Tuple[bool, str]:
     if not parsed.hostname:
         return False, "Connection URI must include a host"
 
+    if settings.ALLOW_LOCAL_MONGO:
+        return True, ""
+
     # mongodb+srv:// resolves via DNS SRV records rather than a plain A/AAAA
     # lookup; skip the direct IP check for it (the driver resolves it at
     # connect time) but still block the obvious loopback/hostname cases.

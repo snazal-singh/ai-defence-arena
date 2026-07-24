@@ -132,7 +132,14 @@ def process_json_file(file, db: pymongo.database.Database) -> List[str]:
     created_collections = []
     try:
         file.seek(0)
-        payload = json.load(file)
+        raw = file.read()
+        if isinstance(raw, bytes):
+            raw = raw.decode("utf-8")
+        # Use json_util (not plain json.load) so MongoDB Extended JSON
+        # notation — {"$oid": ...}, {"$date": ...}, {"$numberLong": ...} —
+        # round-trips into real ObjectId/datetime/int values instead of
+        # being inserted as literal nested dicts with no query semantics.
+        payload = json_util.loads(raw)
         documents = _normalize_json_payload(payload)
 
         collection_name = sanitize_identifier(file.filename.rsplit('.', 1)[0])
@@ -421,6 +428,18 @@ def execute_safe_mongo_query(
     database_name = query_plan.get("database")
     collection_name = query_plan.get("collection")
     operation = query_plan.get("operation", "find")
+
+    # Weaker/local LLMs sometimes drop server_id/database from the plan
+    # entirely (observed with a local Mistral model) despite the prompt's
+    # schema clearly listing them, even though it gets the collection name
+    # right. If the collection name alone unambiguously identifies exactly
+    # one allowed target, resolve server_id/database from that match rather
+    # than rejecting an otherwise-correct plan. Still rejected as before if
+    # the name is ambiguous (matches >1 target) or matches none.
+    if not server_id and not database_name and collection_name and allowed_targets:
+        matches = [t for t in allowed_targets if t[2] == collection_name]
+        if len(matches) == 1:
+            server_id, database_name, _ = matches[0]
 
     if allowed_targets is not None and (server_id, database_name, collection_name) not in allowed_targets:
         raise ValueError(

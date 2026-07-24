@@ -188,12 +188,14 @@ def delete_container(
 # Lets a user attach one or more of their own externally-hosted MongoDB
 # servers (e.g. Atlas) to a container, as an additional structured data
 # source alongside data ingested from uploaded JSON files. Only publicly
-# reachable Mongo servers are supported -- this backend has no network path
-# to a server on the user's own local machine/LAN. See
-# controllers/external_mongo_connection.py for the connection/validation/
-# introspection logic; once attached, schema-aware SQL-vs-Mongo intent
-# routing and query generation for this container automatically include
-# every attached server's cached schema catalog.
+# reachable Mongo servers are supported by default -- this backend has no
+# network path to a server on the user's own local machine/LAN unless
+# settings.ALLOW_LOCAL_MONGO is set (dev/testing only, never in a real
+# deployment -- see controllers/external_mongo_connection.py). See that
+# module for the connection/validation/introspection logic; once attached,
+# schema-aware SQL-vs-Mongo intent routing and query generation for this
+# container automatically include every attached server's cached schema
+# catalog.
 # ---------------------------------------------------------------------------
 
 @router.post("/containers/{session_id}/mongodb/connect")
