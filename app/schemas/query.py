@@ -1,25 +1,25 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, AliasChoices
 from typing import Any, Dict, List, Optional, Union
 
 
 class TrialQueryRequest(BaseModel):
     fingerprint: str
     message: str
-    inputLanguage: Optional[str] = "en"
-    outputLanguage: Optional[str] = "en"
-    hasCsvOrXlsx: Optional[bool] = False
+    inputLanguage: Optional[Union[str, int]] = Field(default="en", validation_alias=AliasChoices('inputLanguage', 'input_language'))
+    outputLanguage: Optional[Union[str, int]] = Field(default="en", validation_alias=AliasChoices('outputLanguage', 'output_language'))
+    hasCsvOrXlsx: Optional[bool] = Field(default=False, validation_alias=AliasChoices('hasCsvOrXlsx', 'has_csv_or_xlsx'))
     mode: Optional[str] = "default"
     filenames: Optional[List[str]] = []
 
 
 class QueryRequest(BaseModel):
     message: str
-    chatId: str
-    sessionId: Optional[str] = None
+    chatId: Optional[str] = Field(default=None, validation_alias=AliasChoices('chatId', 'chat_id'))
+    sessionId: Optional[str] = Field(default=None, validation_alias=AliasChoices('sessionId', 'session_id'))
     context: Optional[Union[str, bool]] = ""
-    inputLanguage: Optional[str] = "en"
-    outputLanguage: Optional[str] = "en"
-    hasCsvOrXlsx: Optional[bool] = False
+    inputLanguage: Optional[Union[str, int]] = Field(default="en", validation_alias=AliasChoices('inputLanguage', 'input_language'))
+    outputLanguage: Optional[Union[str, int]] = Field(default="en", validation_alias=AliasChoices('outputLanguage', 'output_language'))
+    hasCsvOrXlsx: Optional[bool] = Field(default=False, validation_alias=AliasChoices('hasCsvOrXlsx', 'has_csv_or_xlsx'))
     mode: Optional[str] = "default"
     filenames: Optional[List[str]] = []
 
@@ -29,20 +29,20 @@ class DemoQueryRequest(BaseModel):
 
 
 class ToggleNoteRequest(BaseModel):
-    sessionId: str
-    chatId: Optional[str] = "default"
-    messageId: str
+    sessionId: str = Field(validation_alias=AliasChoices('sessionId', 'session_id'))
+    chatId: Optional[str] = Field(default="default", validation_alias=AliasChoices('chatId', 'chat_id'))
+    messageId: str = Field(validation_alias=AliasChoices('messageId', 'message_id'))
 
 
 class RenameChatRequest(BaseModel):
-    sessionId: str
-    chatId: Optional[str] = "default"
-    newChatName: str
+    sessionId: str = Field(validation_alias=AliasChoices('sessionId', 'session_id'))
+    chatId: Optional[str] = Field(default="default", validation_alias=AliasChoices('chatId', 'chat_id'))
+    newChatName: str = Field(validation_alias=AliasChoices('newChatName', 'new_chat_name'))
 
 
 class AnalyzeContextRequest(BaseModel):
-    sessionId: str
-    chatId: Optional[str] = "default"
+    sessionId: str = Field(validation_alias=AliasChoices('sessionId', 'session_id'))
+    chatId: Optional[str] = Field(default="default", validation_alias=AliasChoices('chatId', 'chat_id'))
     query: str
 
 
@@ -92,3 +92,4 @@ class RenameChatResponse(BaseModel):
     message: str
     chat_id: Optional[str] = None
     new_chat_name: Optional[str] = None
+

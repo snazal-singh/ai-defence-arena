@@ -8,8 +8,9 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from app.api.adapters import UploadFileList
 from app.api.deps import get_current_user
-from app.schemas.document import RenameContainerBody
+from app.schemas.document import MongoServerConnectRequest, MongoCollectionSelectRequest, RenameContainerBody
 from app.services.document_service import get_document_service
+from controllers import external_mongo_connection
 
 logger = logging.getLogger(__name__)
 
@@ -70,12 +71,13 @@ def free_trial(
 
 @router.post("/upload")
 def upload(
-    session_id: str = Form(..., alias="sessionId"),
+    sessionId: str = Form(...),
     files: List[UploadFile] = File(default=[]),
     urls: Optional[str] = Form(default=None),
     user_email: str = Depends(get_current_user),
 ):
     """Create a new container and upload documents / URLs into it."""
+    session_id = sessionId
     parsed_urls = _parse_urls(urls)
     user_session = user_email + session_id.lower()
     file_list = UploadFileList(files)
@@ -178,6 +180,107 @@ def delete_container(
     if not success:
         raise HTTPException(status_code=500, detail="Error deleting container.")
     return {"message": "Container deleted successfully"}
+
+
+# ---------------------------------------------------------------------------
+# External MongoDB servers (multi-server)
+#
+# Lets a user attach one or more of their own externally-hosted MongoDB
+# servers (e.g. Atlas) to a container, as an additional structured data
+# source alongside data ingested from uploaded JSON files. Only publicly
+# reachable Mongo servers are supported by default -- this backend has no
+# network path to a server on the user's own local machine/LAN unless
+# settings.ALLOW_LOCAL_MONGO is set (dev/testing only, never in a real
+# deployment -- see controllers/external_mongo_connection.py). See that
+# module for the connection/validation/introspection logic; once attached,
+# schema-aware SQL-vs-Mongo intent routing and query generation for this
+# container automatically include every attached server's cached schema
+# catalog.
+# ---------------------------------------------------------------------------
+
+@router.post("/containers/{session_id}/mongodb/connect")
+def connect_mongo_server(
+    session_id: str,
+    body: MongoServerConnectRequest,
+    user_email: str = Depends(get_current_user),
+):
+    """Verify connectivity, introspect the database named in the connection
+    URI (or the whole server if it has none), and attach it to this
+    container. Which collection to actually query is chosen afterwards via
+    the /collections and /collection endpoints below."""
+    user_session = user_email + session_id.lower()
+
+    ok, message, server = external_mongo_connection.attach_server(
+        user_session, body.connectionUri, body.serverName
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail=message)
+
+    return {"message": message, "server": server}
+
+
+@router.get("/containers/{session_id}/mongodb/servers")
+def list_mongo_servers(
+    session_id: str,
+    user_email: str = Depends(get_current_user),
+):
+    """List every external MongoDB server attached to this container
+    (metadata + cached schema catalog only, never the connection string)."""
+    user_session = user_email + session_id.lower()
+    return {"servers": external_mongo_connection.list_servers(user_session)}
+
+
+@router.delete("/containers/{session_id}/mongodb/servers/{server_id}")
+def remove_mongo_server(
+    session_id: str,
+    server_id: str,
+    user_email: str = Depends(get_current_user),
+):
+    """Detach a single external MongoDB server from this container."""
+    user_session = user_email + session_id.lower()
+    removed = external_mongo_connection.remove_server(user_session, server_id)
+    if not removed:
+        raise HTTPException(status_code=404, detail=f"No server '{server_id}' attached to this container")
+    return {"message": "Server removed successfully"}
+
+
+@router.get("/containers/{session_id}/mongodb/servers/{server_id}/collections")
+def list_mongo_server_collections(
+    session_id: str,
+    server_id: str,
+    user_email: str = Depends(get_current_user),
+):
+    """Database name (taken from the connection URI) + every collection in
+    it, for populating a collection-selection dropdown after connecting.
+    Read from the schema catalog cached at attach-time -- no live server
+    round-trip."""
+    user_session = user_email + session_id.lower()
+    ok, message, database_name, collections = external_mongo_connection.list_collections_for_server(
+        user_session, server_id
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail=message)
+    return {"database": database_name, "collections": collections}
+
+
+@router.put("/containers/{session_id}/mongodb/servers/{server_id}/collection")
+def select_mongo_server_collections(
+    session_id: str,
+    server_id: str,
+    body: MongoCollectionSelectRequest,
+    user_email: str = Depends(get_current_user),
+):
+    """Lock this server to one or more collections the user picked from the
+    dropdown, replacing any previous selection. All subsequent queries
+    against this server target only these collections. Pass an empty list
+    to clear the lock and put every collection back in scope."""
+    user_session = user_email + session_id.lower()
+    ok, message = external_mongo_connection.select_collections(
+        user_session, server_id, body.collections
+    )
+    if not ok:
+        raise HTTPException(status_code=400, detail=message)
+    return {"message": message}
 
 
 # ---------------------------------------------------------------------------

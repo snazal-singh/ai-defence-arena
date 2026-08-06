@@ -6,6 +6,15 @@ class RenameContainerBody(BaseModel):
     new_name: str
 
 
+class MongoServerConnectRequest(BaseModel):
+    connectionUri: str
+    serverName: str
+
+
+class MongoCollectionSelectRequest(BaseModel):
+    collections: List[str]
+
+
 class ContainerItem(BaseModel):
     session_id: str
     name: str

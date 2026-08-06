@@ -429,3 +429,99 @@ def get_user_sessions(email):
     except Exception as e:
         logging.error(f"Error retrieving sessions for user {email}: {e}")
         return []
+
+
+# ---------------------------------------------------------------------------
+# External MongoDB server configs
+#
+# Keyed by user_session (the opaque email+session_id.lower() string every
+# other resolution function in this pipeline already threads through --
+# has_mongo_data(user_session), get_mongo_db_for_session(user_session), etc.
+# in controllers/mongodb_db.py) rather than nested inside db.sessions'
+# per-user "sessions" array (which is keyed by user_email + session_id
+# separately). user_session is not reliably reversible back into those two
+# parts, and every deep call site below the API layer only has the combined
+# string -- so a dedicated collection keyed the same way everything else
+# already is keeps this consistent instead of introducing a second,
+# incompatible session-identity scheme. The API layer (which does have both
+# email and session_id) is what computes user_session before calling these.
+# ---------------------------------------------------------------------------
+
+mongo_servers_collection = db.mongo_servers
+
+
+def add_mongo_server(user_session: str, server_config: dict) -> bool:
+    """Append a new external Mongo server config for this session.
+
+    server_config is expected to contain: server_id, server_name,
+    encrypted_uri, schema_catalog (see controllers/external_mongo_connection.py).
+    """
+    try:
+        result = mongo_servers_collection.update_one(
+            {"user_session": user_session},
+            {"$push": {"servers": server_config}},
+            upsert=True,
+        )
+        logging.info(
+            f"Added Mongo server '{server_config.get('server_id')}' for session {user_session} "
+            f"(upserted={bool(result.upserted_id)})"
+        )
+        return True
+    except Exception as e:
+        logging.error(f"Error adding Mongo server for session {user_session}: {e}")
+        return False
+
+
+def get_mongo_servers(user_session: str) -> list:
+    """All external Mongo server configs attached to this session (including
+    encrypted_uri -- callers that only need metadata should strip it before
+    returning it externally)."""
+    try:
+        doc = mongo_servers_collection.find_one({"user_session": user_session})
+        if not doc:
+            return []
+        return doc.get("servers", [])
+    except Exception as e:
+        logging.error(f"Error retrieving Mongo servers for session {user_session}: {e}")
+        return []
+
+
+def set_mongo_server_selected_collections(user_session: str, server_id: str, collection_names: list) -> bool:
+    """Lock a previously attached server to one or more collections the user
+    picked (e.g. from a dropdown populated by its cached schema_catalog),
+    replacing any previous selection wholesale. Once set, query routing
+    restricts this server to just these collections instead of choosing
+    among every collection in its catalog. An empty list clears the lock."""
+    try:
+        result = mongo_servers_collection.update_one(
+            {"user_session": user_session, "servers.server_id": server_id},
+            {"$set": {"servers.$.selected_collections": collection_names}},
+        )
+        if result.matched_count == 0:
+            logging.warning(f"No Mongo server '{server_id}' found for session {user_session}")
+            return False
+        logging.info(f"Set selected collections {collection_names} on server '{server_id}' for session {user_session}")
+        return True
+    except Exception as e:
+        logging.error(f"Error setting selected collections on server '{server_id}' for session {user_session}: {e}")
+        return False
+
+
+def remove_mongo_server(user_session: str, server_id: str) -> bool:
+    """Detach a single external Mongo server from this session by server_id."""
+    try:
+        result = mongo_servers_collection.update_one(
+            {"user_session": user_session},
+            {"$pull": {"servers": {"server_id": server_id}}},
+        )
+        if result.matched_count == 0:
+            logging.warning(f"No Mongo server config found for session {user_session}")
+            return False
+        if result.modified_count == 0:
+            logging.warning(f"Server '{server_id}' not found in session {user_session}'s server list")
+            return False
+        logging.info(f"Removed Mongo server '{server_id}' from session {user_session}")
+        return True
+    except Exception as e:
+        logging.error(f"Error removing Mongo server '{server_id}' for session {user_session}: {e}")
+        return False

@@ -259,6 +259,29 @@ def clean_sql_query(raw_query: str) -> str:
 #         raise ValueError(f"Invalid SQL: {str(e)}")
 
 
+def describe_session_schema(user_session: str) -> str:
+    """
+    Get a lightweight column-name-level schema summary for this session's SQL
+    tables (table + column names, no sample rows) — used to ground intent
+    classification's SQL-vs-Mongo routing decision in real field names rather
+    than guessing from how the user phrased the question.
+    """
+    engine = get_db_engine(user_session)
+    if not engine:
+        return ""
+    try:
+        db = SQLDatabase(engine)
+        table_names = db.get_usable_table_names()
+        lines = []
+        for table in table_names:
+            columns = [col["name"] for col in db._inspector.get_columns(table)]
+            lines.append(f"Table '{table}': columns: {', '.join(columns)}")
+        return "\n".join(lines)
+    except Exception as e:
+        logger.warning(f"Failed to describe SQL schema for session {user_session}: {e}")
+        return ""
+
+
 def generate_sql_query(engine: Engine, natural_language_query: str) -> str:
     """Fail-safe generation pipeline with parse validation."""
     try:
