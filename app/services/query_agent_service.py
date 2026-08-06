@@ -57,7 +57,7 @@ class QueryAgentService:
             logger.info("Creative reasoning service not available")
     
     def process_no_context_query(self, user_query: str, user_email: str,
-                          input_language: int = 23, output_language: int = 23) -> Dict[str, Any]:
+                          input_language: str = "en", output_language: str = "en") -> Dict[str, Any]:
         """
         Process a query when no document context is available.
         """
@@ -71,12 +71,12 @@ class QueryAgentService:
         # Generate a response that guides the user to upload files or select a session
         return self._generate_no_context_response(user_query, user_email, available_sessions, language)
         
-    def process_query(self, user_query: str, user_session: str, 
-                    input_language: int = 23, output_language: int = 23,
+    def process_query(self, user_query: str, user_session: str,
+                    input_language: str = "en", output_language: str = "en",
                     filenames: Optional[List[str]] = None,
                     has_csvxl: bool = False, mode: str = 'default',
                     is_trial: bool = False, chat_id: str = None,
-                    image_url: str = None, image_caption: str = None) -> Dict[str, Any]:
+                    image_id: str = None, image_caption: str = None) -> Dict[str, Any]:
         """
         Process a user query with support for both standard and creative modes.
         
@@ -130,9 +130,7 @@ class QueryAgentService:
 
         # Save conversation turn to chat history with chat_id
         assistant_response_text = response.get("answer", "")
-        response["image_url"] = image_url
-        response["image_caption"] = image_caption
-        
+
         # Determine query type based on response structure
         query_type = "general"
         if "fileName" in response:
@@ -143,6 +141,15 @@ class QueryAgentService:
             query_type = "creative"
 
         # Save and get assistant message ID
+        chat_metadata = {
+            "processing_time": response.get("processing_metadata", {}).get("processing_time"),
+            "mode": response.get("creative_reasoning", {}).get("strategy_used", "standard")
+        }
+        if image_id:
+            chat_metadata["image_id"] = image_id
+        if image_caption:
+            chat_metadata["image_caption"] = image_caption
+
         assistant_message_id = self.chat_history_manager.save_conversation_turn(
             user_session=user_session,
             user_query=user_query,
@@ -150,12 +157,7 @@ class QueryAgentService:
             chat_id=chat_id,
             query_type=query_type,
             context_used=chat_context.get("context_used", False) if chat_context else False,
-            image_url=response.get("image_url"),
-            image_caption=response.get("image_caption"),
-            metadata={
-                "processing_time": response.get("processing_metadata", {}).get("processing_time"),
-                "mode": response.get("creative_reasoning", {}).get("strategy_used", "standard")
-            }
+            metadata=chat_metadata
         )
 
         # Add assistant message ID to response
@@ -311,20 +313,24 @@ class QueryAgentService:
             )
     
     def _process_standard_query(self, user_query: str, user_session: str,
-                          resources: Dict[str, bool], language: Optional[str],
-                          filenames: Optional[List[str]], has_csvxl: bool,
-                          chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                              resources: Dict[str, bool], language: Optional[str],
+                              filenames: Optional[List[str]], has_csvxl: bool,
+                              chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Process query using standard mode."""
         enhanced_query = user_query
         if chat_context and chat_context.get("context_used"):
             context_text = chat_context.get("context", "")
             enhanced_query = f"{user_query}\n\nContext from previous conversation:\n{context_text}"
+            logger.info("Enhanced query with chat context for intent classification")
 
-        # Force DOCUMENT intent if image description is in the query or in the chat context
+        # Force DOCUMENT intent if image description is in the query or chat context
         has_image_in_query = "\n\nImage Description:" in user_query
-        has_image_in_context = chat_context and chat_context.get("context_used") and "[Image Description:" in chat_context.get("context", "")
-        
+        has_image_in_context = (
+            chat_context and chat_context.get("context_used")
+            and "[Image Description:" in chat_context.get("context", "")
+        )
         if has_image_in_query or has_image_in_context:
-            logger.info("Image query or image in context detected - forcing DOCUMENT intent")
+            logger.info("Image detected in query or context — forcing DOCUMENT intent")
             return self._process_document_query(enhanced_query, user_session, language, chat_context)
 
         # Classify query intent using the enhanced query
@@ -651,16 +657,17 @@ class QueryAgentService:
                 "topics": "various"
             }
             
-    def _get_language(self, language_code: int) -> str:
-        """Get the language name from its code."""
+    def _get_language(self, language_code: str) -> str:
+        """Get the language name from its ISO 639-1 code."""
         languages = {
-            1: "Hindi", 2: "Gom", 3: "Kannada", 4: "Dogri", 5: "Bodo",
-            6: "Urdu", 7: "Tamil", 8: "Kashmiri", 9: "Assamese", 10: "Bengali",
-            11: "Marathi", 12: "Sindhi", 13: "Maithili", 14: "Punjabi", 15: "Malayalam",
-            16: "Manipuri", 17: "Telugu", 18: "Sanskrit", 19: "Nepali", 20: "Santali",
-            21: "Gujarati", 22: "Odia", 23: "English"
+            "hi": "Hindi",  "kok": "Gom",    "kn": "Kannada",  "doi": "Dogri",
+            "brx": "Bodo",  "ur": "Urdu",    "ta": "Tamil",    "ks": "Kashmiri",
+            "as": "Assamese","bn": "Bengali", "mr": "Marathi",  "sd": "Sindhi",
+            "mai": "Maithili","pa": "Punjabi","ml": "Malayalam","mni": "Manipuri",
+            "te": "Telugu", "sa": "Sanskrit","ne": "Nepali",   "sat": "Santali",
+            "gu": "Gujarati","or": "Odia",   "en": "English",
         }
-        return languages.get(language_code, 'English')
+        return languages.get(str(language_code), 'English')
     
     def get_supported_modes(self) -> Dict[str, Any]:
         """Get information about supported query processing modes."""

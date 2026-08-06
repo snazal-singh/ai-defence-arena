@@ -40,11 +40,7 @@ class ChatMessage:
     token_count: int = 0
     metadata: Dict[str, Any] = field(default_factory=dict)
     save_to_note: bool = False
-    # -------------------------------------------------
-    # NEW – store the raw caption when the user uploads an image
-    # This allows later queries to reference the image description
     image_caption: Optional[str] = None
-    # NEW – store the URL/path to the saved image file for chat history display
     image_url: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -60,9 +56,7 @@ class ChatMessage:
                 "token_count": int(self.token_count) if self.token_count else 0,
                 "metadata": self.metadata or {},
                 "save_to_note": bool(self.save_to_note),
-                # Persist the caption if it exists
                 "image_caption": self.image_caption or "",
-                # Persist the image URL if it exists
                 "image_url": self.image_url or ""
             }
         except Exception as e:

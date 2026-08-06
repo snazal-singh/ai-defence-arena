@@ -11,49 +11,79 @@ class VisionService:
 
     def __init__(self):
         logger.info("Initializing VisionService")
-        self.gemma_url = f"{settings.GEMMA_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat" if settings.GEMMA_SERVER_BASE_URL else ""
+        if settings.GEMMA4_CHAT_ENDPOINT:
+            self.gemma_url = settings.GEMMA4_CHAT_ENDPOINT
+        elif settings.GEMMA_SERVER_BASE_URL:
+            self.gemma_url = f"{settings.GEMMA_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
+        else:
+            self.gemma_url = ""
         self.gemma_key = settings.GEMMA4_API_KEY
         self.gemma_model = settings.GEMMA4_MODEL
+        self.gemma_api_format = settings.GEMMA4_API_FORMAT
         
         self.numarkdown_url = settings.NUMARKDOWN_API_URL
         self.numarkdown_key = settings.NUMARKDOWN_API_KEY
         self.numarkdown_model = settings.NUMARKDOWN_MODEL
+
+    def get_image_caption_from_bytes(self, image_bytes: bytes, mime: str = "image/jpeg") -> str:
+        """Query the Gemma4 vision server to generate a caption from raw image bytes."""
+        if not self.gemma_url:
+            logger.warning("Gemma vision server URL is not configured.")
+            return ""
+
+        try:
+            image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+            return self._caption_from_base64(image_base64, mime)
+        except Exception as e:
+            logger.error(f"Gemma 4 captioning error: {e}")
+            return ""
+
+    def _caption_from_base64(self, image_base64: str, mime: str = "image/jpeg") -> str:
+        if self.gemma_api_format == "openai":
+            message_content = [
+                {"type": "text", "text": "Describe this image in detail. Mention all objects, text, charts, or any relevant content you see."},
+                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{image_base64}"}},
+            ]
+        else:
+            message_content = "Describe this image in detail. Mention all objects, text, charts, or any relevant content you see."
+
+        payload = {
+            "model": self.gemma_model,
+            "messages": [{
+                "role": "user",
+                "content": message_content,
+                **({"images": [image_base64]} if self.gemma_api_format != "openai" else {}),
+            }],
+            "stream": False,
+            "max_tokens": 512,
+        }
+
+        headers = {
+            "Authorization": f"Bearer {self.gemma_key}",
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(self.gemma_url, json=payload, headers=headers, timeout=120)
+        response.raise_for_status()
+        data = response.json()
+        if self.gemma_api_format == "openai":
+            caption = data["choices"][0]["message"]["content"]
+        else:
+            caption = data["message"]["content"]
+        logger.info(f"Gemma 4 Caption successfully retrieved ({len(caption)} chars)")
+        return caption
 
     def get_image_caption(self, image_path: str) -> str:
         """Query the Gemma4 vision server to generate a detailed caption for the image."""
         if not self.gemma_url:
             logger.warning("Gemma vision server URL is not configured.")
             return ""
-            
+
         try:
             with open(image_path, "rb") as f:
                 image_base64 = base64.b64encode(f.read()).decode("utf-8")
 
-            payload = {
-                "model": self.gemma_model,
-                "messages": [{
-                    "role": "user",
-                    "content": "Describe this image in detail. Mention all objects, text, charts, or any relevant content you see.",
-                    "images": [image_base64]
-                }],
-                "stream": False
-            }
-
-            headers = {
-                "Authorization": f"Bearer {self.gemma_key}",
-                "Content-Type": "application/json"
-            }
-
-            response = requests.post(
-                self.gemma_url,
-                json=payload,
-                headers=headers,
-                timeout=60
-            )
-            response.raise_for_status()
-            caption = response.json()["message"]["content"]
-            logger.info(f"Gemma 4 Caption successfully retrieved ({len(caption)} chars)")
-            return caption
+            return self._caption_from_base64(image_base64)
 
         except Exception as e:
             logger.error(f"Gemma 4 captioning error: {e}")

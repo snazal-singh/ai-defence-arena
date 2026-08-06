@@ -316,7 +316,6 @@ Respond with JSON only:
             if len(content) > 150:
                 content = content[:150] + "..."
             
-            # Keep the image description intact in chat context
             image_cap = msg.get("image_caption")
             if image_cap:
                 content = f"{content} [Image Description: {image_cap}]"
@@ -367,7 +366,6 @@ Respond with JSON only:
             if len(content) > 200:
                 content = content[:200] + "..."
             
-            # Keep the image description intact in chat context
             image_cap = msg.get("image_caption")
             if image_cap:
                 content = f"{content} [Image Description: {image_cap}]"
@@ -400,7 +398,6 @@ Respond with JSON only:
             if len(content) > 300:
                 content = content[:300] + "..."
             
-            # Keep the image description intact in chat context
             image_cap = msg.get("image_caption")
             if image_cap:
                 content = f"{content} [Image Description: {image_cap}]"

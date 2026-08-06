@@ -22,6 +22,7 @@ from summarizer import Summarizer
 # Local imports
 from app.services.llm_service import get_fast_llm
 from app.core.config import settings
+from utils.translation import translate_to_indic
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -241,17 +242,18 @@ class DocumentSummaryService:
             logger.warning("No text found for summarization")
             raise Exception("No text found for summarization. Please check if the files exist.")
         
-        # Create abstractive summary using LLM
+        # Create abstractive summary using LLM (always in English, translate after)
         try:
-            prompt = self._create_summary_prompt(query, combined_text, language)
+            prompt = self._create_summary_prompt(query, combined_text)
             logger.info(f"Approx token count for prompt: {len(prompt.split()) * 1.33}")
-            
-            # Create summary with LLM
-            # Create summary
+
             summary = self.llm.invoke(prompt)
             logger.info(f'Generated summary in {time.time() - start_time:.2f} seconds')
-            
-            return summary.content
+
+            content = summary.content
+            if language and language.strip().lower() != "english":
+                content = translate_to_indic(content, language)
+            return content
         except Exception as e:
             logger.error(f'Error creating enhanced abstractive summary with LLM: {e}')
             raise Exception("Cannot create abstractive summary")
@@ -451,15 +453,14 @@ class DocumentSummaryService:
             logger.error(f'Error reading content from {content_path}: {e}')
             return ""
             
-    def _create_summary_prompt(self, query: str, sentences: str, language: Optional[str] = None) -> str:
+    def _create_summary_prompt(self, query: str, sentences: str) -> str:
         """
         Create a prompt for the LLM to generate a summary.
-        
+
         Args:
             query (str): User's query for the summary
             sentences (str): Important sentences to summarize
-            language (str, optional): Language for the summary
-            
+
         Returns:
             str: Prompt for the LLM
         """
@@ -488,12 +489,8 @@ ANALYSIS REQUIREMENTS:
 • Do not mention about important sentences or extraction methods
 • If multiple documents are involved, synthesize information across sources'''
 
-        # Add language specification
-        if language and language != 'English':
-            prompt += f"\n\nLANGUAGE REQUIREMENT: Provide your detailed analysis in {language}, maintaining the same level of depth and structure."
-        else:
-            prompt += "\n\nProvide your analysis in the same language as the user's request, maintaining professional clarity and depth."
-            
+        prompt += "\n\nProvide your analysis in English with professional clarity and depth."
+
         return prompt
 
 # Create a singleton instance

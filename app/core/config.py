@@ -41,7 +41,11 @@ class Settings(BaseSettings):
     MISTRAL_OCR_API_KEY: str
 
     # Eleven Labs TTS
-    ELEVENLABS_API_KEY: str
+    ELEVENLABS_API_KEY: str = ""
+
+    # Vexyl STT/TTS (ai4bharat Indic models)
+    VEXYL_TTS_URL: str = "ws://127.0.0.1:8092"
+    VEXYL_STT_URL: str = "ws://127.0.0.1:8091"
 
     # OpenAI / Gemini
     OPENAI_API_KEY: str = ""
@@ -58,13 +62,24 @@ class Settings(BaseSettings):
     GPU_SERVER_BASE_URL: str = ""
     GPU_SERVER_API_KEY: str = ""
     GPU_SERVER_MODEL: str = "llama3.1:8b"
+    GPU_SERVER_CHAT_ENDPOINT: str = ""
     GPU_SERVER_DEFAULT_MAX_TOKENS: int = 8000
     GPU_SERVER_VERIFY_SSL: bool = False
+    # "ollama" = Ollama /api/chat format; "openai" = OpenAI /v1/chat/completions format (Cerebras, etc.)
+    GPU_SERVER_API_FORMAT: str = "ollama"
 
     # Gemma server
     GEMMA_SERVER_BASE_URL: str = ""
     GEMMA4_API_KEY: str = ""
     GEMMA4_MODEL: str = "gemma4:26b"
+    GEMMA4_CHAT_ENDPOINT: str = ""  # overrides the default /cdot/ollama2/api/chat path
+    # "ollama" = Ollama format (images as base64 array); "openai" = OpenAI vision format
+    GEMMA4_API_FORMAT: str = "ollama"
+
+    # NuMarkdown
+    NUMARKDOWN_API_URL: str = ""
+    NUMARKDOWN_MODEL: str = ""
+    NUMARKDOWN_API_KEY: str = ""
 
     # NuMarkdown server
     NUMARKDOWN_API_URL: str = ""

@@ -56,7 +56,9 @@ LANGUAGE_TO_FLORES: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # Remote server config (read once at import time)
 # ---------------------------------------------------------------------------
-_SERVER_URL: Optional[str] = os.getenv("TRANSLATION_SERVER_URL", "localhost").rstrip("/") or None
+from app.core.config import settings as _settings
+
+_SERVER_URL: Optional[str] = (_settings.TRANSLATION_SERVER_URL or "").rstrip("/") or None
 _API_KEY: Optional[str] = os.getenv("TRANSLATION_API_KEY")
 
 _REQUEST_TIMEOUT: int = int(os.getenv("TRANSLATION_REQUEST_TIMEOUT", "120"))  # seconds
@@ -128,6 +130,74 @@ def translate_to_indic(text: str, language: str) -> str:
     except Exception as exc:
         logger.error(
             "Translation to '%s' failed: %s. Returning original text.",
+            language,
+            exc,
+            exc_info=True,
+        )
+
+    return text
+
+
+def translate_to_english(text: str, language: str) -> str:
+    """
+    Translate *text* (in an Indic language) to English via the remote
+    IndicTrans2 inference server.
+
+    Returns the original text unchanged if:
+    - *language* is "English",
+    - *language* is unsupported,
+    - TRANSLATION_SERVER_URL is not set,
+    - the remote call fails (logs a warning).
+    """
+    if not text or not text.strip():
+        return text
+
+    language_key = language.strip().title() if language else "English"
+
+    if language_key == "English":
+        return text
+
+    if language_key not in LANGUAGE_TO_FLORES:
+        logger.warning(
+            "Language '%s' is not supported by IndicTrans2; returning original text.",
+            language,
+        )
+        return text
+
+    if _SERVER_URL is None:
+        logger.error(
+            "TRANSLATION_SERVER_URL is not set. Cannot translate '%s' to English. "
+            "Returning original text.",
+            language,
+        )
+        return text
+
+    try:
+        response = requests.post(
+            f"{_SERVER_URL}/translate-to-english",
+            json={"text": text, "language": language_key},
+            headers=_headers(),
+            timeout=_REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+        return response.json()["translated"]
+
+    except requests.exceptions.ConnectionError:
+        logger.error(
+            "Could not connect to translation server at %s. "
+            "Returning original text.",
+            _SERVER_URL,
+        )
+    except requests.exceptions.Timeout:
+        logger.error(
+            "Translation request to %s timed out after %ds. "
+            "Returning original text.",
+            _SERVER_URL,
+            _REQUEST_TIMEOUT,
+        )
+    except Exception as exc:
+        logger.error(
+            "Translation of '%s' to English failed: %s. Returning original text.",
             language,
             exc,
             exc_info=True,

@@ -45,8 +45,17 @@ dist/
 *.egg-info/
 files/
 chat_images/
-
 telegram_bot.py
 
 opencode.json
 CLAUDE.md
+
+# Tool-generated indexes
+.codegraph/
+.understand-anything/
+
+# Dev/evaluation artifacts
+docs/
+sample_data/
+results.csv
+*.csv

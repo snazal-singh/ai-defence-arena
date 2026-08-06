@@ -1,0 +1,67 @@
+"""Shared language code mappings used across STT, TTS, and query services."""
+
+# ISO 639-1/3 code → display name (used for translation service calls)
+ISO_TO_NAME: dict[str, str] = {
+    "en":  "English",   "hi":  "Hindi",     "kok": "Gom",
+    "kn":  "Kannada",   "doi": "Dogri",     "brx": "Bodo",
+    "ur":  "Urdu",      "ta":  "Tamil",     "ks":  "Kashmiri",
+    "as":  "Assamese",  "bn":  "Bengali",   "mr":  "Marathi",
+    "sd":  "Sindhi",    "mai": "Maithili",  "pa":  "Punjabi",
+    "ml":  "Malayalam", "mni": "Manipuri",  "te":  "Telugu",
+    "sa":  "Sanskrit",  "ne":  "Nepali",    "sat": "Santali",
+    "gu":  "Gujarati",  "or":  "Odia",
+}
+
+# ISO 639-1/3 codes and full language names → Vexyl BCP-47 locale tags.
+# "auto" passes through unchanged for STT language-detection mode.
+ISO_TO_BCP47: dict[str, str] = {
+    # Short ISO codes
+    "en":  "en-IN",
+    "hi":  "hi-IN",
+    "kok": "kok-IN",
+    "kn":  "kn-IN",
+    "doi": "doi-IN",
+    "brx": "brx-IN",
+    "ur":  "ur-IN",
+    "ta":  "ta-IN",
+    "ks":  "ks-IN",
+    "as":  "as-IN",
+    "bn":  "bn-IN",
+    "mr":  "mr-IN",
+    "sd":  "sd-IN",
+    "mai": "mai-IN",
+    "pa":  "pa-IN",
+    "ml":  "ml-IN",
+    "mni": "mni-IN",
+    "te":  "te-IN",
+    "sa":  "sa-IN",
+    "ne":  "ne-IN",
+    "sat": "sat-IN",
+    "gu":  "gu-IN",
+    "or":  "or-IN",
+    "auto": "auto",
+    # Full language names (lowercase)
+    "english":   "en-IN",
+    "hindi":     "hi-IN",
+    "malayalam": "ml-IN",
+    "tamil":     "ta-IN",
+    "telugu":    "te-IN",
+    "kannada":   "kn-IN",
+    "bengali":   "bn-IN",
+    "gujarati":  "gu-IN",
+    "marathi":   "mr-IN",
+    "punjabi":   "pa-IN",
+    "odia":      "or-IN",
+    "assamese":  "as-IN",
+    "urdu":      "ur-IN",
+    "nepali":    "ne-IN",
+    "sanskrit":  "sa-IN",
+    "konkani":   "kok-IN",
+    "bodo":      "brx-IN",
+    "dogri":     "doi-IN",
+    "maithili":  "mai-IN",
+    "manipuri":  "mni-IN",
+    "santali":   "sat-IN",
+    "sindhi":    "sd-IN",
+    "kashmiri":  "ks-IN",
+}
