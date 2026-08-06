@@ -333,24 +333,118 @@ class LLMType(Enum):
 # ---------------------------------------------------------------------------
 
 def _make_llm(**kwargs) -> BaseChatModel:
-    """Internal factory. Pass any GPUServerChatModel field overrides via kwargs
-    (max_tokens/temperature apply to all providers; the rest are ignored by
-    ChatGroq/ChatOpenAI)."""
+    """
+    Universal internal factory supporting ANY LLM provider.
+    
+    Supported providers via settings.LLM_PROVIDER or environment flags:
+    - 'groq': Groq hosted models (via ChatGroq)
+    - 'nvidia': NVIDIA NIM hosted models (via ChatOpenAI)
+    - 'openai': Official OpenAI models or custom OpenAI endpoints (via ChatOpenAI)
+    - 'gemini' / 'google': Google Gemini models
+    - 'anthropic' / 'claude': Anthropic Claude models
+    - 'mistral': Mistral AI models
+    - 'ollama': Local Ollama models (via ChatOllama)
+    - 'custom': Generic OpenAI-compatible endpoints (vLLM, LM Studio, OpenRouter, etc.)
+    - 'gpu_server': Internal GPU server (via GPUServerChatModel)
+    """
     common_kwargs = {}
     if "max_tokens" in kwargs:
         common_kwargs["max_tokens"] = kwargs["max_tokens"]
     if "temperature" in kwargs:
         common_kwargs["temperature"] = kwargs["temperature"]
 
-    if settings.USE_NVIDIA:
+    provider = (settings.LLM_PROVIDER or "").lower().strip()
+
+    # Explicit provider selection or auto-detection
+    if provider == "nvidia" or (not provider and settings.USE_NVIDIA):
+        logger.info("Initializing NVIDIA LLM provider: %s", settings.NVIDIA_MODEL)
         return ChatOpenAI(
             model=settings.NVIDIA_MODEL,
             api_key=settings.NVIDIA_API_KEY,
             base_url=settings.NVIDIA_BASE_URL,
             **common_kwargs,
         )
-    if settings.USE_GROQ:
-        return ChatGroq(model=settings.GROQ_MODEL, api_key=settings.GROQ_API_KEY, **common_kwargs)
+
+    if provider == "groq" or (not provider and settings.USE_GROQ):
+        logger.info("Initializing Groq LLM provider: %s", settings.GROQ_MODEL)
+        return ChatGroq(
+            model=settings.GROQ_MODEL,
+            api_key=settings.GROQ_API_KEY,
+            **common_kwargs,
+        )
+
+    if provider in ("openai", "custom") or (not provider and settings.OPENAI_API_KEY and not settings.USE_LOCAL_LLM):
+        logger.info("Initializing OpenAI/Custom LLM provider: %s", settings.OPENAI_MODEL)
+        openai_kwargs = {
+            "model": settings.OPENAI_MODEL,
+            "api_key": settings.OPENAI_API_KEY or "custom_key",
+            **common_kwargs,
+        }
+        if settings.OPENAI_BASE_URL:
+            openai_kwargs["base_url"] = settings.OPENAI_BASE_URL
+        return ChatOpenAI(**openai_kwargs)
+
+    if provider in ("anthropic", "claude"):
+        logger.info("Initializing Anthropic/Claude LLM provider: %s", settings.ANTHROPIC_MODEL)
+        try:
+            from langchain_anthropic import ChatAnthropic
+            return ChatAnthropic(
+                model=settings.ANTHROPIC_MODEL,
+                api_key=settings.ANTHROPIC_API_KEY,
+                **common_kwargs,
+            )
+        except ImportError:
+            return ChatOpenAI(
+                model=settings.ANTHROPIC_MODEL,
+                api_key=settings.ANTHROPIC_API_KEY or "custom",
+                base_url=settings.OPENAI_BASE_URL or "https://api.anthropic.com/v1",
+                **common_kwargs,
+            )
+
+    if provider in ("gemini", "google"):
+        logger.info("Initializing Gemini/Google LLM provider: %s", settings.GEMINI_MODEL)
+        try:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            return ChatGoogleGenerativeAI(
+                model=settings.GEMINI_MODEL,
+                google_api_key=settings.GEMINI_API_KEY,
+                **common_kwargs,
+            )
+        except ImportError:
+            return ChatOpenAI(
+                model=settings.GEMINI_MODEL,
+                api_key=settings.GEMINI_API_KEY or "custom",
+                base_url=settings.OPENAI_BASE_URL or "https://generativelanguage.googleapis.com/v1beta/openai",
+                **common_kwargs,
+            )
+
+    if provider == "mistral":
+        logger.info("Initializing Mistral LLM provider: %s", settings.MISTRAL_MODEL)
+        return ChatOpenAI(
+            model=settings.MISTRAL_MODEL,
+            api_key=settings.MISTRAL_API_KEY or os.getenv("MISTRAL_API_KEY", ""),
+            base_url="https://api.mistral.ai/v1",
+            **common_kwargs,
+        )
+
+    if provider == "ollama" or (not provider and settings.USE_LOCAL_LLM):
+        logger.info("Initializing Ollama LLM provider: %s", settings.OLLAMA_LLM_MODEL)
+        try:
+            from langchain_ollama import ChatOllama
+            return ChatOllama(
+                model=settings.OLLAMA_LLM_MODEL,
+                base_url=settings.OLLAMA_BASE_URL,
+                **common_kwargs,
+            )
+        except ImportError:
+            from langchain_community.chat_models import ChatOllama
+            return ChatOllama(
+                model=settings.OLLAMA_LLM_MODEL,
+                base_url=settings.OLLAMA_BASE_URL,
+                **common_kwargs,
+            )
+
+    logger.info("Initializing GPUServerChatModel default provider")
     return GPUServerChatModel(**kwargs)
 
 

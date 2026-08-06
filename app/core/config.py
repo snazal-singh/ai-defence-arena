@@ -146,7 +146,17 @@ class Settings(BaseSettings):
     NUMARKDOWN_API_URL: str = ""
     NUMARKDOWN_API_KEY: str = ""
     NUMARKDOWN_MODEL: str = "maternion/NuMarkdown-Thinking:8b"
-    USE_NUMARKDOWN_PARSER: bool = True
+    # Universal Multi-Provider LLM Configuration
+    # Set LLM_PROVIDER in .env to any of:
+    # "openai", "groq", "nvidia", "gemini", "anthropic", "mistral", "ollama", "custom", "gpu_server"
+    LLM_PROVIDER: str = ""
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_BASE_URL: str = ""
+    ANTHROPIC_API_KEY: str = ""
+    ANTHROPIC_MODEL: str = "claude-3-5-sonnet-20241022"
+    GEMINI_MODEL: str = "gemini-1.5-flash"
+    MISTRAL_API_KEY: str = ""
+    MISTRAL_MODEL: str = "mistral-small-latest"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
