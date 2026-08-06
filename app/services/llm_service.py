@@ -81,8 +81,9 @@ GPU_SERVER_API_KEY: str = settings.GPU_SERVER_API_KEY
 GPU_SERVER_MODEL: str = settings.GPU_SERVER_MODEL
 GPU_SERVER_DEFAULT_MAX_TOKENS: int = settings.GPU_SERVER_DEFAULT_MAX_TOKENS
 GPU_SERVER_VERIFY_SSL: bool = settings.GPU_SERVER_VERIFY_SSL
+GPU_SERVER_API_FORMAT: str = settings.GPU_SERVER_API_FORMAT  # "ollama" or "openai"
 
-CHAT_ENDPOINT = f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
+CHAT_ENDPOINT = settings.GPU_SERVER_CHAT_ENDPOINT or f"{GPU_SERVER_BASE_URL.rstrip('/')}/cdot/ollama2/api/chat"
 
 
 # ---------------------------------------------------------------------------
@@ -110,6 +111,7 @@ class GPUServerChatModel(BaseChatModel):
     temperature: float = 0.7
     verify_ssl: bool = GPU_SERVER_VERIFY_SSL
     timeout: int = 120          # seconds
+    api_format: str = GPU_SERVER_API_FORMAT  # "ollama" or "openai"
 
     class Config:
         # Allow extra fields coming from parent without raising errors
@@ -149,6 +151,45 @@ class GPUServerChatModel(BaseChatModel):
 
     # ---- Core generation (non-streaming) -----------------------------------
 
+    def _build_payload(self, messages: List[BaseMessage], stream: bool, stop: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Build request payload in either Ollama or OpenAI format."""
+        base_messages = self._to_api_messages(messages)
+        if self.api_format == "openai":
+            payload: Dict[str, Any] = {
+                "model": self.model,
+                "messages": base_messages,
+                "stream": stream,
+                "max_tokens": self.max_tokens,
+                "temperature": self.temperature,
+            }
+            if stop:
+                payload["stop"] = stop
+        else:
+            payload = {
+                "model": self.model,
+                "messages": base_messages,
+                "stream": stream,
+                "options": {
+                    "num_predict": self.max_tokens,
+                    "temperature": self.temperature,
+                    **({"stop": stop} if stop else {}),
+                },
+            }
+        return payload
+
+    def _parse_content(self, data: Dict[str, Any]) -> str:
+        """Extract assistant content from either Ollama or OpenAI response."""
+        if self.api_format == "openai":
+            try:
+                return data["choices"][0]["message"]["content"]
+            except (KeyError, IndexError, TypeError) as exc:
+                raise ValueError(f"Unexpected OpenAI-format response: {data}") from exc
+        else:
+            try:
+                return data["message"]["content"]
+            except (KeyError, TypeError) as exc:
+                raise ValueError(f"Unexpected Ollama-format response: {data}") from exc
+
     def _generate(
         self,
         messages: List[BaseMessage],
@@ -156,22 +197,14 @@ class GPUServerChatModel(BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
-        payload = {
-            "model": self.model,
-            "messages": self._to_api_messages(messages),
-            "stream": False,
-            "options": {
-                "num_predict": self.max_tokens,
-            },
-        }
+        payload = self._build_payload(messages, stream=False, stop=stop)
 
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}",
         }
 
-        logger.info("GPUServerChatModel → POST %s | model=%s", self.endpoint, self.model)
-
+        logger.info("GPUServerChatModel → POST %s | model=%s | format=%s", self.endpoint, self.model, self.api_format)
         logger.info("Payload being sent: %s", json.dumps(payload, indent=2))
 
         try:
@@ -188,18 +221,14 @@ class GPUServerChatModel(BaseChatModel):
             raise RuntimeError(f"GPU server request failed: {exc}") from exc
 
         data = resp.json()
-
-        # Parse Ollama-compatible response format:
-        # {"message": {"role": "assistant", "content": "..."}, ...}
         try:
-            content = data["message"]["content"]
-        except (KeyError, TypeError) as exc:
+            content = self._parse_content(data)
+        except ValueError:
             logger.error("Unexpected GPU server response format: %s", data)
-            raise ValueError(f"Unexpected response format from GPU server: {data}") from exc
+            raise
 
         message = AIMessage(content=content)
         generation = ChatGeneration(message=message)
-
         logger.debug("GPUServerChatModel ← %d chars", len(content))
         return ChatResult(generations=[generation])
 
@@ -213,20 +242,10 @@ class GPUServerChatModel(BaseChatModel):
         **kwargs: Any,
     ) -> Iterator[ChatGenerationChunk]:
         """
-        Streams tokens from the GPU server using Ollama's NDJSON streaming
-        format (stream: true).  Each line is a JSON object with a 'message'
-        key containing the delta content.
+        Streams tokens from the GPU/inference server.
+        Supports both Ollama NDJSON format and OpenAI SSE format (Cerebras, etc.).
         """
-        payload = {
-            "model": self.model,
-            "messages": self._to_api_messages(messages),
-            "stream": True,
-            "options": {
-                "num_predict": self.max_tokens,
-                "temperature": self.temperature,
-                **({"stop": stop} if stop else {}),
-            },
-        }
+        payload = self._build_payload(messages, stream=True, stop=stop)
 
         headers = {
             "Content-Type": "application/json",
@@ -246,23 +265,35 @@ class GPUServerChatModel(BaseChatModel):
                 for raw_line in resp.iter_lines():
                     if not raw_line:
                         continue
-                    import json
-                    try:
-                        chunk_data = json.loads(raw_line)
-                    except json.JSONDecodeError:
-                        continue
+                    line = raw_line.decode("utf-8") if isinstance(raw_line, bytes) else raw_line
 
-                    delta = chunk_data.get("message", {}).get("content", "")
+                    if self.api_format == "openai":
+                        # OpenAI SSE format: "data: {...}" or "data: [DONE]"
+                        if not line.startswith("data:"):
+                            continue
+                        payload_str = line[len("data:"):].strip()
+                        if payload_str == "[DONE]":
+                            break
+                        try:
+                            chunk_data = json.loads(payload_str)
+                        except json.JSONDecodeError:
+                            continue
+                        delta = chunk_data.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                    else:
+                        # Ollama NDJSON format: each line is a complete JSON object
+                        try:
+                            chunk_data = json.loads(line)
+                        except json.JSONDecodeError:
+                            continue
+                        delta = chunk_data.get("message", {}).get("content", "")
+                        if chunk_data.get("done"):
+                            break
+
                     if delta:
-                        chunk = ChatGenerationChunk(
-                            message=AIMessage(content=delta)
-                        )
+                        chunk = ChatGenerationChunk(message=AIMessage(content=delta))
                         if run_manager:
                             run_manager.on_llm_new_token(delta)
                         yield chunk
-
-                    if chunk_data.get("done"):
-                        break
 
         except requests.exceptions.RequestException as exc:
             logger.error("GPU server streaming request failed: %s", exc)

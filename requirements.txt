@@ -16,14 +16,12 @@ elasticsearch>=8.13.1
 langchain==0.3.26
 langchain-core==0.3.66
 langchain-community==0.3.16
-langchain-ollama
 langchain-elasticsearch==0.3.2
 
 # AI Services
 bert-extractive-summarizer==0.10.1  # NOTE: potential runtime compatibility issue with torch>=2.1.0 and transformers==4.47.1
 torch>=2.1.0
 transformers==4.47.1
-IndicTransToolkit
 
 # Database
 motor==3.3.2
@@ -44,12 +42,5 @@ selenium==4.15.2
 webdriver-manager==4.0.1
 werkzeug==3.0.1
 
-# Audio Processing for STT
-torchaudio>=2.1.0
-librosa>=0.10.1
-soundfile>=0.12.1
-onnxruntime>=1.16.0
-
-# Indic Parler TTS (local multilingual TTS — 21 Indic languages + English)
-# Install via: pip install git+https://github.com/huggingface/parler-tts.git
-pydub>=0.25.1
+# STT/TTS (Vexyl WebSocket servers)
+websockets>=11.0

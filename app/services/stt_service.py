@@ -1,232 +1,333 @@
 """
-Speech-to-Text service utilizing a state-of-the-art Hybrid ASR Architecture.
-Leverages OpenAI's Whisper-Base for high-fidelity English transcription and zero-touch language identification (LID),
-and automatically routes Indian languages to AI4Bharat's Indic-Conformer-600M for 22 native Indian languages in native scripts.
+Speech-to-Text service module using Vexyl-STT (ai4bharat/indic-conformer).
+
+Provides two modes:
+  - Batch transcription:  Send an audio file via HTTP POST, poll for result.
+  - Streaming transcription: Open a WebSocket, stream 16kHz PCM chunks,
+    receive real-time partial + final transcripts.
+
+The Vexyl-STT server runs at ws://127.0.0.1:8091 (configured via VEXYL_STT_URL).
 """
 
-import os
+import asyncio
+import io
+import json
 import logging
-import torch
-from typing import Optional
-from transformers import pipeline
+import time
+import threading
+import uuid
+from typing import Generator, Iterator, Optional
+
+import requests
+import websockets
+
+from app.core.config import settings as Config
+from utils.language_codes import ISO_TO_BCP47
 
 logger = logging.getLogger(__name__)
 
-# Mapping of standard language names to AI4Bharat Conformer codes
-LANGUAGE_MAP = {
-    "hindi": "hi",
-    "gom": "kok",       # Goan Konkani mapped to Konkani
-    "kannada": "kn",
-    "dogri": "doi",
-    "bodo": "brx",
-    "urdu": "ur",
-    "tamil": "ta",
-    "kashmiri": "ks",
-    "assamese": "as",
-    "bengali": "bn",
-    "marathi": "mr",
-    "sindhi": "sd",
-    "maithili": "mai",
-    "punjabi": "pa",
-    "malayalam": "ml",
-    "manipuri": "mni",
-    "telugu": "te",
-    "sanskrit": "sa",
-    "nepali": "ne",
-    "santali": "sat",
-    "gujarati": "gu",
-    "odia": "or"
-}
+
+def _to_vexyl_lang(language) -> str:
+    """Normalize an ISO 639-1 code or language name to a Vexyl BCP-47 locale tag."""
+    return ISO_TO_BCP47.get(str(language).lower().strip(), "auto")
+
+
+def _ws_to_http(ws_url: str) -> str:
+    """Convert ws:// → http:// for REST calls."""
+    return ws_url.replace("ws://", "http://", 1).replace("wss://", "https://", 1)
+
+
+# ─── Service class ────────────────────────────────────────────────────────────
 
 class STTService:
-    """Hybrid Service using Whisper-Base for English/LID and AI4Bharat Indic-Conformer for 22 Indian languages."""
+    """
+    Service for speech-to-text operations via Vexyl-STT.
+
+    Batch mode:   sends a complete audio file, returns the final transcript.
+    Stream mode:  iterates over 16kHz PCM chunks, yields transcript strings
+                  as Vexyl-STT emits utterances.
+    """
 
     def __init__(self):
-        self.whisper_pipe = None
-        self.conformer_model = None
-        
-        # Setup device selection (CUDA GPU > MPS Apple Silicon GPU > CPU)
-        if torch.cuda.is_available():
-            self.device = torch.device("cuda")
-        elif torch.backends.mps.is_available():
-            self.device = torch.device("mps")
-        else:
-            self.device = torch.device("cpu")
-            
-        logger.info(f"Hybrid STT Service initialized. Default execution device: {self.device}")
+        self.stt_url  = Config.VEXYL_STT_URL
+        self.http_base = _ws_to_http(self.stt_url)
+        logger.info(f"[VexylSTT] STTService initialised → {self.stt_url}")
 
-    def load_whisper(self):
-        """Lazy load the Whisper-Base model to save memory at startup."""
-        if self.whisper_pipe is None:
-            logger.info(f"Loading OpenAI Whisper-Base Model on {self.device}...")
-            # We use openai/whisper-base (140M params) for perfect speed & bilingual accuracy
-            device_arg = 0 if self.device.type == "cuda" else ("mps" if self.device.type == "mps" else -1)
-            try:
-                self.whisper_pipe = pipeline(
-                    "automatic-speech-recognition",
-                    model="openai/whisper-base",
-                    device=device_arg
-                )
-                logger.info("Whisper-Base Model loaded successfully.")
-            except Exception as e:
-                if self.device.type == "mps":
-                    logger.warning(f"Failed to load Whisper on MPS: {e}. Falling back to CPU...")
-                    try:
-                        self.whisper_pipe = pipeline(
-                            "automatic-speech-recognition",
-                            model="openai/whisper-base",
-                            device=-1
-                        )
-                        logger.info("Whisper-Base Model loaded successfully on CPU fallback.")
-                    except Exception as fallback_err:
-                        logger.error(f"Failed to load Whisper model even on CPU fallback: {fallback_err}")
-                        raise fallback_err
-                else:
-                    logger.error(f"Failed to load Whisper model: {e}")
-                    raise e
+    # ------------------------------------------------------------------
+    # Batch transcription (HTTP)
+    # ------------------------------------------------------------------
 
-    def load_conformer(self):
-        """Lazy load the Indic-Conformer-600M model to save memory at startup."""
-        if self.conformer_model is None:
-            logger.info(f"Loading AI4Bharat Indic-Conformer-600M Model on {self.device}...")
-            try:
-                from transformers import AutoModel
-                # trust_remote_code=True is required for AI4Bharat custom conformer class
-                self.conformer_model = AutoModel.from_pretrained(
-                    "ai4bharat/indic-conformer-600m-multilingual",
-                    trust_remote_code=True
-                )
-                self.conformer_model.to(self.device)
-                self.conformer_model.eval()
-                logger.info("Indic-Conformer-600M model loaded successfully.")
-            except Exception as e:
-                # Handle potential MPS operation failures or errors by falling back to CPU
-                if self.device.type == "mps":
-                    logger.warning(f"Failed to load Conformer ASR Model on MPS GPU: {e}. Falling back to CPU...")
-                    self.conformer_device = torch.device("cpu")
-                    try:
-                        from transformers import AutoModel
-                        self.conformer_model = AutoModel.from_pretrained(
-                            "ai4bharat/indic-conformer-600m-multilingual",
-                            trust_remote_code=True
-                        )
-                        self.conformer_model.to(self.conformer_device)
-                        self.conformer_model.eval()
-                        logger.info("Indic-Conformer-600M model loaded successfully on CPU fallback.")
-                    except Exception as fallback_err:
-                        logger.error(f"Failed to load Conformer ASR Model even on CPU fallback: {fallback_err}")
-                        raise fallback_err
-                else:
-                    logger.error(f"Failed to load Conformer ASR Model: {e}")
-                    raise e
-
-    def preprocess_audio(self, audio_path: str, target_device: torch.device) -> torch.Tensor:
+    def transcribe_audio_bytes(
+        self,
+        audio_bytes: bytes,
+        language: str = "auto",
+        filename: str = "audio.wav",
+        poll_interval: float = 0.5,
+        timeout: float = 120.0,
+    ) -> dict:
         """
-        Load and preprocess audio for Indic-Conformer ASR.
-        Converts format to 16,000 Hz sample rate and collapses channels to Mono.
-        """
-        import soundfile as sf
-        import torchaudio
-        data, sample_rate = sf.read(audio_path)
-        
-        waveform = torch.tensor(data).float()
-        if len(waveform.shape) == 1:
-            waveform = waveform.unsqueeze(0)  # Convert mono to shape (1, num_frames)
-        else:
-            waveform = waveform.t()  # Transpose to shape (num_channels, num_frames)
-        
-        # Resample to 16kHz
-        if sample_rate != 16000:
-            resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)
-            waveform = resampler(waveform)
-        
-        # Force Mono channel
-        if waveform.shape[0] > 1:
-            waveform = torch.mean(waveform, dim=0, keepdim=True)
-            
-        return waveform.to(target_device)
+        Transcribe a complete audio file via the Vexyl-STT batch HTTP API.
 
-    def transcribe(self, audio_path: str, language: Optional[str] = None, strategy: str = "rnnt") -> Optional[str]:
-        """
-        Transcribe the audio file using explicit language routing.
-        Routes English directly to Whisper and Indic languages directly to Indic-Conformer.
-        
+        The audio is submitted as a multipart upload; the method polls the
+        job-status endpoint until the transcription is done.
+
         Args:
-            audio_path: Path to the audio file (.wav, .mp3, .m4a, etc.)
-            language: The name of the language selected by the user (e.g. 'Tamil', 'Hindi', 'English')
-            strategy: Optional decoding strategy parameter ('rnnt' or 'ctc')
-        """
-        try:
-            # Normalize requested language
-            requested_lang = (language or "english").lower().strip()
-            logger.info(f"Processing transcription for audio: {audio_path} | selected language: '{requested_lang}'")
-            
-            # Direct Explicit Routing
-            if requested_lang == "english":
-                logger.info("English selected. Running Whisper ASR in a single pass...")
-                self.load_whisper()
-                whisper_result = self.whisper_pipe(audio_path)
-                whisper_text = whisper_result.get("text", "").strip()
-                logger.info(f"Returning Whisper transcription: '{whisper_text}'")
-                return whisper_text
-                
-            # Indic Conformer Routing
-            lang_code = LANGUAGE_MAP.get(requested_lang)
-            if lang_code is None:
-                # Fuzzy matching fallback
-                for standard_lang, code in LANGUAGE_MAP.items():
-                    if requested_lang in standard_lang or standard_lang in requested_lang:
-                        lang_code = code
-                        logger.info(f"Fuzzy matched '{requested_lang}' to Conformer code '{lang_code}'")
-                        break
-            
-            if lang_code is None:
-                logger.warning(f"Requested language '{requested_lang}' is not explicitly supported by Indic-Conformer. Defaulting to Hindi ('hi').")
-                lang_code = "hi"
-            
-            logger.info(f"Routing audio to Indic-Conformer for native transcription using code: '{lang_code}'")
-            self.load_conformer()
-            
-            target_device = getattr(self, "conformer_device", self.device)
-            waveform = self.preprocess_audio(audio_path, target_device)
-            
-            try:
-                with torch.no_grad():
-                    transcription = self.conformer_model(waveform, lang_code, strategy)
-                result_text = transcription.strip() if isinstance(transcription, str) else str(transcription).strip()
-                logger.info(f"Successfully generated native Indic-Conformer transcription: '{result_text}'")
-                return result_text
-            except Exception as conformer_err:
-                if target_device.type == "mps":
-                    logger.warning(f"Conformer inference failed on MPS GPU: {conformer_err}. Retrying execution on CPU...")
-                    try:
-                        self.conformer_device = torch.device("cpu")
-                        self.conformer_model.to(self.conformer_device)
-                        waveform_cpu = self.preprocess_audio(audio_path, self.conformer_device)
-                        with torch.no_grad():
-                            transcription = self.conformer_model(waveform_cpu, lang_code, strategy)
-                        result_text = transcription.strip() if isinstance(transcription, str) else str(transcription).strip()
-                        logger.info("Successfully generated transcription on CPU fallback.")
-                        return result_text
-                    except Exception as fallback_err:
-                        logger.exception(f"Error during CPU fallback transcription: {fallback_err}")
-                        # Fallback to Whisper ASR
-                        self.load_whisper()
-                        whisper_result = self.whisper_pipe(audio_path)
-                        return whisper_result.get("text", "").strip()
-                else:
-                    logger.exception(f"Error during Conformer transcription: {conformer_err}")
-                    # Fallback to Whisper ASR
-                    self.load_whisper()
-                    whisper_result = self.whisper_pipe(audio_path)
-                    return whisper_result.get("text", "").strip()
-            
-        except Exception as e:
-            logger.exception(f"Error during automatic hybrid transcription: {e}")
-            return None
+            audio_bytes:   Raw bytes of the audio file (WAV/MP3/OGG/FLAC).
+            language:      Sachet language name, numeric code, or 'auto'.
+            filename:      Original filename (used for content-type sniffing).
+            poll_interval: Seconds between poll requests.
+            timeout:       Maximum seconds to wait before giving up.
 
-# Singleton instance
-_stt_service = None
+        Returns:
+            dict with keys: transcript, language, latency_ms, job_id
+        """
+        lang_code = _to_vexyl_lang(language)
+        submit_url = f"{self.http_base}/batch/transcribe"
+        logger.info(f"[VexylSTT] Submitting batch job | lang={lang_code} | size={len(audio_bytes)}")
+
+        # Determine MIME type from extension
+        ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "wav"
+        mime_map = {
+            "wav": "audio/wav",
+            "mp3": "audio/mpeg",
+            "ogg": "audio/ogg",
+            "flac": "audio/flac",
+            "m4a": "audio/mp4",
+            "webm": "audio/webm",
+        }
+        mime_type = mime_map.get(ext, "audio/wav")
+
+        try:
+            resp = requests.post(
+                submit_url,
+                files={"file": (filename, io.BytesIO(audio_bytes), mime_type)},
+                data={"language_code": lang_code},
+                timeout=30,
+            )
+        except requests.RequestException as exc:
+            logger.error(f"[VexylSTT] Batch submit failed: {exc}")
+            raise RuntimeError(f"Failed to submit audio to Vexyl-STT: {exc}") from exc
+
+        if resp.status_code not in (200, 201, 202):
+            logger.error(f"[VexylSTT] Batch submit HTTP {resp.status_code}: {resp.text[:200]}")
+            raise RuntimeError(f"Vexyl-STT submit error {resp.status_code}: {resp.text[:200]}")
+
+        job_data = resp.json()
+        job_id   = job_data.get("job_id")
+        if not job_id:
+            # Synchronous response — transcript returned immediately
+            transcript = job_data.get("transcript", "")
+            logger.info(f"[VexylSTT] Synchronous result: '{transcript}'")
+            return {
+                "transcript": transcript,
+                "language": job_data.get("language", lang_code),
+                "latency_ms": job_data.get("latency_ms", 0),
+                "job_id": None,
+            }
+
+        logger.info(f"[VexylSTT] Job queued: {job_id}, polling...")
+
+        # Poll until complete
+        poll_url = f"{self.http_base}/batch/status/{job_id}"
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            time.sleep(poll_interval)
+            try:
+                poll_resp = requests.get(poll_url, timeout=10)
+            except requests.RequestException as exc:
+                logger.warning(f"[VexylSTT] Poll error: {exc}")
+                continue
+
+            if poll_resp.status_code != 200:
+                logger.warning(f"[VexylSTT] Poll HTTP {poll_resp.status_code}")
+                continue
+
+            status_data = poll_resp.json()
+            status = status_data.get("status")
+
+            if status == "completed":
+                transcript = status_data.get("transcript", "")
+                logger.info(f"[VexylSTT] Job {job_id} done: '{transcript}'")
+                return {
+                    "transcript":  transcript,
+                    "language":    status_data.get("language", lang_code),
+                    "latency_ms":  status_data.get("latency_ms", 0),
+                    "job_id":      job_id,
+                }
+            elif status == "failed":
+                err = status_data.get("error_message", status_data.get("error", "Unknown transcription error"))
+                logger.error(f"[VexylSTT] Job {job_id} failed: {err}")
+                raise RuntimeError(f"Transcription failed: {err}")
+
+            # queued / processing — keep polling
+            logger.debug(f"[VexylSTT] Job {job_id} status: {status}")
+
+        raise TimeoutError(f"Transcription job {job_id} did not complete within {timeout}s")
+
+    # ------------------------------------------------------------------
+    # Streaming transcription (WebSocket, sync generator)
+    # ------------------------------------------------------------------
+
+    def stream_transcription(
+        self,
+        pcm_chunks: Iterator[bytes],
+        language: str = "auto",
+        session_id: Optional[str] = None,
+        default_lang: str = "hi-IN",
+    ) -> Generator[dict, None, None]:
+        """
+        Stream 16kHz 16-bit mono PCM audio chunks to Vexyl-STT; yield
+        transcript dicts as utterances are finalized.
+
+        Args:
+            pcm_chunks:   Iterator yielding raw PCM bytes (16kHz, 16-bit, mono).
+            language:     Language code or 'auto' for automatic detection.
+            session_id:   Optional session identifier (auto-generated if None).
+            default_lang: Fallback language for auto-detection.
+
+        Yields:
+            dicts with keys: text, lang, latency_ms, duration
+        """
+        lang_code  = _to_vexyl_lang(language)
+        session_id = session_id or f"sachet_{uuid.uuid4().hex[:8]}"
+        import queue as _queue
+
+        result_queue: _queue.Queue = _queue.Queue()
+
+        def _thread_target():
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                loop.run_until_complete(
+                    _async_stream_stt(
+                        pcm_chunks, lang_code, session_id, default_lang, result_queue, loop
+                    )
+                )
+            finally:
+                loop.close()
+
+        thread = threading.Thread(target=_thread_target, daemon=True)
+        thread.start()
+
+        while True:
+            item = result_queue.get()
+            if item is None:
+                break
+            if isinstance(item, Exception):
+                logger.error(f"[VexylSTT] Stream error: {item}")
+                break
+            yield item
+
+        thread.join(timeout=5)
+
+    # ------------------------------------------------------------------
+    # Health check
+    # ------------------------------------------------------------------
+
+    def test_connection(self) -> bool:
+        """Test connectivity to the Vexyl-STT HTTP health endpoint."""
+        health_url = f"{self.http_base}/health"
+        try:
+            resp = requests.get(health_url, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                logger.info(f"[VexylSTT] Health OK: {data.get('status', 'ok')}")
+                return True
+            logger.warning(f"[VexylSTT] Health returned {resp.status_code}")
+            return False
+        except Exception as exc:
+            logger.error(f"[VexylSTT] Health check failed: {exc}")
+            return False
+
+
+# ─── Async WebSocket streaming helper ─────────────────────────────────────────
+
+async def _async_stream_stt(
+    pcm_chunks,
+    lang_code: str,
+    session_id: str,
+    default_lang: str,
+    result_queue,
+    loop,
+):
+    """
+    Async coroutine: drives the Vexyl-STT WebSocket streaming session.
+    Sends PCM chunks as binary frames; receives transcript events and
+    puts them on result_queue. Signals done with None sentinel.
+    """
+    ws_url = Config.VEXYL_STT_URL
+
+    def _put(item):
+        loop.call_soon_threadsafe(result_queue.put_nowait, item)
+
+    try:
+        async with websockets.connect(ws_url, open_timeout=10, close_timeout=5) as ws:
+            # 1. Wait for ready message
+            ready_raw = await asyncio.wait_for(ws.recv(), timeout=10)
+            ready = json.loads(ready_raw)
+            if ready.get("type") != "ready":
+                logger.warning(f"[VexylSTT] Unexpected handshake: {ready}")
+
+            # 2. Send start message
+            await ws.send(json.dumps({
+                "type":         "start",
+                "lang":         lang_code,
+                "session_id":   session_id,
+                "default_lang": default_lang,
+            }))
+
+            # Wait for "started" ack
+            started_raw = await asyncio.wait_for(ws.recv(), timeout=10)
+            started = json.loads(started_raw)
+            logger.info(f"[VexylSTT] Session started: {started}")
+
+            # 3. Send audio chunks while collecting transcripts concurrently
+            async def _send_audio():
+                for chunk in pcm_chunks:
+                    await ws.send(chunk)
+                # Signal end of audio
+                await ws.send(json.dumps({"type": "stop"}))
+
+            async def _recv_transcripts():
+                while True:
+                    try:
+                        raw = await asyncio.wait_for(ws.recv(), timeout=30)
+                    except asyncio.TimeoutError:
+                        logger.warning("[VexylSTT] Receive timeout")
+                        break
+                    msg = json.loads(raw)
+                    msg_type = msg.get("type")
+                    if msg_type == "final":
+                        transcript = msg.get("text", "").strip()
+                        if transcript:
+                            _put({
+                                "text":       transcript,
+                                "lang":       msg.get("lang", lang_code),
+                                "latency_ms": msg.get("latency_ms", 0),
+                                "duration":   msg.get("duration", 0),
+                            })
+                    elif msg_type == "stopped":
+                        break
+                    elif msg_type == "error":
+                        logger.error(f"[VexylSTT] Server error: {msg.get('message')}")
+                        break
+
+            await asyncio.gather(_send_audio(), _recv_transcripts())
+
+    except (websockets.exceptions.ConnectionClosed,
+            websockets.exceptions.WebSocketException) as exc:
+        _put(exc)
+    except Exception as exc:
+        logger.error(f"[VexylSTT] Unexpected error: {exc}", exc_info=True)
+        _put(exc)
+    finally:
+        _put(None)  # sentinel
+
+
+# ─── Singleton ────────────────────────────────────────────────────────────────
+
+_stt_service: Optional[STTService] = None
+
 
 def get_stt_service() -> STTService:
     """Get the STT service singleton instance."""

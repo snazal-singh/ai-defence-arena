@@ -1,12 +1,12 @@
 from pydantic import BaseModel
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 
 class TrialQueryRequest(BaseModel):
     fingerprint: str
     message: str
-    inputLanguage: Optional[int] = 23
-    outputLanguage: Optional[int] = 23
+    inputLanguage: Optional[str] = "en"
+    outputLanguage: Optional[str] = "en"
     hasCsvOrXlsx: Optional[bool] = False
     mode: Optional[str] = "default"
     filenames: Optional[List[str]] = []
@@ -16,9 +16,9 @@ class QueryRequest(BaseModel):
     message: str
     chatId: str
     sessionId: Optional[str] = None
-    context: Optional[str] = ""
-    inputLanguage: Optional[int] = 23
-    outputLanguage: Optional[int] = 23
+    context: Optional[Union[str, bool]] = ""
+    inputLanguage: Optional[str] = "en"
+    outputLanguage: Optional[str] = "en"
     hasCsvOrXlsx: Optional[bool] = False
     mode: Optional[str] = "default"
     filenames: Optional[List[str]] = []

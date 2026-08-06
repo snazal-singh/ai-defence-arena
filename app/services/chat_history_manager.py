@@ -5,11 +5,14 @@ This module handles storage, retrieval, and management of chat history using Mon
 Added support for chat names stored in a separate collection.
 """
 
+import base64
 import logging
+import uuid
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 import re
 import json
+from bson import Binary
 from pymongo import MongoClient, IndexModel, ASCENDING, DESCENDING
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 
@@ -28,7 +31,8 @@ class ChatHistoryManager:
         self.client = None
         self.db = None
         self.collection = None
-        self.chat_names_collection = None  # New collection for chat names
+        self.chat_names_collection = None
+        self.chat_images_collection = None
         self.llm = get_fast_llm()
         
         # Configuration limits
@@ -60,7 +64,8 @@ class ChatHistoryManager:
             # Use a dedicated database for chat history
             self.db = self.client.chat_history
             self.collection = self.db.sessions
-            self.chat_names_collection = self.db.chat_names  # New collection for chat names
+            self.chat_names_collection = self.db.chat_names
+            self.chat_images_collection = self.db.chat_images
             
             # Create indexes for efficient queries
             self._create_indexes()
@@ -74,12 +79,14 @@ class ChatHistoryManager:
             self.db = None
             self.collection = None
             self.chat_names_collection = None
+            self.chat_images_collection = None
         except Exception as e:
             logger.error(f"Unexpected MongoDB init error (type={type(e).__name__}): {e}")
             self.client = None
             self.db = None
             self.collection = None
             self.chat_names_collection = None
+            self.chat_images_collection = None
     
     def _create_indexes(self):
         """Create MongoDB indexes for efficient queries."""
@@ -111,7 +118,14 @@ class ChatHistoryManager:
                     IndexModel([("updated_at", DESCENDING)], name="chat_name_updated_at_desc")
                 ]
                 self.chat_names_collection.create_indexes(chat_name_indexes)
-            
+
+            if self.chat_images_collection is not None:
+                chat_image_indexes = [
+                    IndexModel([("image_id", ASCENDING)], unique=True, name="chat_images_image_id_unique"),
+                    IndexModel([("created_at", ASCENDING)], expireAfterSeconds=self.MAX_SESSION_AGE_DAYS * 24 * 3600, name="chat_images_ttl")
+                ]
+                self.chat_images_collection.create_indexes(chat_image_indexes)
+
             logger.debug("MongoDB indexes created successfully with chat_id support")
         except Exception as e:
             logger.error(f"Error creating indexes: {e}")
@@ -138,6 +152,68 @@ class ChatHistoryManager:
         """Generate a default chat name based on current time."""
         now = datetime.utcnow()
         return f"Chat {now.strftime('%Y-%m-%d %H:%M')}"
+
+    def save_image(self, user_session: str, chat_id: str, image_bytes: bytes, mime_type: str = "image/jpeg") -> Optional[str]:
+        """Store image as BSON Binary in the chat_images collection. Returns image_id or None."""
+        if not self._is_available() or self.chat_images_collection is None:
+            return None
+        try:
+            raw_bytes = image_bytes
+            image_id = str(uuid.uuid4())
+            self.chat_images_collection.insert_one({
+                "image_id": image_id,
+                "user_session": user_session,
+                "chat_id": chat_id or self.DEFAULT_CHAT_ID,
+                "created_at": datetime.utcnow(),
+                "mime_type": mime_type,
+                "data": Binary(raw_bytes),
+            })
+            logger.debug(f"Saved image {image_id} for session {user_session}")
+            return image_id
+        except Exception as e:
+            logger.error(f"Error saving image to MongoDB: {e}")
+            return None
+
+    def get_image(self, image_id: str) -> Optional[str]:
+        """Retrieve image as data URI by image_id. Returns None if not found."""
+        if not self._is_available() or self.chat_images_collection is None:
+            return None
+        try:
+            doc = self.chat_images_collection.find_one(
+                {"image_id": image_id}, {"data": 1, "mime_type": 1, "_id": 0}
+            )
+            if not doc:
+                return None
+            raw = doc.get("data")
+            # Handle both new BSON Binary format and legacy base64 string format
+            if isinstance(raw, (bytes, Binary)):
+                mime = doc.get("mime_type", "image/jpeg")
+                return f"data:{mime};base64,{base64.b64encode(bytes(raw)).decode()}"
+            return raw  # legacy string passthrough
+        except Exception as e:
+            logger.error(f"Error fetching image {image_id}: {e}")
+            return None
+
+    def get_images_batch(self, image_ids: list) -> dict:
+        """Fetch multiple images in one query. Returns {image_id: data_uri_or_None}."""
+        result: dict = {id_: None for id_ in image_ids}
+        if not self._is_available() or self.chat_images_collection is None or not image_ids:
+            return result
+        try:
+            docs = self.chat_images_collection.find(
+                {"image_id": {"$in": image_ids}},
+                {"image_id": 1, "data": 1, "mime_type": 1, "_id": 0},
+            )
+            for doc in docs:
+                raw = doc.get("data")
+                if isinstance(raw, (bytes, Binary)):
+                    mime = doc.get("mime_type", "image/jpeg")
+                    result[doc["image_id"]] = f"data:{mime};base64,{base64.b64encode(bytes(raw)).decode()}"
+                elif raw:
+                    result[doc["image_id"]] = raw
+        except Exception as e:
+            logger.error(f"Error batch-fetching images: {e}")
+        return result
 
     def _create_chat_name_entry(self, user_session: str, chat_id: str, chat_name: str = None) -> bool:
         """Create a chat name entry in the chat_names collection."""
@@ -206,34 +282,23 @@ class ChatHistoryManager:
             logger.error(f"Error getting all chat names: {e}")
             return {}
 
-    # -------------------------------------------------
-    # NEW – public API used by the /ask endpoint
     def store_user_message(self,
                            user_session: str,
                            chat_id: str,
                            role: MessageRole,
                            content: str,
                            image_caption: Optional[str] = None,
-                           image_url: Optional[str] = None) -> bool:  # NEW param
-        """
-        Store a user message (or system-generated message) in the current chat session.
-        The optional ``image_caption`` is persisted so later queries can reference it.
-        The optional ``image_url`` stores the path to the saved image for chat history display.
-        """
+                           image_url: Optional[str] = None) -> bool:
+        """Store a user or system message in the current chat session."""
         try:
-            # Load or create a session
             session = self._get_or_create_session(user_session, chat_id)
-
-            # Build the ChatMessage object
             msg = ChatMessage(
                 role=role,
                 content=content,
                 image_caption=image_caption,
-                image_url=image_url,  # NEW
+                image_url=image_url,
                 timestamp=datetime.utcnow()
             )
-
-            # Append and apply limits
             session.add_message(msg)
             self._apply_session_limits(session)
             return self._save_session(session)
@@ -243,8 +308,7 @@ class ChatHistoryManager:
 
     def save_conversation_turn(self, user_session: str, user_query: str, assistant_response: str,
                               chat_id: str = None, query_type: str = "general",
-                              context_used: bool = False, image_url: str = None,
-                              image_caption: str = None, metadata: Dict = None) -> str:
+                              context_used: bool = False, metadata: Dict = None) -> str:
         """
         Save a complete conversation turn (user query + assistant response).
         
@@ -275,8 +339,6 @@ class ChatHistoryManager:
                 content=user_query,
                 query_type=query_type_enum,
                 token_count=int(user_tokens),
-                image_url=image_url,
-                image_caption=image_caption,
                 metadata=metadata or {}
             )
             

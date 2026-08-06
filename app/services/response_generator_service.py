@@ -342,7 +342,7 @@ Do not make up information or answer factual questions from general knowledge.
     def _create_document_prompt(self, user_question: str, context: str, language: Optional[str] = None,
                           chat_context: Optional[Dict[str, Any]] = None) -> str:
 
-    # Extract image description from question if present
+        # Extract image description from question if present
         image_description = ""
         if "\n\nImage Description:" in user_question:
             parts = user_question.split("\n\nImage Description:")
@@ -351,8 +351,8 @@ Do not make up information or answer factual questions from general knowledge.
 
         # Check if an image is involved (either in the current query or in the chat history)
         has_image = bool(image_description) or (
-            chat_context and 
-            chat_context.get("context_used") and 
+            chat_context and
+            chat_context.get("context_used") and
             "[Image Description:" in chat_context.get("context", "")
         )
 
@@ -362,6 +362,7 @@ Do not make up information or answer factual questions from general knowledge.
 - If the image content is NOT related to the documents in the CONTEXT, and the user's query is asking about the image, respond exactly: "The provided image is not related to the documents." and do not answer any questions about the image itself.
 - If the image is related to the documents, you must treat the image description as part of the CONTEXT and answer the question about the image using both the documents and the image description.
 - If the user's query is about the documents (and not asking about the image itself), answer the question normally using the document context, even if an unrelated image is present in the context or history."""
+
 
         prompt = f"""You are a document assistant. Answer ONLY using the information in the CONTEXT below.
 
@@ -430,7 +431,7 @@ Generate ONLY the answer. No preamble, no commentary.
 """
 
         return prompt
-    
+
     def _create_hybrid_prompt(self, user_query: str, document_context: str, sql_context: str,
                             language: Optional[str] = None, chat_context: Optional[Dict[str, Any]] = None) -> str:
         """Create prompt for hybrid queries with adaptive formatting."""
@@ -551,7 +552,9 @@ Documents available:
         """
         if not language or language.strip().lower() == "english":
             return text
-        return translate_to_indic(text, language)
+        translated = translate_to_indic(text, language)
+        logger.info(f"[TRANSLATION] Output ({language}): {translated}")
+        return translated
 
     def _validate_structure(self, parsed):
         """

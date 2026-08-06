@@ -3,12 +3,11 @@ import logging
 import time
 import os
 import uuid
-import base64
-import requests
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form, File, UploadFile
-from fastapi.responses import JSONResponse, StreamingResponse, FileResponse, Response
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
+from pydantic import BaseModel
 
 from app.api.deps import get_current_user, get_current_user_sse
 from app.core.config import settings
@@ -23,6 +22,12 @@ from app.schemas.query import (
 )
 from app.services.chat_history_manager import get_chat_history_manager
 from app.services.query_service import get_query_service
+from app.services.tts_service import get_tts_service
+from app.services.stt_service import get_stt_service
+
+class SynthesizeRequest(BaseModel):
+    text: str
+    language: str = "en"
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -127,83 +132,94 @@ async def trial_ask(
 # ---------------------------------------------------------------------------
 
 @router.post("/ask")
-async def ask(
-    request: Request,
-    body: Optional[QueryRequest] = None,
-    user_email: str = Depends(get_current_user),
-):
+async def ask(request: Request, user_email: str = Depends(get_current_user)):
     """Process a document query with full chat-history context for an authenticated user."""
-    image_url = None
+    content_type = request.headers.get("content-type", "")
+
+    image_id = None
     caption = None
-    
-    if "multipart/form-data" in request.headers.get("content-type", ""):
+
+    if "multipart/form-data" in content_type:
         form = await request.form()
+        logger.debug(f"Form keys: {list(form.keys())} | Image object: {form.get('image')} | Image type: {type(form.get('image'))}")
+        message = form.get("message", "")
+        chat_id = form.get("chatId", "default")
+        session_id = form.get("sessionId")
+        context = form.get("context", "")
+
+        input_language = str(form.get("inputLanguage", "en"))
+        output_language = str(form.get("outputLanguage", "en"))
+
+        has_csv_or_xlsx = form.get("hasCsvOrXlsx", "false").lower() == "true"
+        mode = form.get("mode", "default")
+
+        # form.getlist returns a list of strings
+        filenames = form.getlist("filenames")
+
+        # Process image file
         image = form.get("image")
+        logger.debug(f"Checking image: image={bool(image)}, type={type(image).__name__}, filename={getattr(image, 'filename', None)}")
+        if image and (type(image).__name__ == "UploadFile" or hasattr(image, "filename")) and getattr(image, "filename", None):
+            import os
+            ext = (os.path.splitext(image.filename)[1] or ".jpg").lstrip(".")
+            mime = f"image/{ext}" if ext else "image/jpeg"
+
+            image_bytes = await image.read()
+            if image_bytes:
+                from app.services.vision_service import get_vision_service
+                vision_service = get_vision_service()
+                try:
+                    caption = vision_service.get_image_caption_from_bytes(image_bytes, mime)
+                    if message:
+                        message = f"{message}\n\nImage Description: {caption}"
+                    else:
+                        message = f"Image Description: {caption}"
+                    logger.info(f"Generated caption for uploaded image: {caption}")
+                except Exception as e:
+                    logger.error(f"Error calling vision service for caption: {e}")
+
+                # Store image as BSON Binary in MongoDB
+                user_session_for_img = user_email + (session_id or "").lower()
+                image_id = chat_history_manager.save_image(user_session_for_img, chat_id, image_bytes, mime)
+                logger.info(f"Stored image in MongoDB with id: {image_id}")
+
         data = {
-            'token': form.get('token'),
-            'message': form.get('message', ''),
-            'context': form.get('context', "false").lower() in ("true", "1"),
-            'chatId': form.get('chatId', 'default'),
-            'sessionId': form.get('sessionId'),
-            'inputLanguage': int(form.get('inputLanguage', 23)),
-            'outputLanguage': int(form.get('outputLanguage', 23)),
-            'filenames': form.getlist('filenames'),
-            'hasCsvOrXlsx': form.get('hasCsvOrXlsx', "false").lower() in ("true", "1"),
-            'mode': form.get('mode', 'default'),
+            "message": message,
+            "chatId": chat_id,
+            "sessionId": session_id,
+            "context": context,
+            "inputLanguage": input_language,
+            "outputLanguage": output_language,
+            "hasCsvOrXlsx": has_csv_or_xlsx,
+            "mode": mode,
+            "filenames": filenames,
         }
-        
-        if image and image.filename:
-            # Save image permanently to files directory instead of /tmp/
-            BASE_USERS_DIR = "chat_images"
-            session_id_for_path = data.get('sessionId', 'default')
-            ext = os.path.splitext(image.filename)[1] or ".jpg"
-            image_filename = f"img_{int(time.time())}_{uuid.uuid4().hex[:8]}{ext}"
-            image_dir = os.path.join(BASE_USERS_DIR, session_id_for_path)
-            os.makedirs(image_dir, exist_ok=True)
-            image_save_path = os.path.join(image_dir, image_filename)
-            
-            # Read and write content
-            content = await image.read()
-            with open(image_save_path, "wb") as f:
-                f.write(content)
-
-            # Get caption from Gemma4
-            caption = get_image_caption(image_save_path)
-
-            # Build URL for frontend to fetch image
-            image_url = f"/chat_images/{session_id_for_path}/{image_filename}"
-
-            if data['message']:
-                data['message'] = f"{data['message']}\n\nImage Description: {caption}"
-            else:
-                data['message'] = f"Image Description: {caption}"
-            logger.info(f"FINAL MESSAGE SENT TO RAG:\n{data['message']}")
     else:
-        if body:
-            data = body.model_dump()
-        else:
-            try:
-                data = await request.json()
-            except Exception:
-                data = {}
+        # Standard JSON body
+        body_json = await request.json()
 
-    # user_email is authenticated via Depends(get_current_user)
+        # Validate body_json against QueryRequest model attributes
+        body = QueryRequest(**body_json)
+        data = body.model_dump()
+        chat_id = body.chatId or "default"
+        session_id = body.sessionId
+        context = body.context
+
     session_name = user_email
-    context = data.get('context', False)
-    chat_id = data.get('chatId', 'default')
-    
     if context:
-        session_id = data.get('sessionId')
         if not session_id:
             raise HTTPException(status_code=400, detail="sessionId is required when context=true.")
-        session_name = user_email + str(session_id.lower())
+        session_name = user_email + session_id.lower()
 
-
-
-    data['image_url'] = image_url
+    data['image_id'] = image_id
     data['image_caption'] = caption
+    data['skip_user_message_storage'] = False
 
     response, status_code = query_service.process_authenticated_query(data, user_email, session_name, chat_id)
+
+    if image_id and isinstance(response, dict):
+        response["image_id"] = image_id
+        
     return JSONResponse(content=response, status_code=status_code)
 
 
@@ -219,8 +235,8 @@ def ask_stream(
     chat_id: str = Query(default="default", alias="chatId"),
     message: str = Query(...),
     mode: str = Query(default="creative"),
-    input_language: int = Query(default=23, alias="inputLanguage"),
-    output_language: int = Query(default=23, alias="outputLanguage"),
+    input_language: str = Query(default="en", alias="inputLanguage"),
+    output_language: str = Query(default="en", alias="outputLanguage"),
     has_csv_or_xlsx: bool = Query(default=False, alias="hasCsvOrXlsx"),
     filenames: List[str] = Query(default=[]),
 ):
@@ -249,7 +265,13 @@ def ask_stream(
 
     def generate():
         try:
+            from utils.translation import translate_to_indic
             user_query = query_service._extract_query_parameters(data)
+
+            # Translate input query to English for RAG retrieval
+            user_query["message"] = query_service._translate_input_to_english(
+                user_query["message"], user_query["input_language"]
+            )
 
             guardrail_response = query_service._guardrail.process_input(user_query["message"])
             if guardrail_response.get("status") == "blocked":
@@ -265,6 +287,9 @@ def ask_stream(
             from app.services.creative_reasoning_service import get_creative_reasoning_service
             creative_service = get_creative_reasoning_service()
 
+            out_lang = user_query["output_language"]
+            out_lang_name = query_service.LANGUAGE_MAP.get(out_lang, "English")
+
             for event in creative_service.process_creative_query_stream(
                 user_query["message"],
                 session_name,
@@ -275,6 +300,11 @@ def ask_stream(
                 chat_context,
                 chat_id,
             ):
+                # Translate the final answer to the requested output language
+                if event.get("type") == "complete" and out_lang_name != "English":
+                    content = event.get("content", {})
+                    if isinstance(content, dict) and content.get("answer"):
+                        content["answer"] = translate_to_indic(content["answer"], out_lang_name)
                 yield f"data: {json.dumps(event)}\n\n"
 
         except Exception as e:
@@ -323,28 +353,55 @@ def ask_tts(request: Request, body: QueryRequest, user_email: str = Depends(get_
     if not answer_text or not answer_text.strip():
         raise HTTPException(status_code=500, detail="Empty response generated.")
 
-    output_language = body.outputLanguage or 23
-    language_map = {1: "hindi", 23: "english"}
-    lang_str = language_map.get(output_language, "english") if isinstance(output_language, int) else output_language
-    lang_str = str(lang_str).strip().lower()
+    iso_code = str(body.outputLanguage or "en")
 
-    try:
-        from app.services.indic_parler_tts_service import get_indic_parler_service
-        parler_service = get_indic_parler_service()
-        audio_bytes = parler_service.generate_audio_bytes(answer_text, lang_str)
-        
-        return Response(
-            content=audio_bytes,
-            media_type="audio/mpeg",
-            headers={
-                "Content-Length": str(len(audio_bytes)),
-                "Cache-Control": "no-cache",
-                "X-TTS-Provider": "indic-parler",
-            }
-        )
-    except Exception as e:
-        logger.exception(f"TTS generation failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Local TTS generation failed: {str(e)}")
+    tts_service = get_tts_service()
+
+    def generate_audio():
+        try:
+            for chunk in tts_service.generate_audio_stream(answer_text, iso_code):
+                yield chunk
+        except Exception as e:
+            logger.error(f"TTS streaming error: {e}")
+
+    return StreamingResponse(
+        generate_audio(),
+        media_type="audio/wav",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive",
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
+# TTS synthesis (text → WAV) — used by the UI's per-sentence play button
+# ---------------------------------------------------------------------------
+
+@router.post("/synthesize")
+@limiter.limit("30/minute")
+def synthesize_text(request: Request, body: SynthesizeRequest, user_email: str = Depends(get_current_user)):
+    """Convert text to WAV audio via Vexyl-TTS. Returns a streaming WAV response."""
+    text = body.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="text is required")
+
+    iso_code = str(body.language or "en")
+    tts = get_tts_service()
+
+    def generate_audio():
+        try:
+            for chunk in tts.generate_audio_stream(text, iso_code):
+                yield chunk
+        except Exception as e:
+            logger.error(f"TTS synthesis error: {e}")
+
+    return StreamingResponse(
+        generate_audio(),
+        media_type="audio/wav",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -353,81 +410,61 @@ def ask_tts(request: Request, body: QueryRequest, user_email: str = Depends(get_
 
 @router.get("/tts-health")
 def tts_health(user_email: str = Depends(get_current_user)):
-    """Check whether the local Indic Parler TTS service is reachable and configured."""
-    try:
-        from app.services.indic_parler_tts_service import get_indic_parler_service
-        parler_service = get_indic_parler_service()
-        connection_ok = parler_service.test_connection()
-        return {
-            "status": "healthy" if connection_ok else "degraded",
-            "tts_available": connection_ok,
-            "default_voice": "parler-tts-indic-v1",
-            "message": "Local Indic Parler TTS service is ready" if connection_ok else "Local Indic Parler TTS service has issues",
-        }
-    except Exception as e:
-        logger.error(f"TTS health check error: {e}")
-        return {
-            "status": "unhealthy",
-            "tts_available": False,
-            "message": f"TTS service error: {str(e)}"
-        }
+    """Check whether the Vexyl-TTS service is reachable."""
+    tts_service = get_tts_service()
+    ok = tts_service.test_connection()
+    return {
+        "status": "healthy" if ok else "degraded",
+        "tts_available": ok,
+        "message": "Vexyl-TTS is ready" if ok else "Vexyl-TTS is not reachable",
+    }
 
 
 # ---------------------------------------------------------------------------
-# Direct TTS audio synthesis endpoint
+# STT endpoints (Vexyl-STT)
 # ---------------------------------------------------------------------------
 
-@router.api_route("/tts", methods=["GET", "POST"])
-async def tts_direct(request: Request):
-    """
-    Direct text-to-speech endpoint using local Indic Parler TTS.
-    Converts given text to audio and returns the bytes.
-    """
+@router.post("/stt-transcribe")
+@limiter.limit("20/minute")
+async def stt_transcribe(
+    request: Request,
+    audio: UploadFile = File(...),
+    language: str = Query(default="auto"),
+    user_email: str = Depends(get_current_user),
+):
+    """Transcribe an uploaded audio file via Vexyl-STT."""
+    audio_bytes = await audio.read()
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="Audio file is empty.")
+
+    stt_service = get_stt_service()
     try:
-        text = None
-        output_language = "english"
-        
-        if request.method == "POST":
-            data = await request.json()
-            text = data.get("text")
-            output_language = data.get("outputLanguage", "english")
-        else:
-            text = request.query_params.get("text")
-            output_language = request.query_params.get("outputLanguage", "english")
-
-        if not text or not text.strip():
-            raise HTTPException(status_code=400, detail="Text is required")
-
-        # Normalize output language
-        try:
-            output_language = int(output_language)
-        except (ValueError, TypeError):
-            pass
-        if isinstance(output_language, int):
-            language_map = {1: 'hindi', 23: 'english'}
-            output_language = language_map.get(output_language, 'english')
-        output_language = str(output_language).strip().lower()
-
-        logger.info(f"Generating Direct TTS | lang={output_language} | text_len={len(text)}")
-
-        from app.services.indic_parler_tts_service import get_indic_parler_service
-        parler_service = get_indic_parler_service()
-        audio_bytes = parler_service.generate_audio_bytes(text, output_language)
-
-        return Response(
-            content=audio_bytes,
-            media_type="audio/mpeg",
-            headers={
-                'Content-Length': str(len(audio_bytes)),
-                'Cache-Control': 'no-cache',
-                'X-TTS-Provider': 'indic-parler',
-            }
+        result = stt_service.transcribe_audio_bytes(
+            audio_bytes=audio_bytes,
+            language=language,
+            filename=audio.filename or "audio.wav",
         )
-    except HTTPException as he:
-        raise he
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+    except TimeoutError:
+        raise HTTPException(status_code=504, detail="Transcription timed out.")
     except Exception as e:
-        logger.exception(f'Direct TTS generation error: {e}')
-        raise HTTPException(status_code=500, detail=f'Direct TTS generation failed: {e}')
+        logger.exception(f"STT unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Transcription failed.")
+
+    return result
+
+
+@router.get("/stt-health")
+def stt_health(user_email: str = Depends(get_current_user)):
+    """Check whether the Vexyl-STT service is reachable."""
+    stt_service = get_stt_service()
+    ok = stt_service.test_connection()
+    return {
+        "status": "healthy" if ok else "degraded",
+        "stt_available": ok,
+        "message": "Vexyl-STT is ready" if ok else "Vexyl-STT is not reachable",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -550,9 +587,14 @@ def get_chat_history(
         return {"success": True, "messages": [], "total_messages": 0, "session_exists": False, "chatId": chat_id, "chatName": chat_name}
 
     recent = chat_session.get_recent_messages(limit)
+    dicts = [msg.to_dict() for msg in recent]
+    image_ids = [(d.get("metadata") or {}).get("image_id") for d in dicts]
+    ids_to_fetch = [i for i in image_ids if i]
+    images = chat_history_manager.get_images_batch(ids_to_fetch) if ids_to_fetch else {}
+
     messages = []
-    for msg in recent:
-        d = msg.to_dict()
+    for d, image_id in zip(dicts, image_ids):
+        metadata = d.get("metadata") or {}
         messages.append({
             "message_id": d.get("message_id"),
             "timestamp": d.get("timestamp"),
@@ -560,8 +602,8 @@ def get_chat_history(
             "content": d.get("content"),
             "query_type": d.get("query_type"),
             "save_to_note": d.get("save_to_note", False),
-            "image_url": d.get("image_url", ""),
-            "image_caption": d.get("image_caption", ""),
+            "image": images.get(image_id) if image_id else None,
+            "image_caption": metadata.get("image_caption"),
         })
 
     return {
