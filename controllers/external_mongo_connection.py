@@ -23,6 +23,7 @@ for dev or self-hosted setups where this backend genuinely can reach them.
 
 import ipaddress
 import logging
+import re
 import socket
 import threading
 import uuid
@@ -39,6 +40,7 @@ from controllers import database
 logger = logging.getLogger(__name__)
 
 _CONNECT_TIMEOUT_MS = 5000
+_SOCKET_TIMEOUT_MS = 10000
 _ALLOWED_SCHEMES = {"mongodb", "mongodb+srv"}
 _SCHEMA_SAMPLE_SIZE = 3      # documents sampled per collection to infer field types
 _MAX_DATABASES = 20          # max databases introspected in a full-server scan
@@ -46,6 +48,13 @@ _MAX_COLLECTIONS_PER_DB = 30 # max collections introspected per database
 _MAX_FIELDS_PER_COLLECTION = 50  # max fields kept per collection in the schema catalog
 # Databases every Mongo deployment has that are never user data.
 _SYSTEM_DATABASES = {"admin", "local", "config"}
+
+
+def _mask_uri_credentials(uri: str) -> str:
+    """Mask credentials in MongoDB connection URI for safe logging and error reporting."""
+    if not uri:
+        return ""
+    return re.sub(r"://([^:]+):([^@]+)@", r"://\1:***@", uri)
 
 
 # ---------------------------------------------------------------------------
@@ -120,24 +129,46 @@ def _points_to_own_backend_mongo(hostname: str, port: Optional[int]) -> bool:
     internally (settings.MONGO_URL) -- every knowledge container's own
     private data (db_<session> databases) lives there, so treating the
     whole server as one "external" source would leak one container's data
-    into another's. Only the host/port are compared (not database), since
-    the whole point is to catch "the same physical server" regardless of
-    which database path was given."""
+    into another's. Compares string hostnames, standard aliases, and
+    resolved IP sets to prevent bypasses."""
+    if not hostname:
+        return False
     try:
         own = urlparse(settings.MONGO_URL)
     except Exception:
         return False
     own_port = own.port or 27017
     target_port = port or 27017
+    if own_port != target_port:
+        return False
+
     own_host = (own.hostname or "").lower()
-    target_host = (hostname or "").lower()
-    if own_host in ("localhost", "127.0.0.1", "::1"):
-        return target_host in ("localhost", "127.0.0.1", "::1") and own_port == target_port
-    return own_host == target_host and own_port == target_port
+    target_host = hostname.lower()
+    if own_host in ("localhost", "127.0.0.1", "::1") and target_host in ("localhost", "127.0.0.1", "::1"):
+        return True
+    if own_host == target_host:
+        return True
+
+    # Compare resolved IP addresses as an additional check against DNS aliases
+    try:
+        own_ips = {sa[0] for _, _, _, _, sa in socket.getaddrinfo(own_host, None)}
+        target_ips = {sa[0] for _, _, _, _, sa in socket.getaddrinfo(target_host, None)}
+        if own_ips and target_ips and bool(own_ips & target_ips):
+            return True
+    except Exception:
+        pass
+
+    return False
 
 
 def validate_connection_uri(connection_uri: str) -> Tuple[bool, str]:
-    """Structural + SSRF validation, before we ever attempt to connect."""
+    """Structural, format, and SSRF validation before attempting connection."""
+    if not connection_uri or not isinstance(connection_uri, str):
+        return False, "Connection URI is required"
+
+    if len(connection_uri) > 2048:
+        return False, "Connection URI exceeds maximum length of 2048 characters"
+
     try:
         parsed = urlparse(connection_uri)
     except Exception as e:
@@ -149,18 +180,29 @@ def validate_connection_uri(connection_uri: str) -> Tuple[bool, str]:
     if not parsed.hostname:
         return False, "Connection URI must include a host"
 
+    # Validate database name in path if provided
+    uri_db = (parsed.path or "").lstrip("/")
+    if uri_db:
+        if uri_db in _SYSTEM_DATABASES:
+            return False, f"Database '{uri_db}' is a system database and cannot be used as an external source"
+        if not re.match(r"^[a-zA-Z0-9_\-\.]+$", uri_db):
+            return False, "Database name contains invalid characters. Only alphanumeric, _, -, and . are permitted"
+
     if settings.ALLOW_LOCAL_MONGO:
         return True, ""
 
-    # mongodb+srv:// resolves via DNS SRV records rather than a plain A/AAAA
-    # lookup; skip the direct IP check for it (the driver resolves it at
-    # connect time) but still block the obvious loopback/hostname cases.
-    if parsed.scheme == "mongodb":
-        ok, msg = _validate_host_is_public(parsed.hostname)
-        if not ok:
+    # Always block common loopback names explicitly
+    if parsed.hostname.lower() in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
+        return False, f"Host '{parsed.hostname}' is not reachable from this backend (local/loopback addresses disallowed)"
+
+    # SSRF IP address validation
+    ok, msg = _validate_host_is_public(parsed.hostname)
+    if not ok and parsed.scheme == "mongodb":
+        return False, msg
+    elif not ok and parsed.scheme == "mongodb+srv":
+        # For mongodb+srv, if host resolved to private IP, reject it
+        if "non-public address" in msg:
             return False, msg
-    elif parsed.hostname in ("localhost", "127.0.0.1", "::1") and not settings.ALLOW_LOCAL_MONGO:
-        return False, f"Host '{parsed.hostname}' is not reachable from this backend"
 
     return True, ""
 
@@ -338,12 +380,14 @@ def test_connection(connection_uri: str) -> Tuple[bool, str, Optional[pymongo.Mo
             connection_uri,
             serverSelectionTimeoutMS=_CONNECT_TIMEOUT_MS,
             connectTimeoutMS=_CONNECT_TIMEOUT_MS,
+            socketTimeoutMS=_SOCKET_TIMEOUT_MS,
         )
         client.admin.command("ping")
         return True, "Connection successful", client
     except Exception as e:
-        logger.warning(f"External Mongo connection test failed: {e}")
-        return False, f"Could not connect: {e}", None
+        safe_msg = _mask_uri_credentials(str(e))
+        logger.warning(f"External Mongo connection test failed: {safe_msg}")
+        return False, f"Could not connect: {safe_msg}", None
 
 
 def attach_server(
@@ -359,9 +403,28 @@ def attach_server(
     what's available (see list_collections_for_server).
 
     Returns (ok, message, server_config_without_encrypted_uri)."""
+    # 1. Validate user_session
+    if not user_session or not isinstance(user_session, str) or not user_session.strip():
+        return False, "Invalid user session identifier", None
+
+    # 2. Validate server_name
+    if not server_name or not isinstance(server_name, str) or not server_name.strip():
+        return False, "Server name cannot be empty", None
+    clean_server_name = server_name.strip()
+    if len(clean_server_name) > 100:
+        return False, "Server name must be 100 characters or fewer", None
+    if re.search(r"[\x00-\x1f\x7f<>]", clean_server_name):
+        return False, "Server name contains invalid or unsafe characters", None
+
+    # 3. Validate connection URI upfront before any connection attempt
+    ok, msg = validate_connection_uri(connection_uri)
+    if not ok:
+        return False, msg, None
+
     parsed_host = urlparse(connection_uri)
     uri_database = (parsed_host.path or "").lstrip("/") or None
 
+    # 4. Check backend Mongo isolation
     if _points_to_own_backend_mongo(parsed_host.hostname, parsed_host.port):
         if not uri_database:
             return False, (
@@ -381,6 +444,7 @@ def attach_server(
                 "different database instead."
             ), None
 
+    # 5. Connect and ping
     ok, msg, client = test_connection(connection_uri)
     if not ok:
         return False, msg, None
@@ -397,8 +461,9 @@ def attach_server(
             else build_schema_catalog(client)
         )
     except Exception as e:
-        logger.error(f"Schema introspection failed for new external Mongo server: {e}")
-        return False, f"Connected, but failed to introspect databases/collections: {e}", None
+        safe_err = _mask_uri_credentials(str(e))
+        logger.error(f"Schema introspection failed for new external Mongo server: {safe_err}")
+        return False, f"Connected, but failed to introspect databases/collections: {safe_err}", None
     finally:
         client.close()
 
@@ -409,7 +474,7 @@ def attach_server(
     server_id = f"srv_{uuid.uuid4().hex[:8]}"
     server_config = {
         "server_id": server_id,
-        "server_name": server_name,
+        "server_name": clean_server_name,
         "encrypted_uri": _encrypt(connection_uri),
         "database_name": database_name,
         "schema_catalog": catalog,
@@ -552,6 +617,7 @@ def get_client_for_server(user_session: str, server_id: str) -> pymongo.MongoCli
                     connection_uri,
                     serverSelectionTimeoutMS=_CONNECT_TIMEOUT_MS,
                     connectTimeoutMS=_CONNECT_TIMEOUT_MS,
+                    socketTimeoutMS=_SOCKET_TIMEOUT_MS,
                 )
     return _client_cache[server_id]
 
