@@ -71,13 +71,12 @@ def free_trial(
 
 @router.post("/upload")
 def upload(
-    sessionId: str = Form(...),
+    session_id: str = Form(..., alias="sessionId"),
     files: List[UploadFile] = File(default=[]),
     urls: Optional[str] = Form(default=None),
     user_email: str = Depends(get_current_user),
 ):
     """Create a new container and upload documents / URLs into it."""
-    session_id = sessionId
     parsed_urls = _parse_urls(urls)
     user_session = user_email + session_id.lower()
     file_list = UploadFileList(files)
