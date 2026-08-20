@@ -525,3 +525,14 @@ def remove_mongo_server(user_session: str, server_id: str) -> bool:
     except Exception as e:
         logging.error(f"Error removing Mongo server '{server_id}' for session {user_session}: {e}")
         return False
+
+
+def delete_all_mongo_servers(user_session: str) -> bool:
+    """Delete all external Mongo server configurations attached to this session."""
+    try:
+        mongo_servers_collection.delete_one({"user_session": user_session})
+        logging.info(f"Deleted all Mongo server configurations for session {user_session}")
+        return True
+    except Exception as e:
+        logging.error(f"Error deleting Mongo server configurations for session {user_session}: {e}")
+        return False

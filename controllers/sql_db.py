@@ -409,3 +409,21 @@ def store_table_info(user_session: str, file_name: str):
 
     except Exception as e:
         logger.error(f"Failed to store table info: {str(e)}")
+
+
+def delete_sql_database(user_session: str) -> bool:
+    """Drop the MySQL database for this session if it exists."""
+    sanitized_db = f"db_{sanitize_identifier(user_session)}"
+    try:
+        base_engine = create_engine(
+            f"{MYSQL_CONFIG['drivername']}://"
+            f"{MYSQL_CONFIG['username']}:{MYSQL_CONFIG['password']}"
+            f"@{MYSQL_CONFIG['host']}:{MYSQL_CONFIG['port']}/"
+        )
+        with base_engine.connect() as conn:
+            conn.execute(text(f"DROP DATABASE IF EXISTS {sanitized_db}"))
+            logger.info(f"Dropped MySQL database '{sanitized_db}' for session {user_session}")
+        return True
+    except Exception as e:
+        logger.error(f"Error dropping MySQL database for session {user_session}: {e}")
+        return False

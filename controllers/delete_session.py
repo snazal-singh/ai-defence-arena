@@ -76,7 +76,9 @@ def delete_chat_history(user_session: str) -> bool:
 
 def delete_session(user_session: str) -> Dict[str, Any]:
     """
-    Delete a complete user session including documents, Elasticsearch index, and chat history.
+    Delete a complete user session including documents, Elasticsearch index,
+    chat history, external MongoDB server configs, internal MongoDB database,
+    and MySQL database.
     
     Args:
         user_session (str): User's session identifier
@@ -89,6 +91,9 @@ def delete_session(user_session: str) -> Dict[str, Any]:
         "document_directory": False,
         "elasticsearch_index": False,
         "chat_history": False,
+        "external_mongo_servers": False,
+        "internal_mongo_db": False,
+        "internal_mysql_db": False,
         "overall_success": False
     }
     
@@ -96,26 +101,47 @@ def delete_session(user_session: str) -> Dict[str, Any]:
         # Construct the path to the directory
         session_path = os.path.join('users', user_session)
         
-        # Delete the document directory
+        # 1. Delete the document directory
         try:
             delete_directory(session_path)
             results["document_directory"] = True
         except Exception as e:
             logging.error(f"Error deleting document directory for {user_session}: {e}")
         
-        # Delete the Elasticsearch index
+        # 2. Delete the Elasticsearch index
         try:
             delete_elastic_index(user_session)
             results["elasticsearch_index"] = True
         except Exception as e:
             logging.error(f"Error deleting Elasticsearch index for {user_session}: {e}")
         
-        # Delete chat history
+        # 3. Delete chat history
         try:
             results["chat_history"] = delete_chat_history(user_session)
         except Exception as e:
             logging.error(f"Error deleting chat history for {user_session}: {e}")
         
+        # 4. Delete external MongoDB server configurations & disconnect clients
+        try:
+            from controllers import external_mongo_connection
+            results["external_mongo_servers"] = external_mongo_connection.remove_all_servers_for_session(user_session)
+        except Exception as e:
+            logging.error(f"Error deleting external Mongo servers for {user_session}: {e}")
+
+        # 5. Drop internal MongoDB database (db_<user_session>)
+        try:
+            from controllers import mongodb_db
+            results["internal_mongo_db"] = mongodb_db.delete_mongo_database(user_session)
+        except Exception as e:
+            logging.error(f"Error deleting internal Mongo database for {user_session}: {e}")
+
+        # 6. Drop internal MySQL database (db_<user_session>)
+        try:
+            from controllers import sql_db
+            results["internal_mysql_db"] = sql_db.delete_sql_database(user_session)
+        except Exception as e:
+            logging.error(f"Error deleting MySQL database for {user_session}: {e}")
+
         # Determine overall success
         results["overall_success"] = all([
             results["document_directory"],

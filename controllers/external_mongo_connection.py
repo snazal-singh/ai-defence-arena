@@ -517,6 +517,16 @@ def remove_server(user_session: str, server_id: str) -> bool:
     return removed
 
 
+def remove_all_servers_for_session(user_session: str) -> bool:
+    """Detach all external Mongo servers and clear pooled clients for this session."""
+    servers = database.get_mongo_servers(user_session)
+    for server in servers:
+        server_id = server.get("server_id")
+        if server_id:
+            _client_cache.pop(server_id, None)
+    return database.delete_all_mongo_servers(user_session)
+
+
 def get_combined_schema_text(user_session: str) -> str:
     """All attached servers' cached catalogs, formatted for the intent
     classification prompt. Uses the cache built at attach-time -- does not
