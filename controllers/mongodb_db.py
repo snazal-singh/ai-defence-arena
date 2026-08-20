@@ -205,20 +205,8 @@ def add_collections_to_existing_db(user_session: str, files: List) -> Tuple[bool
         return False, "Failed to add Mongo collections"
 
 
-def _infer_type_name(value: Any) -> str:
-    if isinstance(value, bool):
-        return "bool"
-    if isinstance(value, int):
-        return "int"
-    if isinstance(value, float):
-        return "float"
-    if isinstance(value, str):
-        return "str"
-    if isinstance(value, list):
-        return "list"
-    if isinstance(value, dict):
-        return "object"
-    return type(value).__name__
+# Re-use infer_type_name from external_mongo_connection to avoid duplication
+_infer_type_name = external_mongo_connection.infer_type_name
 
 
 def describe_collections_schema(db: pymongo.database.Database, collection_names: List[str]) -> str:

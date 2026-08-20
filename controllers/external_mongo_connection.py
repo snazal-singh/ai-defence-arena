@@ -213,7 +213,8 @@ def validate_connection_uri(connection_uri: str) -> Tuple[bool, str]:
 # Cached at attach-time rather than re-sampled on every query.
 # ---------------------------------------------------------------------------
 
-def _infer_type_name(value: Any) -> str:
+def infer_type_name(value: Any) -> str:
+    """Infer string type name for a python value (used for schema introspection)."""
     if isinstance(value, bool):
         return "bool"
     if isinstance(value, int):
@@ -227,6 +228,9 @@ def _infer_type_name(value: Any) -> str:
     if isinstance(value, dict):
         return "object"
     return type(value).__name__
+
+
+_infer_type_name = infer_type_name
 
 
 def _describe_collections(
