@@ -40,7 +40,10 @@ logger = logging.getLogger(__name__)
 
 _CONNECT_TIMEOUT_MS = 5000
 _ALLOWED_SCHEMES = {"mongodb", "mongodb+srv"}
-_SCHEMA_SAMPLE_SIZE = 3
+_SCHEMA_SAMPLE_SIZE = 3      # documents sampled per collection to infer field types
+_MAX_DATABASES = 20          # max databases introspected in a full-server scan
+_MAX_COLLECTIONS_PER_DB = 30 # max collections introspected per database
+_MAX_FIELDS_PER_COLLECTION = 50  # max fields kept per collection in the schema catalog
 # Databases every Mongo deployment has that are never user data.
 _SYSTEM_DATABASES = {"admin", "local", "config"}
 
@@ -184,9 +187,17 @@ def _infer_type_name(value: Any) -> str:
     return type(value).__name__
 
 
-def _describe_collections(db: pymongo.database.Database, collection_names: List[str]) -> Dict[str, Dict[str, str]]:
+def _describe_collections(
+    db: pymongo.database.Database,
+    collection_names: List[str],
+    max_collections: int = _MAX_COLLECTIONS_PER_DB,
+) -> Dict[str, Dict[str, str]]:
+    """Introspect up to `max_collections` collections in `db`, sampling
+    _SCHEMA_SAMPLE_SIZE documents each to infer field types. Caps fields
+    per collection at _MAX_FIELDS_PER_COLLECTION so the resulting schema
+    text stays a reasonable size regardless of document width."""
     db_catalog: Dict[str, Dict[str, str]] = {}
-    for coll_name in collection_names:
+    for coll_name in collection_names[:max_collections]:
         fields: Dict[str, str] = {}
         for doc in db[coll_name].find({}, limit=_SCHEMA_SAMPLE_SIZE):
             for key, value in doc.items():
@@ -194,7 +205,15 @@ def _describe_collections(db: pymongo.database.Database, collection_names: List[
                     continue
                 if key not in fields:
                     fields[key] = _infer_type_name(value)
+                if len(fields) >= _MAX_FIELDS_PER_COLLECTION:
+                    break
         db_catalog[coll_name] = fields
+    skipped = len(collection_names) - max_collections
+    if skipped > 0:
+        logger.warning(
+            f"_describe_collections: capped at {max_collections} collections "
+            f"({skipped} skipped) for db '{db.name}'"
+        )
     return db_catalog
 
 
@@ -206,11 +225,21 @@ def build_schema_catalog(client: pymongo.MongoClient) -> Dict[str, Dict[str, Dic
     path (nothing for get_default_database() to resolve) -- when the URI
     does name a database, build_scoped_schema_catalog is used instead so a
     server isn't fully scanned when the user already told us which database
-    they want."""
+    they want.
+
+    Capped at _MAX_DATABASES databases to prevent hangs on large Atlas
+    clusters with hundreds of databases."""
     catalog: Dict[str, Dict[str, Dict[str, str]]] = {}
-    for db_name in client.list_database_names():
-        if db_name in _SYSTEM_DATABASES:
-            continue
+    all_db_names = [
+        name for name in client.list_database_names()
+        if name not in _SYSTEM_DATABASES
+    ]
+    if len(all_db_names) > _MAX_DATABASES:
+        logger.warning(
+            f"build_schema_catalog: server has {len(all_db_names)} user databases; "
+            f"introspecting only the first {_MAX_DATABASES}."
+        )
+    for db_name in all_db_names[:_MAX_DATABASES]:
         db = client[db_name]
         db_catalog = _describe_collections(db, db.list_collection_names())
         if db_catalog:
@@ -233,7 +262,8 @@ def build_scoped_schema_catalog(
 ) -> Dict[str, Dict[str, Dict[str, str]]]:
     """Same shape as build_schema_catalog, but introspects only the one
     database named in the connection URI instead of scanning the whole
-    server."""
+    server. Still caps at _MAX_COLLECTIONS_PER_DB collections so a
+    database with thousands of collections doesn't stall introspection."""
     db = client[database_name]
     db_catalog = _describe_collections(db, db.list_collection_names())
     return {database_name: db_catalog} if db_catalog else {}
