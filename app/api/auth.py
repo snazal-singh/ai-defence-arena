@@ -10,14 +10,12 @@ router = APIRouter(tags=["Health"])
 
 
 @router.get("/health", response_model=MessageResponse)
+@router.get(
+    "/healthcheck",
+    response_model=MessageResponse,
+    include_in_schema=False,
+    description="Legacy alias for /health used by frontend Login client",
+)
 def healthcheck():
-    return {"message": "app is up and running"}
-
-
-# Alias for /health -- qdoc-app's Login.js calls /healthcheck before allowing
-# login (a pre-existing route-naming mismatch between that frontend and this
-# backend); kept as a permanent alias rather than requiring every consumer
-# of this API to agree on one name.
-@router.get("/healthcheck", response_model=MessageResponse)
-def healthcheck_alias():
+    """Application health and liveness check."""
     return {"message": "app is up and running"}
