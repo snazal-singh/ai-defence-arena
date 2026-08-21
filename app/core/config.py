@@ -75,8 +75,7 @@ class Settings(BaseSettings):
     SUMMARY_MAX_SENTENCES: int = 300
     SUMMARY_EXTRACTION_RATIO: float = 0.35
 
-    # Mistral OCR
-    MISTRAL_OCR_API_KEY: str
+    # Mistral OCR is not used — NuMarkdown handles PDF/OCR ingestion instead
 
     # Eleven Labs TTS
     ELEVENLABS_API_KEY: str = ""
@@ -137,12 +136,9 @@ class Settings(BaseSettings):
     # "ollama" = Ollama format (images as base64 array); "openai" = OpenAI vision format
     GEMMA4_API_FORMAT: str = "ollama"
 
-    # NuMarkdown
-    NUMARKDOWN_API_URL: str = ""
-    NUMARKDOWN_MODEL: str = ""
-    NUMARKDOWN_API_KEY: str = ""
-
-    # NuMarkdown server
+    # NuMarkdown vision parser — used for PDF/OCR ingestion instead of Mistral OCR.
+    # Set USE_NUMARKDOWN_PARSER=true in .env (default) to enable; set false to fall back to PyMuPDF.
+    USE_NUMARKDOWN_PARSER: bool = True
     NUMARKDOWN_API_URL: str = ""
     NUMARKDOWN_API_KEY: str = ""
     NUMARKDOWN_MODEL: str = "maternion/NuMarkdown-Thinking:8b"
