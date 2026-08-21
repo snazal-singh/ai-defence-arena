@@ -46,9 +46,8 @@ def process_file_content(pages, user_session, folder_name, filename):
     total_pages = len(pages)
     
     for page in pages:
-        full_text += page.page_content
-        full_text = full_text.replace("\n", " ")
-    
+        full_text += page.page_content + "\n\n"
+
     # Save the full text to file
     content_path = os.path.join(file_dir, 'content.txt')
     with open(content_path, "w", encoding='utf-8') as file:

@@ -69,12 +69,25 @@ def classify_files(file_list) -> Tuple[List, List, List, List]:
     return document_files, data_files, mongo_files, unsupported_files
 
 def extract_pdf_with_vision(file_path: str, filename: str) -> List[Document]:
-    """Extract text from PDF using NuMarkdown vision-based parser."""
+    """Extract text from PDF using NuMarkdown vision-based parser.
+    
+    Returns up to 50 pages. If the PDF has more pages, a warning is logged
+    and each returned Document has pages_truncated=True in its metadata so
+    the caller can surface this to the user.
+    """
     logger.info(f"Extracting PDF with NuMarkdown vision parser: {file_path}")
     
     # Convert PDF pages to images
-    images = convert_from_path(file_path, dpi=150)
-    images = images[:50]  # Hard limit to 50 pages
+    all_images = convert_from_path(file_path, dpi=150)
+    total_pages = len(all_images)
+    _PAGE_LIMIT = 50
+    truncated = total_pages > _PAGE_LIMIT
+    if truncated:
+        logger.warning(
+            f"PDF '{filename}' has {total_pages} pages — only the first {_PAGE_LIMIT} will be "
+            "ingested by NuMarkdown (hard limit). The remaining pages are skipped."
+        )
+    images = all_images[:_PAGE_LIMIT]
     
     documents = []
     vision_service = get_vision_service()
@@ -97,6 +110,8 @@ def extract_pdf_with_vision(file_path: str, filename: str) -> List[Document]:
                         "filename": filename,
                         "page": page_num,
                         "content_type": "text",
+                        "pages_total": total_pages,
+                        "pages_truncated": truncated,
                     }
                 ))
                 
@@ -169,6 +184,17 @@ def process_document_files(doc_files: List, user_session: str, is_new_container:
             }
             if error_msg:
                 info["warning"] = error_msg
+            # Surface page truncation warning to the API response so the caller
+            # (and eventually the user) knows that a long PDF was partially ingested.
+            if documents and documents[0].metadata.get("pages_truncated"):
+                total = documents[0].metadata.get("pages_total", "?")
+                trunc_msg = (
+                    f"PDF has {total} pages but only the first 50 were ingested "
+                    "(NuMarkdown page limit). The remaining pages were skipped."
+                )
+                info["warning"] = (info["warning"] + " | " + trunc_msg) if info.get("warning") else trunc_msg
+                info["pages_truncated"] = True
+                info["pages_total"] = total
             file_infos.append(info)
         else:
             file_infos.append({
