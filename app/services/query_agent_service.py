@@ -342,9 +342,13 @@ class QueryAgentService:
         )
         logger.info(f'Query intent classification: {intent.name} with confidence {confidence}, data_source={data_source}')
         
-        # For general chat queries when documents are available, use document-aware chat
+        # For general chat queries when documents are available, use document-aware chat.
+        # Exception: pure greetings (e.g. "hi", "thanks") classified as GENERAL_CHAT via
+        # the fast-path never need document metadata — skip the doc-aware path for them
+        # to avoid loading unnecessary context for trivial responses.
         if intent == QueryIntent.GENERAL_CHAT and resources.get('has_documents', False):
-            return self._process_document_aware_chat(enhanced_query, user_session, language, filenames, chat_context)
+            if not self.intent_service._is_unambiguous_greeting(enhanced_query):
+                return self._process_document_aware_chat(enhanced_query, user_session, language, filenames, chat_context)
         
         # Process based on query intent
         if intent == QueryIntent.GENERAL_CHAT:
