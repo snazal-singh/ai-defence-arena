@@ -385,12 +385,26 @@ class ContextProviderService:
         Returns:
             Dictionary with resource availability flags
         """
-        # Check for document files in the files directory
-        files_dir = os.path.join('users', user_session, 'files')
-        # TODO: Check actual elasticsearch index exists
-        has_documents = True
+        # Check whether this session's Elasticsearch index actually exists
+        # and contains at least one document. Previously hardcoded True, which
+        # caused the intent classifier to always assume documents exist even for
+        # sessions that only have CSV/JSON data (no uploaded PDFs/DOCX).
+        try:
+            from elastic.client import ElasticClient
+            es = ElasticClient()
+            if es.index_exists(user_session):
+                count_result = es.client.count(index=user_session)
+                has_documents = count_result.get("count", 0) > 0
+            else:
+                has_documents = False
+        except Exception as e:
+            # If ES is unreachable, assume documents exist to avoid breaking
+            # sessions that do have docs — failing open is safer than failing shut.
+            logger.warning(f"Could not verify ES index for session {user_session}: {e}. Assuming has_documents=True.")
+            has_documents = True
 
         # Check for summaries
+        files_dir = os.path.join('users', user_session, 'files')
         summary_exists = False
         if os.path.exists(files_dir):
             for file_dir in glob.glob(os.path.join(files_dir, '*')):

@@ -121,12 +121,22 @@ def delete_session(user_session: str) -> Dict[str, Any]:
         except Exception as e:
             logging.error(f"Error deleting chat history for {user_session}: {e}")
         
-        # 4. Delete external MongoDB server configurations & disconnect clients
+        # 4. Delete external MongoDB server configurations & disconnect clients.
+        #    Two steps:
+        #    a) Remove persisted server config records from db.mongo_servers (database.py)
+        #    b) Evict live MongoClient instances from the in-process pool (external_mongo_connection.py)
+        try:
+            from controllers import database as db_ctrl
+            db_ctrl.delete_all_mongo_servers(user_session)
+        except Exception as e:
+            logging.error(f"Error deleting external Mongo server DB records for {user_session}: {e}")
+
         try:
             from controllers import external_mongo_connection
             results["external_mongo_servers"] = external_mongo_connection.remove_all_servers_for_session(user_session)
         except Exception as e:
-            logging.error(f"Error deleting external Mongo servers for {user_session}: {e}")
+            logging.error(f"Error evicting external Mongo server pool for {user_session}: {e}")
+
 
         # 5. Drop internal MongoDB database (db_<user_session>)
         try:
