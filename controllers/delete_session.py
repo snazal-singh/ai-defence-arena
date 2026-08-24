@@ -152,6 +152,7 @@ def delete_session(user_session: str) -> Dict[str, Any]:
         except Exception as e:
             logging.error(f"Error deleting MySQL database for {user_session}: {e}")
 
+
         # Determine overall success
         results["overall_success"] = all([
             results["document_directory"],

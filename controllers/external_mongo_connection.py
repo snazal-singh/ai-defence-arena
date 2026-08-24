@@ -62,7 +62,7 @@ def _mask_uri_credentials(uri: str) -> str:
 # ---------------------------------------------------------------------------
 
 def _get_fernet() -> Fernet:
-    key = getattr(settings, "EXTERNAL_MONGO_ENCRYPTION_KEY", "") or getattr(settings, "EXTERNAL_MYSQL_ENCRYPTION_KEY", "")
+    key = getattr(settings, "EXTERNAL_MONGO_ENCRYPTION_KEY", "")
     if not key:
         # Fall back to a deterministic key derived from SECRET_KEY to prevent unhandled RuntimeError in dev/test
         import base64
