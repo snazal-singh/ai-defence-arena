@@ -344,7 +344,7 @@ Respond with ONLY a JSON object and nothing else — no markdown fences, no expl
                     confidence = 0.7
                 confidence = max(0.0, min(1.0, confidence))
 
-                # Guard: never trust a data/hybrid label if no structured
+                # Guard 1: never trust a data/hybrid label if no structured
                 # source actually exists for this session, regardless of
                 # what the model returned.
                 if intent in (QueryIntent.DATA_QUERY, QueryIntent.HYBRID) and not has_data_tables:
@@ -353,6 +353,16 @@ Respond with ONLY a JSON object and nothing else — no markdown fences, no expl
                         "downgrading to document/general_chat"
                     )
                     intent = QueryIntent.DOCUMENT if has_documents else QueryIntent.GENERAL_CHAT
+
+                # Guard 2: HYBRID requires both document text AND structured data.
+                # If documents don't exist, downgrade HYBRID → DATA_QUERY so the
+                # caller only queries the available structured sources.
+                if intent == QueryIntent.HYBRID and not has_documents:
+                    logger.warning(
+                        "LLM returned HYBRID but no documents are available; "
+                        "downgrading to DATA_QUERY"
+                    )
+                    intent = QueryIntent.DATA_QUERY
 
                 # HYBRID detection is now handled in the single primary LLM
                 # call via explicit examples in the system prompt — no 2nd
