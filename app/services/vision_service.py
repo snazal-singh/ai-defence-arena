@@ -118,7 +118,18 @@ class VisionService:
                     "model": self.numarkdown_model,
                     "messages": [{
                         "role": "user",
-                        "content": "Convert this document image to Markdown.",
+                        "content": (
+                            "You are a precise document-to-Markdown converter. "
+                            "Convert this document page image to clean, well-structured Markdown. "
+                            "Follow these rules strictly:\n"
+                            "1. Preserve ALL headings using # / ## / ### hierarchy exactly as they appear.\n"
+                            "2. Reproduce ALL tables using Markdown pipe-table syntax (| col | col |). Do NOT flatten tables into plain text.\n"
+                            "3. Preserve bullet lists (- item) and numbered lists (1. item) exactly.\n"
+                            "4. Keep bold (**text**) and italic (*text*) formatting where visible.\n"
+                            "5. For figures/charts/diagrams, write: [Figure: <brief description of what the figure shows>]\n"
+                            "6. Preserve the reading order of the page (top to bottom, left to right).\n"
+                            "7. Do NOT add any commentary, preamble, or explanation — output ONLY the Markdown content of the page."
+                        ),
                         "images": [image_base64]
                     }],
                     "stream": False

@@ -301,10 +301,7 @@ async def extract_docx(file_path: str, filename: str) -> List[Document]:
             text = paragraph.text.strip()
 
             # Page break → flush current page
-            if paragraph._element.xpath(
-                f'.//w:br[@w:type="page"]',
-                namespaces={"w": _DOCX_NS},
-            ):
+            if paragraph._element.xpath('.//w:br[@w:type="page"]'):
                 if current_page_content:
                     result.append({
                         "content": "\n\n".join(current_page_content),

@@ -14,12 +14,16 @@ import re
 import glob
 
 from elastic.retriever import ElasticRetriever
+from elastic.reranker import get_reranker
 from controllers.sql_db import query_database
+from controllers.mongodb_db import has_mongo_data, query_mongodb
 from controllers.doc_summary import get_summary_service
 from utils.extractText import clean_filename
+from app.core.config import settings
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
 
 class ContextProviderService:
     """Service for providing context from different sources with chat history support."""
@@ -45,7 +49,9 @@ class ContextProviderService:
             enhanced_query = self._create_enhanced_search_query(user_query, chat_context)
 
             retriever = ElasticRetriever(user_session)
-            docs = retriever.search(enhanced_query, chat_context=chat_context)
+            candidate_k = settings.RERANKER_CANDIDATE_K if settings.ENABLE_RERANKER else None
+            docs = retriever.search(enhanced_query, chat_context=chat_context,
+                                     candidate_k=candidate_k)
 
             logger.info(f"Retrieved {len(docs) if docs else 0} documents for query: {user_query}")
             if chat_context and chat_context.get("context_used"):
@@ -53,6 +59,15 @@ class ContextProviderService:
 
             if not docs:
                 return ""
+
+            # Re-score the fused candidates against the query directly (rank
+            # fusion above only combines keyword/vector rank positions, it
+            # never looks at content) and cut down to the chunks actually
+            # worth keeping before the table augmentation/formatting below.
+            reranker = get_reranker()
+            if reranker:
+                docs = reranker.rerank(enhanced_query, docs, top_n=settings.RERANKER_TOP_N)
+                logger.info(f"Reranked to {len(docs)} documents")
 
             # Augment results with complete table content when tables are found
             docs = self._augment_with_full_tables(docs, retriever)
@@ -252,32 +267,69 @@ class ContextProviderService:
         
         return query
             
-    def get_data_context(self, user_session: str, user_query: str) -> str:
+    def get_data_context(self, user_session: str, user_query: str,
+                        source: Optional[str] = None) -> str:
         """
-        Get data context from SQL database.
-        
+        Get data context from structured databases (SQL and/or MongoDB).
+
         Args:
             user_session: User's session identifier
             user_query: User's query
-            
+            source: Which source(s) to query — "sql", "mongo", "both", or
+                None (defaults to "both" for backward compatibility). Lets
+                callers that already know which source a query needs (e.g.
+                intent classification's data_source hint) skip querying the
+                irrelevant one instead of always hitting both.
+
         Returns:
-            SQL query results formatted as context
+            Structured query results formatted as context
         """
-        try:
-            sql_doc, error = query_database(user_session, user_query)
-            if error:
-                logger.error(f"SQL query error: {error}")
-                return ""
-                
-            if not sql_doc:
-                logger.info(f"No results found for SQL query")
-                return ""
-                
-            logger.info(f'SQL query results added to context')
-            return sql_doc
-        except Exception as e:
-            logger.error(f'Error getting data context: {e}')
-            return ""
+        sql_doc = ""
+        mongo_doc = ""
+        source = source or "both"
+        query_sql = source in ("sql", "both")
+        query_mongo = source in ("mongo", "both")
+
+        # 1. Fetch context from SQL Database if sheet metadata exists
+        sheet_metadata_path = os.path.join('users', user_session, "files", "sheet_metadata.json")
+        if query_sql and os.path.exists(sheet_metadata_path):
+            try:
+                logger.info(f"Querying SQL database for session: {user_session}")
+                res, error = query_database(user_session, user_query)
+                if error:
+                    logger.error(f"SQL query error: {error}")
+                elif res:
+                    sql_doc = res
+                    logger.info("SQL query results added to context")
+            except Exception as e:
+                logger.error(f"Error querying SQL: {e}")
+
+        # 2. Fetch context from this session's own MongoDB data, if any was
+        # uploaded. Gated the same way as SQL above — never queried for a
+        # session that has no Mongo data of its own.
+        if query_mongo and has_mongo_data(user_session):
+            try:
+                logger.info(f"Querying MongoDB database for session: {user_session}")
+                res, error = query_mongodb(user_session, user_query)
+                if error:
+                    logger.error(f"MongoDB query error: {error}")
+                elif res:
+                    mongo_doc = res
+                    logger.info("MongoDB query results added to context")
+            except Exception as e:
+                logger.error(f"Error querying MongoDB: {e}")
+
+        # Combine SQL and MongoDB context results
+        combined_doc = ""
+        if sql_doc:
+            combined_doc += sql_doc
+        if mongo_doc:
+            if combined_doc:
+                combined_doc += "\n\n"
+            combined_doc += mongo_doc
+
+        return combined_doc
+
             
     def get_summary_context(self, user_session: str, user_query: str, 
                          language: Optional[str] = None, 
@@ -333,12 +385,26 @@ class ContextProviderService:
         Returns:
             Dictionary with resource availability flags
         """
-        # Check for document files in the files directory
-        files_dir = os.path.join('users', user_session, 'files')
-        # TODO: Check actual elasticsearch index exists
-        has_documents = True
+        # Check whether this session's Elasticsearch index actually exists
+        # and contains at least one document. Previously hardcoded True, which
+        # caused the intent classifier to always assume documents exist even for
+        # sessions that only have CSV/JSON data (no uploaded PDFs/DOCX).
+        try:
+            from elastic.client import ElasticClient
+            es = ElasticClient()
+            if es.index_exists(user_session):
+                count_result = es.client.count(index=user_session)
+                has_documents = count_result.get("count", 0) > 0
+            else:
+                has_documents = False
+        except Exception as e:
+            # If ES is unreachable, assume documents exist to avoid breaking
+            # sessions that do have docs — failing open is safer than failing shut.
+            logger.warning(f"Could not verify ES index for session {user_session}: {e}. Assuming has_documents=True.")
+            has_documents = True
 
         # Check for summaries
+        files_dir = os.path.join('users', user_session, 'files')
         summary_exists = False
         if os.path.exists(files_dir):
             for file_dir in glob.glob(os.path.join(files_dir, '*')):
@@ -350,13 +416,22 @@ class ContextProviderService:
             
         # Check for database tables by looking for sheet_metadata.json
         sheet_metadata_path = os.path.join('users', user_session, "files", "sheet_metadata.json")
-        has_data_tables = os.path.exists(sheet_metadata_path)
+        has_sql_tables = os.path.exists(sheet_metadata_path)
+
+        # Check for this session's own uploaded Mongo data (mirrors the SQL
+        # check above — no global/shared dataset check anymore).
+        has_mongo_tables = has_mongo_data(user_session)
+
+        has_data_tables = has_sql_tables or has_mongo_tables
         
         return {
             "has_documents": has_documents,
             "has_data_tables": has_data_tables,
+            "has_sql_tables": has_sql_tables,
+            "has_mongo_tables": has_mongo_tables,
             "has_summaries": summary_exists
         }
+
     
     def _extract_doc_info(self, docs):
         """

@@ -333,17 +333,22 @@ class QueryAgentService:
             logger.info("Image detected in query or context — forcing DOCUMENT intent")
             return self._process_document_query(enhanced_query, user_session, language, chat_context)
 
-        # Classify query intent using the enhanced query
-        intent, confidence = self.intent_service.classify_intent(
+        intent, confidence, data_source = self.intent_service.classify_intent(
             enhanced_query,
             has_documents=resources.get('has_documents', False),
-            has_data_tables=has_csvxl
+            has_sql_tables=resources.get('has_sql_tables', has_csvxl),
+            has_mongo_tables=resources.get('has_mongo_tables', False),
+            user_session=user_session
         )
-        logger.info(f'Query intent classification: {intent.name} with confidence {confidence}')
+        logger.info(f'Query intent classification: {intent.name} with confidence {confidence}, data_source={data_source}')
         
-        # For general chat queries when documents are available, use document-aware chat
+        # For general chat queries when documents are available, use document-aware chat.
+        # Exception: pure greetings (e.g. "hi", "thanks") classified as GENERAL_CHAT via
+        # the fast-path never need document metadata — skip the doc-aware path for them
+        # to avoid loading unnecessary context for trivial responses.
         if intent == QueryIntent.GENERAL_CHAT and resources.get('has_documents', False):
-            return self._process_document_aware_chat(enhanced_query, user_session, language, filenames, chat_context)
+            if not self.intent_service._is_unambiguous_greeting(enhanced_query):
+                return self._process_document_aware_chat(enhanced_query, user_session, language, filenames, chat_context)
         
         # Process based on query intent
         if intent == QueryIntent.GENERAL_CHAT:
@@ -356,10 +361,10 @@ class QueryAgentService:
             return self._process_document_query(enhanced_query, user_session, language, chat_context)
             
         elif intent == QueryIntent.DATA_QUERY:
-            return self._process_data_query(enhanced_query, user_session, language, chat_context)
-            
+            return self._process_data_query(enhanced_query, user_session, language, chat_context, data_source)
+
         elif intent == QueryIntent.HYBRID:
-            return self._process_hybrid_query(enhanced_query, user_session, language, chat_context)
+            return self._process_hybrid_query(enhanced_query, user_session, language, chat_context, data_source)
             
         # Fallback to general response if no specific handler
         return self._process_general_chat(enhanced_query, language, chat_context)
@@ -446,50 +451,58 @@ class QueryAgentService:
                 "answer": f"I encountered an error while processing your document: {str(e)}. Please try a different question or contact support if the issue persists.",
             }
         
-    def _process_data_query(self, user_query: str, user_session: str, 
+    def _process_data_query(self, user_query: str, user_session: str,
                           language: Optional[str] = None,
-                          chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Process a data query with chat context."""
-        # Get SQL context
-        sql_context = self.context_service.get_data_context(user_session, user_query)
-        
-        # If no SQL context found, return a message about no relevant data
-        if not sql_context:
+                          chat_context: Optional[Dict[str, Any]] = None,
+                          data_source: Optional[str] = None) -> Dict[str, Any]:
+        """Process a data query with chat context.
+
+        data_source (from intent classification) narrows the lookup to just
+        "sql" or "mongo" when a session has both structured sources and the
+        classifier could tell which one the question actually needs — avoids
+        querying the irrelevant source. None/"both" queries all available
+        sources, same as before.
+        """
+        data_context = self.context_service.get_data_context(user_session, user_query, source=data_source)
+
+        # If no data context found, return a message about no relevant data
+        if not data_context:
             return {
-                "answer": "I couldn't find any relevant data in your spreadsheets or CSV files to answer this question. Could you try rephrasing your query or asking about another topic?",
+                "answer": "I couldn't find any relevant data in your spreadsheets, CSV files, or uploaded JSON data to answer this question. Could you try rephrasing your query or asking about another topic?",
                 "questions": []
             }
-            
+
         # Generate response with chat context
         response = self.response_service.generate_data_response(
-            user_query, sql_context, language, chat_context
+            user_query, data_context, language, chat_context
         )
-        
+
         return response
-        
-    def _process_hybrid_query(self, user_query: str, user_session: str, 
+
+    def _process_hybrid_query(self, user_query: str, user_session: str,
                             language: Optional[str] = None,
-                            chat_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                            chat_context: Optional[Dict[str, Any]] = None,
+                            data_source: Optional[str] = None) -> Dict[str, Any]:
         """Process a hybrid query needing both document and data contexts."""
-        # Get both document and SQL contexts
+        # Get both document and structured data contexts
         document_context = self.context_service.get_document_context(
             user_session, user_query, chat_context=chat_context
         )
-        
-        sql_context = self.context_service.get_data_context(user_session, user_query)
-        
+
+        data_context = self.context_service.get_data_context(user_session, user_query, source=data_source)
+
         # If neither context found, return a message about no relevant information
-        if not document_context and not sql_context:
+        if not document_context and not data_context:
             return {
                 "answer": "I couldn't find any relevant information in your documents or data to answer this question. Could you try rephrasing your query or asking about another topic?",
                 "questions": []
             }
-            
+
         # Generate response with chat context
         response = self.response_service.generate_hybrid_response(
-            user_query, document_context, sql_context, language, chat_context
+            user_query, document_context, data_context, language, chat_context
         )
-        
+
         return response
         
     def _process_document_aware_chat(self, user_query: str, user_session: str,

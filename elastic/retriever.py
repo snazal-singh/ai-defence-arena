@@ -23,18 +23,31 @@ class ElasticRetriever:
             model=settings.OLLAMA_EMBEDDING_MODEL,
             base_url=settings.OLLAMA_BASE_URL,
         )
-        # Stored during search() to pass chat_context through the body_func closure
+        # Stored during search() to pass chat_context/candidate_k through the
+        # body_func closure (ElasticsearchRetriever calls body_func(query)
+        # with no other args, and EnsembleRetriever doesn't forward extra
+        # kwargs passed to .invoke() down to its sub-retrievers).
         self._current_chat_context: Optional[Dict[str, Any]] = None
+        self._current_candidate_k: int = 10
 
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
     def search(self, query: str, k: int = 4,
-               chat_context: Optional[Dict[str, Any]] = None) -> Optional[List[Document]]:
-        """Hybrid keyword + vector search with optional chat-context enhancement."""
+               chat_context: Optional[Dict[str, Any]] = None,
+               candidate_k: Optional[int] = None) -> Optional[List[Document]]:
+        """Hybrid keyword + vector search with optional chat-context enhancement.
+
+        candidate_k controls how many results each of the keyword/vector
+        branches returns before fusion (default: k). Callers that rerank the
+        results afterwards should pass a wider candidate_k than the number
+        of chunks they actually want, so the reranker has real material to
+        sort instead of just re-ordering an already-tiny top-k.
+        """
         try:
             self._current_chat_context = chat_context
+            self._current_candidate_k = candidate_k or k
             self._original_query = query
             
             # Enrich query once at start so both keyword (BM25) and vector retrievers benefit!
@@ -42,7 +55,7 @@ class ElasticRetriever:
             self._enriched_query = enriched
             search_query = enriched if enriched else query
             
-            retriever = self._create_ensemble_retriever()
+            retriever = self._create_ensemble_retriever(candidate_k=self._current_candidate_k)
             if not retriever:
                 return None
                 
@@ -53,6 +66,7 @@ class ElasticRetriever:
             raise
         finally:
             self._current_chat_context = None
+            self._current_candidate_k = 10
             self._original_query = None
             self._enriched_query = None
 
@@ -95,7 +109,7 @@ class ElasticRetriever:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _create_ensemble_retriever(self, weights=(0.4, 0.6)):
+    def _create_ensemble_retriever(self, weights=(0.4, 0.6), candidate_k: int = 10):
         try:
             if not self.index_manager.index_exists(self.index_name):
                 return None
@@ -112,7 +126,9 @@ class ElasticRetriever:
                 index_name=self.index_name,
                 embedding=self.embeddings,
             )
-            vector_retriever = vector_store.as_retriever()
+            vector_retriever = vector_store.as_retriever(
+                search_kwargs={"k": candidate_k}
+            )
 
             return EnsembleRetriever(
                 retrievers=[key_retriever, vector_retriever],
@@ -146,6 +162,7 @@ class ElasticRetriever:
                     "minimum_should_match": 1,
                 }
             },
+            "size": self._current_candidate_k,
             "_source": ["text", "metadata.source", "metadata.page",
                         "metadata.filename", "metadata.content_type",
                         "metadata.table_id"],

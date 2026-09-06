@@ -3,6 +3,7 @@ fastapi==0.104.1
 uvicorn==0.27.0
 python-multipart==0.0.9
 slowapi==0.1.9
+cryptography==42.0.5
 
 # Document Processing
 python-docx==0.8.11
@@ -17,11 +18,14 @@ langchain==0.3.26
 langchain-core==0.3.66
 langchain-community==0.3.16
 langchain-elasticsearch==0.3.2
+langchain-groq==0.3.8  # Groq hosted-inference LLM provider (USE_GROQ)
+langchain-openai==0.3.35  # NVIDIA's OpenAI-compatible hosted inference API (USE_NVIDIA)
 
 # AI Services
 bert-extractive-summarizer==0.10.1  # NOTE: potential runtime compatibility issue with torch>=2.1.0 and transformers==4.47.1
 torch>=2.1.0
-transformers==4.47.1
+sentence-transformers  # cross-encoder reranker (bge-reranker-v2-m3)
+IndicTransToolkit
 
 # Database
 motor==3.3.2

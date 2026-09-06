@@ -26,7 +26,10 @@ class ElasticClient:
     
     def index_exists(self, index_name):
         try:
-            return self.client.indices.exists(index=index_name)
+            res = self.client.indices.exists(index=index_name)
+            if hasattr(res, 'body'):
+                return bool(res.body)
+            return bool(res)
         except NotFoundError:
             return False
         except Exception as e:
