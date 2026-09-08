@@ -34,6 +34,8 @@ from urllib.parse import urlparse
 import pymongo
 from cryptography.fernet import Fernet, InvalidToken
 
+import time
+
 from app.core.config import settings
 from controllers import database
 
@@ -49,12 +51,101 @@ _MAX_FIELDS_PER_COLLECTION = 50  # max fields kept per collection in the schema 
 # Databases every Mongo deployment has that are never user data.
 _SYSTEM_DATABASES = {"admin", "local", "config"}
 
+_MAX_CONSECUTIVE_FAILURES = 3
+_COOLDOWN_SECONDS = 60
+
 
 def _mask_uri_credentials(uri: str) -> str:
     """Mask credentials in MongoDB connection URI for safe logging and error reporting."""
     if not uri:
         return ""
-    return re.sub(r"://([^:]+):([^@]+)@", r"://\1:***@", uri)
+    # Matches scheme://username:password@host and replaces password with ***
+    return re.sub(r"(mongodb(?:\+srv)?://)([^:]+):(.*)@([a-zA-Z0-9._-]+)", r"\1\2:***@\4", uri)
+
+
+class MongoConnectionRateLimiter:
+    """Thread-safe rate limiter and circuit breaker for MongoDB connection attempts.
+
+    Tracks consecutive failed connection attempts per session/host. If consecutive
+    failures reach _MAX_CONSECUTIVE_FAILURES, connection attempts are locked out
+    for _COOLDOWN_SECONDS to prevent thread starvation and resource exhaustion.
+    """
+
+    def __init__(self, max_failures: int = _MAX_CONSECUTIVE_FAILURES, cooldown_seconds: int = _COOLDOWN_SECONDS):
+        self.max_failures = max_failures
+        self.cooldown_seconds = cooldown_seconds
+        self._failures: Dict[str, Tuple[int, float]] = {}  # key -> (failure_count, cooldown_until_timestamp)
+        self._lock = threading.Lock()
+
+    def _make_key(self, user_session: str, connection_uri: str) -> str:
+        try:
+            parsed = urlparse(connection_uri)
+            host = parsed.hostname or "unknown_host"
+        except Exception:
+            host = "unknown_host"
+        return f"{user_session}:{host}"
+
+    def check_rate_limit(self, user_session: str, connection_uri: str) -> Tuple[bool, str]:
+        """Check if connection attempt is allowed or locked out due to active cooldown."""
+        key = self._make_key(user_session, connection_uri)
+        with self._lock:
+            now = time.time()
+            if key in self._failures:
+                count, cooldown_until = self._failures[key]
+                if now < cooldown_until:
+                    remaining = int(cooldown_until - now) + 1
+                    masked_uri = _mask_uri_credentials(connection_uri)
+                    logger.warning(
+                        f"MongoDB connection request throttled for session '{user_session}' "
+                        f"({masked_uri}). Cooldown active ({remaining}s remaining)."
+                    )
+                    return False, (
+                        f"Too many consecutive connection failures for this MongoDB server. "
+                        f"Connection attempt locked out to protect resources. Please wait {remaining} seconds before retrying."
+                    )
+                elif now >= cooldown_until and count >= self.max_failures:
+                    # Cooldown expired, reset state to allow a fresh retry
+                    self._failures.pop(key, None)
+        return True, ""
+
+    def record_failure(self, user_session: str, connection_uri: str, error_msg: str) -> None:
+        """Record a connection failure and activate cooldown if max failures reached."""
+        key = self._make_key(user_session, connection_uri)
+        masked_uri = _mask_uri_credentials(connection_uri)
+        safe_error = _mask_uri_credentials(error_msg)
+        with self._lock:
+            now = time.time()
+            count, _ = self._failures.get(key, (0, 0.0))
+            count += 1
+            cooldown_until = 0.0
+            if count >= self.max_failures:
+                cooldown_until = now + self.cooldown_seconds
+                logger.warning(
+                    f"MongoDB connection rate limit triggered for session '{user_session}' ({masked_uri}). "
+                    f"{count} consecutive failures recorded. Locked out for {self.cooldown_seconds} seconds."
+                )
+            else:
+                logger.info(
+                    f"Recorded Mongo connection failure ({count}/{self.max_failures}) for session '{user_session}' ({masked_uri}): {safe_error}"
+                )
+            self._failures[key] = (count, cooldown_until)
+
+    def record_success(self, user_session: str, connection_uri: str) -> None:
+        """Reset failure tracking on successful connection."""
+        key = self._make_key(user_session, connection_uri)
+        with self._lock:
+            if key in self._failures:
+                self._failures.pop(key, None)
+                logger.info(f"MongoDB connection succeeded for session '{user_session}'; reset failure state.")
+
+    def reset_all(self) -> None:
+        """Reset all rate limiter state (useful for testing)."""
+        with self._lock:
+            self._failures.clear()
+
+
+_mongo_rate_limiter = MongoConnectionRateLimiter()
+
 
 
 # ---------------------------------------------------------------------------
@@ -432,6 +523,11 @@ def attach_server(
     if not ok:
         return False, msg, None
 
+    # 3b. Check rate limit & failure cooldown lockouts
+    allowed, limit_msg = _mongo_rate_limiter.check_rate_limit(user_session, connection_uri)
+    if not allowed:
+        return False, limit_msg, None
+
     parsed_host = urlparse(connection_uri)
     uri_database = (parsed_host.path or "").lstrip("/") or None
 
@@ -458,6 +554,7 @@ def attach_server(
     # 5. Connect and ping
     ok, msg, client = test_connection(connection_uri)
     if not ok:
+        _mongo_rate_limiter.record_failure(user_session, connection_uri, msg)
         return False, msg, None
 
     try:
@@ -473,6 +570,7 @@ def attach_server(
         )
     except Exception as e:
         safe_err = _mask_uri_credentials(str(e))
+        _mongo_rate_limiter.record_failure(user_session, connection_uri, safe_err)
         logger.error(f"Schema introspection failed for new external Mongo server: {safe_err}")
         return False, f"Connected, but failed to introspect databases/collections: {safe_err}", None
     finally:
@@ -480,7 +578,11 @@ def attach_server(
 
     if not catalog:
         scope = f" for database '{database_name}'" if database_name else ""
-        return False, f"Connected, but no databases/collections were found{scope} on this server", None
+        no_cat_msg = f"Connected, but no databases/collections were found{scope} on this server"
+        _mongo_rate_limiter.record_failure(user_session, connection_uri, no_cat_msg)
+        return False, no_cat_msg, None
+
+    _mongo_rate_limiter.record_success(user_session, connection_uri)
 
     try:
         encrypted_uri = _encrypt(connection_uri)

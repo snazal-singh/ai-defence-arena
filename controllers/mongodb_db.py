@@ -617,8 +617,9 @@ def query_mongodb(user_session: str, natural_language_query: str) -> Tuple[Optio
                 formatted_results = json.loads(json_util.dumps(results))
                 context_parts.append((plan, formatted_results))
             except Exception as e:
-                logger.warning(f"MongoDB sub-query failed, skipping: {e} (plan={plan})")
-                errors.append(str(e))
+                safe_e = external_mongo_connection._mask_uri_credentials(str(e))
+                logger.warning(f"MongoDB sub-query failed, skipping: {safe_e} (plan={plan})")
+                errors.append(safe_e)
 
         if not context_parts:
             return None, "; ".join(errors) if errors else "No MongoDB query could be executed"
@@ -636,8 +637,9 @@ def query_mongodb(user_session: str, natural_language_query: str) -> Tuple[Optio
         return formatted_context, None
 
     except Exception as e:
-        logger.error(f"MongoDB structured query failed: {e}")
-        return None, str(e)
+        safe_e = external_mongo_connection._mask_uri_credentials(str(e))
+        logger.error(f"MongoDB structured query failed: {safe_e}")
+        return None, safe_e
 
 
 def delete_mongo_database(user_session: str) -> bool:
