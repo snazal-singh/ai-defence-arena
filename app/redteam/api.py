@@ -86,7 +86,7 @@ def snapshot():
 
 
 @router.get('/snapshot')
-@limiter.limit('120/minute')
+@limiter.limit('600/minute')
 def get_snapshot(request: Request, response: Response):
     response.headers['Cache-Control'] = 'no-store'
     return snapshot()

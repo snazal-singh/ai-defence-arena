@@ -343,7 +343,6 @@ function connectSSE() {
       if (event.attack_detected) {
         showProbeVerdict(event);
       }
-      loadSnapshot();
     } catch {}
   });
 
