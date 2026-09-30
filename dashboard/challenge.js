@@ -783,7 +783,7 @@
 
     state.isScanning = true;
     clearTimeout(state.idleTimer); // FREEZE IDLE TIMER so attract mode never interrupts
-    el.btnSubmitAttack.disabled = true;
+    if (el.btnSubmitAttack) el.btnSubmitAttack.disabled = true;
     const startTime = performance.now();
 
     // Dynamically detect real attack category from the prompt content
@@ -791,6 +791,45 @@
     let classification = detected.name;
     let threatScore = detected.score;
     let severity = detected.severity;
+    let responseText = '';
+    let isBypass = false;
+
+    // Open scanning modal and initialize steps
+    if (el.modalScanning) el.modalScanning.classList.add('active');
+    const steps = [
+      document.getElementById('step-1'),
+      document.getElementById('step-2'),
+      document.getElementById('step-3'),
+      document.getElementById('step-4'),
+      document.getElementById('step-5')
+    ];
+
+    // Reset steps state
+    steps.forEach((s, idx) => {
+      if (s) {
+        s.className = 'scan-step' + (idx === 0 ? ' active' : '');
+        const icon = s.querySelector('.step-icon');
+        if (icon) icon.textContent = idx === 0 ? '▶' : '○';
+      }
+    });
+
+    // Animate scanning steps dynamically while waiting for real backend
+    let currentStep = 0;
+    const stepInterval = setInterval(() => {
+      if (currentStep < 4) {
+        if (steps[currentStep]) {
+          steps[currentStep].className = 'scan-step completed';
+          const icon = steps[currentStep].querySelector('.step-icon');
+          if (icon) icon.textContent = '✓';
+        }
+        currentStep++;
+        if (steps[currentStep]) {
+          steps[currentStep].className = 'scan-step active';
+          const icon = steps[currentStep].querySelector('.step-icon');
+          if (icon) icon.textContent = '▶';
+        }
+      }
+    }, 2200);
 
     try {
       const askRes = await fetch('/api/v1/redteam/ask', {
@@ -832,7 +871,7 @@
 
     // Brief smooth pause (350ms) so user sees the green checkmarks before verdict opens
     await new Promise(r => setTimeout(r, 350));
-    el.modalScanning.classList.remove('active');
+    if (el.modalScanning) el.modalScanning.classList.remove('active');
 
     // Determine defense outcome via evaluation indicators
     const lowerResp = responseText.toLowerCase();
