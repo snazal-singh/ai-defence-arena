@@ -241,7 +241,7 @@ html, body {
   color: var(--text-dim);
 }
 
-.kiosk-btn-fullscreen, .kiosk-btn-reset {
+.kiosk-btn-fullscreen, .kiosk-btn-reset, .kiosk-btn-audio {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border-subtle);
   color: var(--text-muted);
@@ -257,10 +257,21 @@ html, body {
   transition: all 0.2s ease;
 }
 
-.kiosk-btn-fullscreen:hover, .kiosk-btn-reset:hover {
+.kiosk-btn-fullscreen:hover, .kiosk-btn-reset:hover, .kiosk-btn-audio:hover {
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.kiosk-btn-audio {
+  font-size: 0.95rem;
+  padding: 0 10px;
+}
+
+.kiosk-btn-audio.muted {
+  opacity: 0.6;
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
 }
 
 /* ================= VIEW SWITCHER (ATTRACT vs ARENA) ================= */

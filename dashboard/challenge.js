@@ -212,8 +212,231 @@
     btnVerdictOpenLb: document.getElementById('btn-verdict-open-leaderboard'),
     btnFinalOpenLb: document.getElementById('btn-final-open-leaderboard'),
     btnCloseLbModal: document.getElementById('btn-close-lb-modal'),
-    btnCloseLbBottom: document.getElementById('btn-close-lb-bottom')
+    btnCloseLbBottom: document.getElementById('btn-close-lb-bottom'),
+    btnToggleAudio: document.getElementById('btn-toggle-audio'),
+    audioIcon: document.getElementById('audio-icon')
   };
+
+  // ================= WEB AUDIO API CYBER SOUND SYSTEM =================
+  const soundEngine = (() => {
+    let ctx = null;
+    let muted = localStorage.getItem('arena_sfx_muted') === 'true';
+
+    function getContext() {
+      if (!ctx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          ctx = new AudioContextClass();
+        }
+      }
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      return ctx;
+    }
+
+    function unlock() {
+      getContext();
+    }
+
+    function isMuted() {
+      return muted;
+    }
+
+    function toggleMute() {
+      muted = !muted;
+      localStorage.setItem('arena_sfx_muted', muted ? 'true' : 'false');
+      return muted;
+    }
+
+    // 1. Subtle tactile cyber click
+    function playClick() {
+      if (muted) return;
+      const audioCtx = getContext();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(350, now + 0.04);
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      } catch (e) {}
+    }
+
+    // 2. Launch Attack Probe: Laser charge sweep + sub impact
+    function playLaunch() {
+      if (muted) return;
+      const audioCtx = getContext();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+
+        // High-tech laser sweep
+        const osc1 = audioCtx.createOscillator();
+        const gain1 = audioCtx.createGain();
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(950, now);
+        osc1.frequency.exponentialRampToValueAtTime(160, now + 0.28);
+        gain1.gain.setValueAtTime(0.18, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        osc1.connect(gain1);
+        gain1.connect(audioCtx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.28);
+
+        // Low sub-punch
+        const sub = audioCtx.createOscillator();
+        const subGain = audioCtx.createGain();
+        sub.type = 'sine';
+        sub.frequency.setValueAtTime(180, now + 0.04);
+        sub.frequency.exponentialRampToValueAtTime(42, now + 0.35);
+        subGain.gain.setValueAtTime(0.22, now + 0.04);
+        subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        sub.connect(subGain);
+        subGain.connect(audioCtx.destination);
+        sub.start(now + 0.04);
+        sub.stop(now + 0.35);
+      } catch (e) {}
+    }
+
+    // 3. Scan Radar Ping: Sonar blips scaling with step
+    function playScanPing(stepIndex = 0) {
+      if (muted) return;
+      const audioCtx = getContext();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const freqs = [440, 554, 659, 830, 987];
+        const freq = freqs[Math.min(stepIndex, freqs.length - 1)] || 600;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      } catch (e) {}
+    }
+
+    // 4. AI Defended: Heavy metallic shield impact / deflection
+    function playDefense() {
+      if (muted) return;
+      const audioCtx = getContext();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+
+        // Forcefield strike
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.38);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.38);
+
+        // Deflection resonance hum
+        const hum = audioCtx.createOscillator();
+        const humGain = audioCtx.createGain();
+        hum.type = 'sine';
+        hum.frequency.setValueAtTime(130, now);
+        humGain.gain.setValueAtTime(0.18, now);
+        humGain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+        hum.connect(humGain);
+        humGain.connect(audioCtx.destination);
+        hum.start(now);
+        hum.stop(now + 0.55);
+      } catch (e) {}
+    }
+
+    // 5. You Broke The AI: Cyberpunk Synth Arpeggio Fanfare (Victory chime)
+    function playBreach() {
+      if (muted) return;
+      const audioCtx = getContext();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+
+        // Ascending triumphant cyber arpeggio (C5, E5, G5, C6)
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const noteStart = now + idx * 0.1;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, noteStart);
+          gain.gain.setValueAtTime(0.22, noteStart);
+          gain.gain.exponentialRampToValueAtTime(0.001, noteStart + 0.35);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(noteStart);
+          osc.stop(noteStart + 0.35);
+        });
+
+        // Bright victory chime
+        const chime = audioCtx.createOscillator();
+        const chimeGain = audioCtx.createGain();
+        chime.type = 'sine';
+        chime.frequency.setValueAtTime(1318.51, now + 0.42); // E6
+        chimeGain.gain.setValueAtTime(0.22, now + 0.42);
+        chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.95);
+        chime.connect(chimeGain);
+        chimeGain.connect(audioCtx.destination);
+        chime.start(now + 0.42);
+        chime.stop(now + 0.95);
+      } catch (e) {}
+    }
+
+    // 6. Level Up / Transition Chime
+    function playLevelUp() {
+      if (muted) return;
+      const audioCtx = getContext();
+      if (!audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        [587.33, 880.00].forEach((freq, idx) => {
+          const start = now + idx * 0.12;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.16, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.3);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(start);
+          osc.stop(start + 0.3);
+        });
+      } catch (e) {}
+    }
+
+    return {
+      unlock,
+      isMuted,
+      toggleMute,
+      playClick,
+      playLaunch,
+      playScanPing,
+      playDefense,
+      playBreach,
+      playLevelUp
+    };
+  })();
 
   // --- 1. Ambient Cyber Canvas Animation ---
   function initCyberCanvas() {
@@ -533,6 +756,7 @@
     clearInterval(state.attractCarouselTimer);
     el.viewAttract.classList.remove('active');
     el.viewArena.classList.add('active');
+    soundEngine.playLevelUp();
     resetIdleTimer();
     if (el.inputAttackPrompt) {
       el.inputAttackPrompt.focus();
@@ -577,6 +801,7 @@
         <span class="chip-text">${t.text}</span>
       `;
       chip.addEventListener('click', () => {
+        soundEngine.playClick();
         el.inputAttackPrompt.value = t.prompt;
         el.inputAttackPrompt.focus();
         resetIdleTimer();
@@ -608,6 +833,7 @@
       `;
 
       card.addEventListener('click', () => {
+        soundEngine.playClick();
         selectCategory(cat);
       });
 
@@ -781,6 +1007,7 @@
     const promptText = el.inputAttackPrompt.value.trim();
     if (!promptText) return;
 
+    soundEngine.playLaunch();
     state.isScanning = true;
     clearTimeout(state.idleTimer); // FREEZE IDLE TIMER so attract mode never interrupts
     if (el.btnSubmitAttack) el.btnSubmitAttack.disabled = true;
@@ -812,6 +1039,7 @@
         if (icon) icon.textContent = idx === 0 ? '▶' : '○';
       }
     });
+    soundEngine.playScanPing(0);
 
     // Animate scanning steps dynamically while waiting for real backend
     let currentStep = 0;
@@ -827,6 +1055,7 @@
           steps[currentStep].className = 'scan-step active';
           const icon = steps[currentStep].querySelector('.step-icon');
           if (icon) icon.textContent = '▶';
+          soundEngine.playScanPing(currentStep);
         }
       }
     }, 2200);
@@ -990,12 +1219,14 @@
     if (!el.modalVerdict) return;
 
     if (isBypass) {
+      soundEngine.playBreach();
       el.verdictCard.className = 'verdict-card state-broken';
       el.verdictBadgeIcon.textContent = '⚡';
       el.verdictBadgeText.textContent = 'YOU BROKE THE AI';
       el.verdictHeadline.textContent = `“You found a weakness! Guardrail bypassed! (+${points} PTS)”`;
       el.vReason.textContent = 'Adversarial pattern succeeded in dislodging standard alignment parameters.';
     } else {
+      soundEngine.playDefense();
       el.verdictCard.className = 'verdict-card state-defended';
       el.verdictBadgeIcon.textContent = '🛡️';
       el.verdictBadgeText.textContent = 'AI DEFENDED';
@@ -1121,9 +1352,43 @@
     el.navAgentId.textContent = state.visitorId;
     el.sidebarVisitorTag.textContent = state.visitorId;
 
+    // Setup Audio FX
+    function updateAudioUI() {
+      const isMuted = soundEngine.isMuted();
+      if (el.audioIcon) el.audioIcon.textContent = isMuted ? '🔇' : '🔊';
+      if (el.btnToggleAudio) {
+        if (isMuted) {
+          el.btnToggleAudio.classList.add('muted');
+          el.btnToggleAudio.title = 'Audio Muted — Click to Enable Cyber SFX';
+        } else {
+          el.btnToggleAudio.classList.remove('muted');
+          el.btnToggleAudio.title = 'Cyber SFX Active — Click to Mute';
+        }
+      }
+    }
+    updateAudioUI();
+
+    if (el.btnToggleAudio) {
+      el.btnToggleAudio.addEventListener('click', () => {
+        soundEngine.toggleMute();
+        updateAudioUI();
+        if (!soundEngine.isMuted()) {
+          soundEngine.playClick();
+        }
+      });
+    }
+
+    // Unlock Web Audio API on first user gesture
+    ['click', 'keydown', 'touchstart', 'pointerdown'].forEach(evt => {
+      window.addEventListener(evt, () => soundEngine.unlock(), { once: true });
+    });
+
     // Event Listeners
     if (el.btnStartChallenge) {
-      el.btnStartChallenge.addEventListener('click', handleStartChallengeClick);
+      el.btnStartChallenge.addEventListener('click', () => {
+        soundEngine.playClick();
+        handleStartChallengeClick();
+      });
     }
 
     if (el.formContestantRegister) {
@@ -1132,6 +1397,7 @@
 
     if (el.btnContestantAnon) {
       el.btnContestantAnon.addEventListener('click', () => {
+        soundEngine.playClick();
         setContestantName('Anonymous-' + Math.floor(100 + Math.random() * 900));
         if (el.modalContestant) el.modalContestant.classList.remove('active');
         enterArenaMode();
@@ -1140,6 +1406,7 @@
 
     if (el.btnEditName) {
       el.btnEditName.addEventListener('click', () => {
+        soundEngine.playClick();
         if (el.modalContestant) {
           el.modalContestant.classList.add('active');
           if (el.inputContestantName) {
@@ -1151,7 +1418,10 @@
     }
 
     if (el.btnRotateChips) {
-      el.btnRotateChips.addEventListener('click', rotateChips);
+      el.btnRotateChips.addEventListener('click', () => {
+        soundEngine.playClick();
+        rotateChips();
+      });
     }
 
     if (el.formAttackPrompt) {
@@ -1159,11 +1429,17 @@
     }
 
     if (el.btnResetSession) {
-      el.btnResetSession.addEventListener('click', resetForNextContestant);
+      el.btnResetSession.addEventListener('click', () => {
+        soundEngine.playClick();
+        resetForNextContestant();
+      });
     }
 
     if (el.btnFullscreen) {
-      el.btnFullscreen.addEventListener('click', toggleFullscreen);
+      el.btnFullscreen.addEventListener('click', () => {
+        soundEngine.playClick();
+        toggleFullscreen();
+      });
     }
 
     // Continue attacking vs Stop & View Final Results
@@ -1209,6 +1485,7 @@
 
     if (el.btnTryAgain) {
       el.btnTryAgain.addEventListener('click', () => {
+        soundEngine.playClick();
         hideVerdictModal();
         el.inputAttackPrompt.focus();
       });
@@ -1216,6 +1493,7 @@
 
     if (el.btnNextLevel) {
       el.btnNextLevel.addEventListener('click', () => {
+        soundEngine.playLevelUp();
         hideVerdictModal();
         nextLevel();
       });
