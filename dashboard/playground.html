@@ -55,7 +55,7 @@
       <button class="ik-pill-btn ik-pill-target" id="btn-edit-endpoint" title="Configure Target Bot URL (Pluggable to any Bot)">
         <span class="ik-pill-dot">⚙️</span>
         <span class="ik-pill-label">Target:</span>
-        <strong id="hud-endpoint-label">/api/v1/ask</strong>
+        <strong id="hud-endpoint-label">/api/v1/redteam/ask</strong>
       </button>
     </div>
 
@@ -328,14 +328,14 @@
     </div>
     <form id="form-endpoint" class="ik-modal-form">
       <label for="input-bot-url">Bot Query API URL:</label>
-      <input type="text" id="input-bot-url" value="/api/v1/ask" placeholder="/api/v1/ask or http://localhost:5000/ask" required>
+      <input type="text" id="input-bot-url" value="/api/v1/redteam/ask" placeholder="/api/v1/redteam/ask or /api/v1/ask" required>
       <p class="ik-modal-tip">Pluggable to <b>ANY bot</b>. When querying external URLs, prompts and responses are automatically logged to <code>/api/v1/redteam/log</code> for live OWASP evaluation.</p>
 
       <label for="input-payload-field">JSON Message Field Name:</label>
       <input type="text" id="input-payload-field" value="message" placeholder="message, prompt, or question">
 
       <div class="ik-modal-foot">
-        <button type="button" class="ik-btn-reset" id="btn-reset-endpoint">Reset Default (/api/v1/ask)</button>
+        <button type="button" class="ik-btn-reset" id="btn-reset-endpoint">Reset Default (/api/v1/redteam/ask)</button>
         <button type="submit" class="ik-btn-save">Save Endpoint</button>
       </div>
     </form>

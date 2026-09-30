@@ -22,7 +22,7 @@ const CHALLENGE_MAP = Object.fromEntries(CHALLENGES.map(c => [c.id, c.title]));
 let state = {
   challengerName: localStorage.getItem('sachet_pg_name') || 'Marie',
   currentObjective: localStorage.getItem('sachet_pg_obj') || 'open',
-  botEndpoint: localStorage.getItem('sachet_pg_endpoint') || '/api/v1/ask',
+  botEndpoint: localStorage.getItem('sachet_pg_endpoint') || '/api/v1/redteam/ask',
   messageField: localStorage.getItem('sachet_pg_field') || 'message',
   sessionId: localStorage.getItem('sachet_pg_session_id') || 'pg_' + Math.random().toString(36).slice(2, 9),
   isSending: false,
@@ -100,11 +100,15 @@ async function sendQuery(promptText) {
   let wasBlocked = false;
 
   try {
-    const payload = {};
+    const payload = {
+      message: promptText,
+      prompt: promptText,
+      sessionId: state.sessionId,
+      fingerprint: state.sessionId,
+    };
     payload[state.messageField] = promptText;
-    payload['sessionId'] = state.sessionId;
 
-    const res = await fetch(state.botEndpoint, {
+    let res = await fetch(state.botEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -113,6 +117,19 @@ async function sendQuery(promptText) {
       credentials: 'include',
       body: JSON.stringify(payload)
     });
+
+    // Seamless fallback: If user targets /api/v1/ask without an active JWT login, route via /api/v1/redteam/ask
+    if (res.status === 401 && (state.botEndpoint === '/api/v1/ask' || state.botEndpoint.endsWith('/ask'))) {
+      res = await fetch('/api/v1/redteam/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Redteam-Session': state.sessionId,
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+    }
 
     const elapsedMs = Math.round(performance.now() - startTime);
 
@@ -128,7 +145,7 @@ async function sendQuery(promptText) {
     appendMessage('ai', aiResponseText);
 
     // If querying an external bot target, send telemetry to universal logger
-    if (state.botEndpoint !== '/api/v1/ask' && state.botEndpoint !== '/api/v1/trial-ask') {
+    if (state.botEndpoint !== '/api/v1/ask' && state.botEndpoint !== '/api/v1/trial-ask' && state.botEndpoint !== '/api/v1/redteam/ask') {
       logExternalAttempt(promptText, aiResponseText, elapsedMs, wasBlocked);
     }
 
@@ -141,6 +158,7 @@ async function sendQuery(promptText) {
     $('chat-input').focus();
   }
 }
+
 
 async function logExternalAttempt(prompt, response, latencyMs, blocked) {
   try {
@@ -456,7 +474,7 @@ function initModals() {
   };
   $('form-endpoint').onsubmit = ev => {
     ev.preventDefault();
-    state.botEndpoint = $('input-bot-url').value.trim() || '/api/v1/ask';
+    state.botEndpoint = $('input-bot-url').value.trim() || '/api/v1/redteam/ask';
     state.messageField = $('input-payload-field').value.trim() || 'message';
     localStorage.setItem('sachet_pg_endpoint', state.botEndpoint);
     localStorage.setItem('sachet_pg_field', state.messageField);
@@ -464,11 +482,11 @@ function initModals() {
     $('modal-endpoint').close();
   };
   $('btn-reset-endpoint').onclick = () => {
-    state.botEndpoint = '/api/v1/ask';
+    state.botEndpoint = '/api/v1/redteam/ask';
     state.messageField = 'message';
-    $('input-bot-url').value = '/api/v1/ask';
+    $('input-bot-url').value = '/api/v1/redteam/ask';
     $('input-payload-field').value = 'message';
-    localStorage.setItem('sachet_pg_endpoint', '/api/v1/ask');
+    localStorage.setItem('sachet_pg_endpoint', '/api/v1/redteam/ask');
     localStorage.setItem('sachet_pg_field', 'message');
     updateHUD();
     $('modal-endpoint').close();

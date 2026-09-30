@@ -9,7 +9,7 @@ from .telemetry import get_telemetry
 
 logger = logging.getLogger(__name__)
 observation = ContextVar('redteam_observation', default=None)
-QUERY_PATHS = {'/api/v1/ask', '/api/v1/trial-ask', '/api/v1/demo', '/api/v1/ask-tts', '/api/v1/ask-stream'}
+QUERY_PATHS = {'/api/v1/ask', '/api/v1/trial-ask', '/api/v1/demo', '/api/v1/ask-tts', '/api/v1/ask-stream', '/api/v1/redteam/ask'}
 
 
 def capture(prompt, response=None, status=200):

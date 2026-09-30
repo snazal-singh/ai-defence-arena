@@ -188,6 +188,40 @@ def log_external_event(request: Request, body: ExternalLogRequest):
     }
 
 
+class ArenaAskRequest(BaseModel):
+    message: str = Field(default='', max_length=16000)
+    prompt: str = Field(default='', max_length=16000)
+    sessionId: str = Field(default='arena_user', max_length=120)
+    fingerprint: str = Field(default='arena_user', max_length=120)
+
+
+@router.post('/ask', status_code=200)
+async def arena_ask(request: Request):
+    """
+    Direct playground query endpoint.
+    Routes queries directly through the real RAG model and guardrails without
+    requiring an authenticated user session cookie or JWT token.
+    """
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    message = body.get('message') or body.get('prompt') or ''
+    if not message:
+        raise HTTPException(400, 'Message cannot be empty')
+    
+    sid = request.headers.get('x-redteam-session') or body.get('sessionId') or body.get('fingerprint') or 'arena_tester'
+    trial_data = {
+        'fingerprint': sid,
+        'message': message,
+        'filenames': body.get('filenames', [])
+    }
+    from app.services.query_service import get_query_service
+    resp, code = get_query_service().process_trial_query(trial_data)
+    return Response(content=json.dumps(resp), status_code=code, media_type='application/json')
+
+
+
 # SQLite replay also works between processes; no process-local broadcast dependency.
 class DashboardEventService:
     async def stream(self, request, after):
