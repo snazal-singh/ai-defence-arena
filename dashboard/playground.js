@@ -375,12 +375,13 @@ function renderLeaderboard(leaders) {
     name.className = 'ik-lead-name';
     name.innerHTML = `${escapeHtml(row.participant_name)}${isYou ? '<span class="ik-you-tag">YOU</span>' : ''}`;
 
-    const stats = document.createElement('span');
-    stats.className = 'ik-lead-stats';
-    const bypassStr = row.successes > 0 ? `${row.successes} bypasses` : '0 bypasses (Defended)';
-    stats.textContent = `${bypassStr} · ${row.attempts || 0} attempts`;
+    const promptEl = document.createElement('span');
+    promptEl.className = 'ik-lead-prompt';
+    const cleanPrompt = row.prompt || 'Adversarial probe query';
+    promptEl.textContent = `“${cleanPrompt}”`;
+    promptEl.title = cleanPrompt;
 
-    info.append(name, stats);
+    info.append(name, promptEl);
 
     const pts = document.createElement('div');
     pts.className = 'ik-lead-pts';

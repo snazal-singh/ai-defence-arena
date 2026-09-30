@@ -1309,10 +1309,17 @@ body {
 .ik-lead-name {
   font-weight: 600;
   color: var(--ik-text);
+  font-size: 11px;
 }
-.ik-lead-stats {
+.ik-lead-prompt {
   font-size: 10px;
-  color: #64748b;
+  font-family: ui-monospace, monospace;
+  color: #0284c7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 210px;
+  margin-top: 1px;
 }
 .ik-lead-pts {
   font-weight: 800;

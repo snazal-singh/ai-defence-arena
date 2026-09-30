@@ -423,28 +423,31 @@ function renderLeaders(rows) {
     $('leaderboard').append(empty);
     return;
   }
-  for (const [index, row] of rows.slice(0, 10).entries()) {
+  for (const [index, row] of rows.slice(0, 15).entries()) {
     const el = node('div', null, 'leader-row' + (index === 0 && row.points > 0 ? ' leader-rank-1' : ''));
     const rankStr = String(index + 1).padStart(2, '0');
-    const name = node('div', null, 'leader-name');
-    const nameText = node('span', row.participant_name);
-    name.append(nameText);
-    const targetChallenge = CHALLENGE_NAMES[row.challenge_id] || row.challenge_id || 'Instruction Override';
-    name.append(node('span', '🎯 ' + targetChallenge, 'leader-challenge-badge'));
-    if (index === 0 && row.points > 0) {
-      name.append(node('span', '👑 TOP', 'crown-badge'));
-    }
-    const bypassText = (row.successes ?? 0) > 0 ? `${row.successes} bypasses` : '0 bypasses (Defended)';
-    const stats = `${bypassText} · ${format(row.attempts)} attempts`;
-    name.append(node('small', stats + (row.legacy_points ? ' · legacy pts included' : '')));
-    const pts = node('div', format(row.points), 'leader-points');
-    pts.append(node('small', 'PTS'));
-    el.append(
-      node('span', rankStr, 'rank'),
-      node('span', (row.participant_name || '??').slice(0, 2).toUpperCase(), 'avatar'),
-      name,
-      pts
+
+    // 1. Participant Name column (with rank tag)
+    const nameCol = node('div', null, 'leader-col-name');
+    nameCol.append(
+      node('span', rankStr, 'rank-num'),
+      node('strong', row.participant_name || 'Anonymous', 'participant-title')
     );
+
+    // 2. Entered Prompt column
+    const promptText = row.prompt || 'Adversarial probe query';
+    const promptCol = node('div', null, 'leader-col-prompt');
+    const promptBubble = node('span', `“${promptText}”`, 'prompt-quote');
+    promptBubble.title = promptText;
+    promptCol.append(promptBubble);
+
+    // 3. Bounty Points column
+    const ptsCol = node('div', null, 'leader-col-points');
+    const ptsNum = node('span', format(row.points || 0), 'bounty-val' + ((row.points || 0) > 0 ? ' has-bounty' : ' zero-pts'));
+    const ptsLbl = node('small', 'PTS', 'bounty-lbl');
+    ptsCol.append(ptsNum, ptsLbl);
+
+    el.append(nameCol, promptCol, ptsCol);
     $('leaderboard').append(el);
   }
 }

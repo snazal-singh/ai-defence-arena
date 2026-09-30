@@ -47,6 +47,9 @@
       <span class="score-value" id="nav-score">0</span>
       <span class="score-pts">PTS</span>
     </div>
+    <button class="kiosk-btn-leaderboard" id="btn-top-leaderboard" title="View Official Live Leaderboard">
+      <span>🏆 Leaderboard</span>
+    </button>
     <button class="kiosk-btn-fullscreen" id="btn-fullscreen" title="Toggle Fullscreen Exhibition Display">
       <span id="fs-icon">⛶</span>
     </button>
@@ -310,6 +313,25 @@
           </button>
         </div>
 
+        <!-- Live Arena Leaderboard Panel (Participant Name | Entered Prompt | Bounty Pts) -->
+        <div class="kiosk-panel live-leaderboard-panel">
+          <div class="panel-header">
+            <span class="panel-title">🏆 LIVE LEADERBOARD</span>
+            <span class="live-dot-pulse">● LIVE</span>
+          </div>
+          <div class="kiosk-lb-table-head">
+            <span class="klb-col-name">PARTICIPANT</span>
+            <span class="klb-col-prompt">ENTERED PROMPT</span>
+            <span class="klb-col-pts">BOUNTY</span>
+          </div>
+          <div class="kiosk-lb-list" id="kiosk-leaderboard-list">
+            <div class="lb-loading-state">Loading contestants…</div>
+          </div>
+          <button class="btn-expand-leaderboard" id="btn-sidebar-expand-lb">
+            ⛶ View Full Leaderboard Modal
+          </button>
+        </div>
+
         <!-- Live Activity Ticker Feed (Animated stream) -->
         <div class="kiosk-panel live-feed-panel">
           <div class="panel-header">
@@ -437,11 +459,11 @@
       <button class="btn-verdict-action highlight-finish" id="btn-stop-and-finish">
         🏁 STOP & VIEW FINAL RESULTS
       </button>
+      <button class="btn-verdict-action tertiary" id="btn-verdict-open-leaderboard">
+        🏆 LIVE LEADERBOARD
+      </button>
       <a href="/arena/playground" target="_blank" class="btn-verdict-action secondary">
         💬 OPEN FULL RAG CHATBOT ↗
-      </a>
-      <a href="/arena" target="_blank" class="btn-verdict-action tertiary">
-        🏆 LIVE LEADERBOARD ↗
       </a>
     </div>
 
@@ -487,12 +509,45 @@
       <button class="btn-final-action primary" id="btn-next-contestant">
         ↺ NEXT CONTESTANT (RESET ARENA)
       </button>
-      <a href="/arena" target="_blank" class="btn-final-action secondary">
-        🏆 VIEW LIVE LEADERBOARD ↗
-      </a>
+      <button class="btn-final-action secondary" id="btn-final-open-leaderboard">
+        🏆 VIEW LIVE LEADERBOARD
+      </button>
       <a href="/arena/playground" target="_blank" class="btn-final-action tertiary">
         💬 OPEN FULL RAG CHATBOT ↗
       </a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= STAGE 6: FULL-SCREEN CYBERPUNK LIVE LEADERBOARD MODAL ================= -->
+<div class="leaderboard-modal" id="modal-leaderboard">
+  <div class="leaderboard-modal-card">
+    <div class="lb-modal-header">
+      <div class="lb-modal-title-box">
+        <span class="lb-trophy-badge">🏆</span>
+        <div>
+          <h2>OFFICIAL LIVE LEADERBOARD</h2>
+          <p>Verified scores & entered attack prompts by exhibition challengers</p>
+        </div>
+      </div>
+      <button class="btn-close-modal" id="btn-close-lb-modal" title="Close Leaderboard">✕</button>
+    </div>
+
+    <!-- Table Header: ONLY Participant Name, Entered Attack Prompt, Bounty Points -->
+    <div class="lb-modal-columns">
+      <div class="lb-h-col lb-col-name">PARTICIPANT NAME</div>
+      <div class="lb-h-col lb-col-prompt">ENTERED ATTACK PROMPT</div>
+      <div class="lb-h-col lb-col-points">BOUNTY POINTS</div>
+    </div>
+
+    <!-- Leaderboard Table Body -->
+    <div class="lb-modal-rows" id="lb-modal-rows">
+      <!-- Populated dynamically with rows showing ONLY Name, Prompt, Points -->
+    </div>
+
+    <div class="lb-modal-footer">
+      <span class="lb-status-indicator">● LIVE SYNC ACTIVE WITH GPU CLUSTER</span>
+      <button class="btn-modal-close-action" id="btn-close-lb-bottom">CLOSE LEADERBOARD</button>
     </div>
   </div>
 </div>

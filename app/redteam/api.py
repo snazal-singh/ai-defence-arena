@@ -179,6 +179,12 @@ def log_external_event(request: Request, body: ExternalLogRequest):
         latency=body.response_time_ms,
         signals=signals
     )
+    # Record entered prompt for live leaderboard
+    calc_points = 0 if body.blocked else 100
+    try:
+        service.store.record_participant_prompt(body.participant_name, body.prompt, calc_points)
+    except Exception:
+        pass
     return {
         'status': 'queued' if accepted else 'rejected',
         'participant_name': body.participant_name,
@@ -227,6 +233,12 @@ async def arena_ask(request: Request):
     }
     from app.services.query_service import get_query_service
     resp, code = get_query_service().process_trial_query(trial_data)
+    participant_name = body.get('participant_name') or body.get('challenger_name')
+    if participant_name and message:
+        try:
+            get_telemetry().store.record_participant_prompt(participant_name, message, 0)
+        except Exception:
+            pass
     return Response(content=json.dumps(resp), status_code=code, media_type='application/json')
 
 
