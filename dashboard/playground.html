@@ -97,10 +97,8 @@
       <!-- Containers Section (From Screenshot) -->
       <div class="ik-nav-group">
         <div class="ik-nav-group-title">Containers</div>
-        <div class="ik-container-card active">
-          <span class="ik-caret">›</span>
-          <span class="ik-container-label" title="Default Knowledge Container">Knowledge contain...</span>
-          <span class="ik-more-options">⋮</span>
+        <div class="ik-containers-menu" id="sidebar-containers">
+          <!-- Populated by JS -->
         </div>
       </div>
 
@@ -350,6 +348,40 @@
       <button class="ik-modal-close" onclick="document.getElementById('modal-event-detail').close()">✕</button>
     </div>
     <div class="ik-modal-detail-content" id="event-detail-body"></div>
+  </div>
+<!-- Knowledge Container Ingestion Modal -->
+<dialog id="modal-container" class="ik-modal">
+  <div class="ik-modal-dialog ik-modal-wide">
+    <div class="ik-modal-header">
+      <h3>+ Create Knowledge Container & Ingest</h3>
+      <button class="ik-modal-close" onclick="document.getElementById('modal-container').close()">✕</button>
+    </div>
+    <form id="form-container" class="ik-modal-form" enctype="multipart/form-data">
+      <label for="input-container-name">Container Name:</label>
+      <input type="text" id="input-container-name" value="Security Sandbox Document" placeholder="e.g. Confidential Financials 2026" required>
+
+      <div class="ik-ingest-tabs">
+        <label>Ingest Documents (Upload File or Paste Secret Document):</label>
+        
+        <div class="ik-upload-dropzone" id="dropzone-files">
+          <input type="file" id="input-container-files" multiple accept=".pdf,.docx,.doc,.txt,.csv,.json" style="display:none;">
+          <button type="button" class="ik-btn-browse" onclick="document.getElementById('input-container-files').click()">
+            📁 Choose Files to Upload (PDF, DOCX, TXT, CSV)
+          </button>
+          <span id="selected-files-label" class="ik-selected-files-text">No files selected</span>
+        </div>
+
+        <div class="ik-paste-section" style="margin-top:14px;">
+          <label for="input-raw-text">Or Paste Raw Ground Truth / Confidential Policy Text:</label>
+          <textarea id="input-raw-text" rows="5" placeholder="Paste confidential notes, internal policies, or text to test RAG grounding / retrieval extraction attacks..."></textarea>
+        </div>
+      </div>
+
+      <div class="ik-modal-foot">
+        <button type="button" class="ik-btn-reset" onclick="document.getElementById('modal-container').close()">Cancel</button>
+        <button type="submit" class="ik-btn-save" id="btn-submit-container">Ingest & Create Container</button>
+      </div>
+    </form>
   </div>
 </dialog>
 

@@ -1278,3 +1278,60 @@ body {
   color: #0f172a;
   word-break: break-word;
 }
+
+/* Ingestion Dropzone & Inputs */
+.ik-upload-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.ik-btn-browse {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--ik-teal);
+  background: var(--ik-teal-light);
+  color: var(--ik-teal-dark);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ik-btn-browse:hover {
+  background: var(--ik-teal);
+  color: #ffffff;
+}
+.ik-selected-files-text {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+.ik-paste-section textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--ik-border);
+  font-family: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  outline: none;
+  resize: vertical;
+  background: #ffffff;
+  margin-top: 4px;
+}
+.ik-paste-section textarea:focus {
+  border-color: var(--ik-teal);
+  box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.15);
+}
+.ik-containers-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+

@@ -6,8 +6,9 @@ import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, FastAPI, Header, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Depends, FastAPI, File, Form, Header, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -219,6 +220,64 @@ async def arena_ask(request: Request):
     from app.services.query_service import get_query_service
     resp, code = get_query_service().process_trial_query(trial_data)
     return Response(content=json.dumps(resp), status_code=code, media_type='application/json')
+
+
+@router.post('/container', status_code=200)
+def create_arena_container(
+    request: Request,
+    container_name: str = Form(default='Knowledge Container'),
+    session_id: Optional[str] = Form(default=None),
+    raw_text: Optional[str] = Form(default=None),
+    raw_filename: Optional[str] = Form(default='security_policy.txt'),
+    urls: Optional[str] = Form(default=None),
+    files: List[UploadFile] = File(default=[])
+):
+    """
+    Ingest documents into a Knowledge Container for Red Team Arena testing.
+    Supports file uploads (PDF, DOCX, TXT, CSV), raw pasted text, and URLs.
+    """
+    import io
+    from starlette.datastructures import UploadFile as StarletteUploadFile
+    from app.api.adapters import UploadFileList
+    from app.services.document_service import get_document_service
+
+    sid = session_id or ('kc_' + str(uuid.uuid4())[:8])
+    file_objs = list(files) if files else []
+
+    if raw_text and raw_text.strip():
+        text_bytes = raw_text.strip().encode('utf-8')
+        spool = io.BytesIO(text_bytes)
+        fname = raw_filename or 'security_document.txt'
+        if not fname.endswith(('.txt', '.md', '.json', '.csv')):
+            fname += '.txt'
+        text_upload = StarletteUploadFile(file=spool, filename=fname, headers={'content-type': 'text/plain'})
+        file_objs.append(text_upload)
+
+    parsed_urls = []
+    if urls:
+        try:
+            parsed_urls = json.loads(urls) if urls.startswith('[') else [u.strip() for u in urls.split(',') if u.strip()]
+        except Exception:
+            parsed_urls = [urls.strip()]
+
+    file_list = UploadFileList(file_objs)
+    if not file_list and not parsed_urls:
+        raise HTTPException(400, "Please select a file to upload or enter text/URLs to ingest.")
+
+    doc_service = get_document_service()
+    res = doc_service.process_files_and_urls(
+        file_list, parsed_urls, sid, is_new_container=True, is_trial=True
+    )
+    filenames = [f.filename for f in file_objs if getattr(f, 'filename', None)]
+    return {
+        "status": "success",
+        "container_id": sid,
+        "name": container_name,
+        "filenames": filenames,
+        "message": f"Successfully ingested {len(filenames)} document(s) into container '{container_name}'.",
+        "details": res
+    }
+
 
 
 

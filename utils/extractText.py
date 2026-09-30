@@ -644,13 +644,18 @@ def get_text_from_files(files: List[FileStorage], user_session: str) -> Tuple[Li
         
         return all_documents, file_infos
     
-    # Run async function synchronously
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    # Run async function synchronously safely
     try:
-        return loop.run_until_complete(_async_extract())
-    finally:
-        loop.close()
+        import nest_asyncio
+        nest_asyncio.apply()
+    except Exception:
+        pass
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    return loop.run_until_complete(_async_extract())
 
 # Standalone usage support
 async def extract_from_path(file_path: str) -> Dict[str, Any]:

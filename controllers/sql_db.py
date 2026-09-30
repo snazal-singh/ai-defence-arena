@@ -418,7 +418,8 @@ def delete_sql_database(user_session: str) -> bool:
         base_engine = create_engine(
             f"{MYSQL_CONFIG['drivername']}://"
             f"{MYSQL_CONFIG['username']}:{MYSQL_CONFIG['password']}"
-            f"@{MYSQL_CONFIG['host']}:{MYSQL_CONFIG['port']}/"
+            f"@{MYSQL_CONFIG['host']}:{MYSQL_CONFIG['port']}/",
+            connect_args={"connect_timeout": 1}
         )
         with base_engine.connect() as conn:
             conn.execute(text(f"DROP DATABASE IF EXISTS {sanitized_db}"))

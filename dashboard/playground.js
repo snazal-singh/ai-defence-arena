@@ -1,7 +1,7 @@
 'use strict';
 /* ============================================================
    icarKno™ – Security Arena Playground Logic
-   Universal Pluggable Red Team Playground + Real-Time Telemetry
+   Universal Pluggable Red Team Playground + Ingestion + Telemetry
    ============================================================ */
 
 const API = '/api/v1/redteam';
@@ -25,6 +25,8 @@ let state = {
   botEndpoint: localStorage.getItem('sachet_pg_endpoint') || '/api/v1/redteam/ask',
   messageField: localStorage.getItem('sachet_pg_field') || 'message',
   sessionId: localStorage.getItem('sachet_pg_session_id') || 'pg_' + Math.random().toString(36).slice(2, 9),
+  containers: JSON.parse(localStorage.getItem('sachet_pg_containers') || '[{"id":"sec_sandbox","name":"Security Sandbox Document","files":[]}]'),
+  activeContainerId: localStorage.getItem('sachet_pg_active_container') || 'sec_sandbox',
   isSending: false,
   streamSource: null,
   cursor: 0,
@@ -99,12 +101,17 @@ async function sendQuery(promptText) {
   let aiResponseText = '';
   let wasBlocked = false;
 
+  const activeContainer = state.containers.find(c => c.id === state.activeContainerId);
+  const targetSession = state.activeContainerId || state.sessionId;
+  const filenames = (activeContainer && activeContainer.files) ? activeContainer.files : [];
+
   try {
     const payload = {
       message: promptText,
       prompt: promptText,
-      sessionId: state.sessionId,
-      fingerprint: state.sessionId,
+      sessionId: targetSession,
+      fingerprint: targetSession,
+      filenames: filenames,
     };
     payload[state.messageField] = promptText;
 
@@ -112,7 +119,7 @@ async function sendQuery(promptText) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Redteam-Session': state.sessionId,
+        'X-Redteam-Session': targetSession,
       },
       credentials: 'include',
       body: JSON.stringify(payload)
@@ -124,7 +131,7 @@ async function sendQuery(promptText) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Redteam-Session': state.sessionId,
+          'X-Redteam-Session': targetSession,
         },
         credentials: 'include',
         body: JSON.stringify(payload)
@@ -158,7 +165,6 @@ async function sendQuery(promptText) {
     $('chat-input').focus();
   }
 }
-
 
 async function logExternalAttempt(prompt, response, latencyMs, blocked) {
   try {
@@ -392,6 +398,128 @@ function openEventInspector(event) {
   $('modal-event-detail').showModal();
 }
 
+/* ─── KNOWLEDGE CONTAINERS MANAGEMENT ────────────────────────── */
+function renderContainers() {
+  const container = $('sidebar-containers');
+  if (!container) return;
+  container.replaceChildren();
+
+  for (const c of state.containers) {
+    const card = document.createElement('div');
+    const isActive = c.id === state.activeContainerId;
+    card.className = 'ik-container-card' + (isActive ? ' active' : '');
+    card.innerHTML = `
+      <span class="ik-caret">›</span>
+      <span class="ik-container-label" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</span>
+      <span class="ik-more-options">⋮</span>
+    `;
+    card.onclick = () => selectContainer(c.id);
+    container.append(card);
+  }
+}
+
+function selectContainer(containerId) {
+  state.activeContainerId = containerId;
+  localStorage.setItem('sachet_pg_active_container', containerId);
+  renderContainers();
+
+  const c = state.containers.find(x => x.id === containerId);
+  if (c) {
+    appendMessage('ai', `Switched active container to: <b>${escapeHtml(c.name)}</b> (${(c.files || []).length} document(s)). All queries and attack probes will now target this container.`);
+  }
+}
+
+function initContainerModal() {
+  const btnNew = $('btn-new-container');
+  const modal = $('modal-container');
+  const fileInput = $('input-container-files');
+  const fileLabel = $('selected-files-label');
+  const form = $('form-container');
+  const btnSubmit = $('btn-submit-container');
+
+  if (btnNew && modal) {
+    btnNew.onclick = () => {
+      $('input-container-name').value = `Knowledge Container ${state.containers.length + 1}`;
+      if (fileInput) fileInput.value = '';
+      if (fileLabel) fileLabel.textContent = 'No files selected';
+      if ($('input-raw-text')) $('input-raw-text').value = '';
+      modal.showModal();
+    };
+  }
+
+  if (fileInput && fileLabel) {
+    fileInput.onchange = () => {
+      const count = fileInput.files.length;
+      if (count === 0) {
+        fileLabel.textContent = 'No files selected';
+      } else if (count === 1) {
+        fileLabel.textContent = `Selected: ${fileInput.files[0].name}`;
+      } else {
+        fileLabel.textContent = `Selected ${count} files: ` + Array.from(fileInput.files).map(f => f.name).slice(0, 3).join(', ') + (count > 3 ? '…' : '');
+      }
+    };
+  }
+
+  if (form) {
+    form.onsubmit = async ev => {
+      ev.preventDefault();
+      const name = $('input-container-name').value.trim() || 'New Knowledge Container';
+      const rawText = $('input-raw-text') ? $('input-raw-text').value.trim() : '';
+      const files = fileInput ? fileInput.files : [];
+
+      if (files.length === 0 && !rawText) {
+        alert('Please choose at least one file to upload or enter text in the box to ingest.');
+        return;
+      }
+
+      const origText = btnSubmit.textContent;
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Ingesting into RAG database…';
+
+      try {
+        const formData = new FormData();
+        formData.append('container_name', name);
+        formData.append('session_id', 'kc_' + Math.random().toString(36).slice(2, 9));
+        if (rawText) formData.append('raw_text', rawText);
+
+        for (let i = 0; i < files.length; i++) {
+          formData.append('files', files[i]);
+        }
+
+        const res = await fetch('/api/v1/redteam/container', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const newContainer = {
+            id: data.container_id,
+            name: data.name || name,
+            files: data.filenames || [],
+          };
+          state.containers.push(newContainer);
+          localStorage.setItem('sachet_pg_containers', JSON.stringify(state.containers));
+          state.activeContainerId = newContainer.id;
+          localStorage.setItem('sachet_pg_active_container', newContainer.id);
+          renderContainers();
+
+          modal.close();
+          appendMessage('ai', `📁 <b>${escapeHtml(newContainer.name)}</b> created and indexed successfully with ${newContainer.files.length || 1} document(s). You can now ask questions or launch RAG security probes against this container.`);
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          alert('Ingestion failed: ' + (errData.detail || errData.message || res.statusText));
+        }
+      } catch (err) {
+        alert('Ingestion connection error: ' + err.message);
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = origText;
+      }
+    };
+  }
+}
+
 /* ─── SIDEBAR & OBJECTIVES RENDERING ─────────────────────────── */
 function renderSidebarObjectives() {
   const container = $('sidebar-objectives');
@@ -603,8 +731,10 @@ function initChatForm() {
 
 // Boot
 updateHUD();
+renderContainers();
 renderSidebarObjectives();
 initModals();
+initContainerModal();
 initAttackChips();
 initInterfaceToggles();
 initChatForm();
