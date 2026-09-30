@@ -103,7 +103,8 @@
 
   // --- State ---
   const state = {
-    visitorId: 'VISITOR-' + Math.floor(100 + Math.random() * 900),
+    contestantName: '',
+    visitorId: 'CONTESTANT',
     sessionId: 'kiosk-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6),
     currentLevel: 1,
     score: 0,
@@ -116,6 +117,7 @@
     carouselIndex: 0,
     chipIndex: 0,
     isScanning: false,
+    probeHistory: [],
     stats: {
       challengesToday: 247,
       attempts: 89,
@@ -172,7 +174,26 @@
     statDefended: document.getElementById('stat-defended'),
     statBypasses: document.getElementById('stat-bypasses'),
     statDefenseRate: document.getElementById('stat-defense-rate'),
-    attractCarousel: document.getElementById('attract-carousel')
+    attractCarousel: document.getElementById('attract-carousel'),
+    // Contestant Registration & Flow Elements
+    modalContestant: document.getElementById('modal-contestant'),
+    formContestantRegister: document.getElementById('form-contestant-register'),
+    inputContestantName: document.getElementById('input-contestant-name'),
+    btnContestantAnon: document.getElementById('btn-contestant-anon'),
+    btnEditName: document.getElementById('btn-edit-name'),
+    btnSidebarFinish: document.getElementById('btn-sidebar-finish'),
+    btnContinueAttack: document.getElementById('btn-continue-attack'),
+    btnStopAndFinish: document.getElementById('btn-stop-and-finish'),
+    // Final Results Scorecard Elements
+    modalFinalResults: document.getElementById('modal-final-results'),
+    finalContestantName: document.getElementById('final-contestant-name'),
+    finalVerdictSummary: document.getElementById('final-verdict-summary'),
+    finalScore: document.getElementById('final-score'),
+    finalAttempts: document.getElementById('final-attempts'),
+    finalBreaks: document.getElementById('final-breaks'),
+    finalDefenseRate: document.getElementById('final-defense-rate'),
+    finalRecapList: document.getElementById('final-recap-list'),
+    btnNextContestant: document.getElementById('btn-next-contestant')
   };
 
   // --- 1. Ambient Cyber Canvas Animation ---
@@ -332,6 +353,48 @@
     el.viewAttract.classList.add('active');
     startAttractCarousel();
     fetchBackendSnapshot();
+  }
+
+  function handleStartChallengeClick() {
+    if (!state.contestantName) {
+      if (el.modalContestant) {
+        el.modalContestant.classList.add('active');
+        if (el.inputContestantName) {
+          el.inputContestantName.value = '';
+          el.inputContestantName.focus();
+        }
+      } else {
+        enterArenaMode();
+      }
+    } else {
+      enterArenaMode();
+    }
+  }
+
+  function handleContestantRegister(e) {
+    if (e) e.preventDefault();
+    const name = (el.inputContestantName ? el.inputContestantName.value : '').trim();
+    setContestantName(name || ('Contestant-' + Math.floor(100 + Math.random() * 900)));
+    if (el.modalContestant) el.modalContestant.classList.remove('active');
+    enterArenaMode();
+  }
+
+  function setContestantName(name) {
+    state.contestantName = name;
+    state.visitorId = name;
+    if (el.navAgentId) el.navAgentId.textContent = name;
+    if (el.sidebarVisitorTag) el.sidebarVisitorTag.textContent = name;
+
+    // Register official session in backend store with contestant nickname
+    fetch('/api/v1/redteam/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nickname: name,
+        challenge_id: state.activeCategory.id,
+        reset: false
+      })
+    }).catch(() => {});
   }
 
   function enterArenaMode() {
@@ -655,6 +718,17 @@
     }
     updateScorecard();
 
+    // Record probe into contestant session history
+    state.probeHistory.push({
+      prompt: promptText,
+      category: classification,
+      isBypass: isBypass,
+      points: pointsAwarded,
+      threatScore: Math.floor(75 + Math.random() * 20),
+      latency: latencySec + 's',
+      responseText: responseText
+    });
+
     // Add to live feed
     addFeedItem(state.visitorId, classification, isBypass ? 'SUCCESS' : 'BLOCKED');
 
@@ -706,17 +780,79 @@
     resetIdleTimer();
   }
 
-  // --- 9. Session Reset & Fullscreen ---
-  function resetSession() {
-    state.visitorId = 'VISITOR-' + Math.floor(100 + Math.random() * 900);
+  // --- 9. Final Results Scorecard Display & Next Contestant Reset ---
+  function showFinalResults() {
+    hideVerdictModal();
+    if (!el.modalFinalResults) return;
+
+    const contestantDisplay = state.contestantName || state.visitorId || 'CONTESTANT';
+    el.finalContestantName.textContent = `CONTESTANT: ${contestantDisplay}`;
+    el.finalScore.textContent = state.score;
+    el.finalAttempts.textContent = state.attempts;
+    el.finalBreaks.textContent = state.breaks;
+
+    const rate = state.attempts > 0 
+      ? (((state.attempts - state.breaks) / state.attempts) * 100).toFixed(1) + '%' 
+      : '100%';
+    el.finalDefenseRate.textContent = rate;
+
+    if (state.breaks > 0) {
+      el.finalVerdictSummary.textContent = `⚡ “VULNERABILITY DISCOVERED! You broke our AI guardrails ${state.breaks} time(s) with ${state.score} bounty points!”`;
+    } else {
+      el.finalVerdictSummary.textContent = `🛡️ “AI DEFENSE STOOD STRONG! The model successfully survived all ${state.attempts} of your attack attempts.”`;
+    }
+
+    // Populate attack recap list
+    if (el.finalRecapList) {
+      el.finalRecapList.innerHTML = '';
+      if (state.probeHistory.length === 0) {
+        el.finalRecapList.innerHTML = '<div style="color:#64748b;font-size:0.75rem;padding:8px;text-align:center;">No attack probes recorded in this session.</div>';
+      } else {
+        state.probeHistory.forEach((p, idx) => {
+          const item = document.createElement('div');
+          item.className = 'final-recap-item';
+          item.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;max-width:70%;">
+              <span style="color:#06b6d4;font-weight:700;">#${idx + 1}</span>
+              <span class="recap-prompt-snippet" title="${p.prompt}">“${p.prompt}”</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="color:#94a3b8;font-size:0.68rem;">${p.category}</span>
+              <span class="recap-verdict-badge ${p.isBypass ? 'breach' : 'blocked'}">
+                ${p.isBypass ? `⚡ BYPASS (+${p.points} PTS)` : '🛡️ DEFENDED (0 PTS)'}
+              </span>
+            </div>
+          `;
+          el.finalRecapList.appendChild(item);
+        });
+      }
+    }
+
+    el.modalFinalResults.classList.add('active');
+  }
+
+  function hideFinalResults() {
+    if (el.modalFinalResults) {
+      el.modalFinalResults.classList.remove('active');
+    }
+  }
+
+  function resetForNextContestant() {
+    hideFinalResults();
+    hideVerdictModal();
+    if (el.modalContestant) el.modalContestant.classList.remove('active');
+
+    state.contestantName = '';
+    state.visitorId = 'ENTER NAME';
     state.sessionId = 'kiosk-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
     state.score = 0;
     state.attempts = 0;
     state.breaks = 0;
     state.currentLevel = 1;
+    state.probeHistory = [];
 
-    el.navAgentId.textContent = state.visitorId;
-    el.sidebarVisitorTag.textContent = state.visitorId;
+    el.navAgentId.textContent = 'ENTER NAME';
+    el.sidebarVisitorTag.textContent = 'NOT REGISTERED';
     el.inputAttackPrompt.value = '';
     selectCategory(ATTACK_CATEGORIES[0]);
     updateScorecard();
@@ -748,7 +884,31 @@
 
     // Event Listeners
     if (el.btnStartChallenge) {
-      el.btnStartChallenge.addEventListener('click', enterArenaMode);
+      el.btnStartChallenge.addEventListener('click', handleStartChallengeClick);
+    }
+
+    if (el.formContestantRegister) {
+      el.formContestantRegister.addEventListener('submit', handleContestantRegister);
+    }
+
+    if (el.btnContestantAnon) {
+      el.btnContestantAnon.addEventListener('click', () => {
+        setContestantName('Anonymous-' + Math.floor(100 + Math.random() * 900));
+        if (el.modalContestant) el.modalContestant.classList.remove('active');
+        enterArenaMode();
+      });
+    }
+
+    if (el.btnEditName) {
+      el.btnEditName.addEventListener('click', () => {
+        if (el.modalContestant) {
+          el.modalContestant.classList.add('active');
+          if (el.inputContestantName) {
+            el.inputContestantName.value = state.contestantName || '';
+            el.inputContestantName.focus();
+          }
+        }
+      });
     }
 
     if (el.btnRotateChips) {
@@ -760,11 +920,32 @@
     }
 
     if (el.btnResetSession) {
-      el.btnResetSession.addEventListener('click', resetSession);
+      el.btnResetSession.addEventListener('click', resetForNextContestant);
     }
 
     if (el.btnFullscreen) {
       el.btnFullscreen.addEventListener('click', toggleFullscreen);
+    }
+
+    // Continue attacking vs Stop & View Final Results
+    if (el.btnContinueAttack) {
+      el.btnContinueAttack.addEventListener('click', () => {
+        hideVerdictModal();
+        el.inputAttackPrompt.value = '';
+        el.inputAttackPrompt.focus();
+      });
+    }
+
+    if (el.btnStopAndFinish) {
+      el.btnStopAndFinish.addEventListener('click', showFinalResults);
+    }
+
+    if (el.btnSidebarFinish) {
+      el.btnSidebarFinish.addEventListener('click', showFinalResults);
+    }
+
+    if (el.btnNextContestant) {
+      el.btnNextContestant.addEventListener('click', resetForNextContestant);
     }
 
     if (el.btnTryAgain) {

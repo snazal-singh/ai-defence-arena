@@ -27,8 +27,9 @@
       <span class="kiosk-logo-sub">DEFENSE ARENA</span>
     </div>
     <div class="kiosk-agent-pill" id="agent-pill">
-      <span class="pill-label">CHALLENGER:</span>
-      <span class="pill-value" id="nav-agent-id">AGENT-714</span>
+      <span class="pill-label">CONTESTANT:</span>
+      <span class="pill-value" id="nav-agent-id">ENTER NAME</span>
+      <button class="pill-edit-name-btn" id="btn-edit-name" title="Change Contestant Name">✏️</button>
     </div>
   </div>
 
@@ -54,6 +55,39 @@
     </button>
   </div>
 </header>
+
+<!-- ================= CONTESTANT REGISTRATION MODAL ================= -->
+<div class="contestant-modal" id="modal-contestant">
+  <div class="contestant-modal-card">
+    <div class="cyber-modal-badge">STALL / EXHIBITION REGISTRATION</div>
+    <h2 class="contestant-modal-title">WHO IS CHALLENGING OUR AI?</h2>
+    <p class="contestant-modal-desc">Enter your name or team handle to log your attack results on the official exhibition leaderboard.</p>
+    
+    <form id="form-contestant-register">
+      <div class="contestant-input-wrapper">
+        <span class="c-input-icon">👤</span>
+        <input 
+          type="text" 
+          id="input-contestant-name" 
+          class="contestant-name-input" 
+          placeholder="Enter your name (e.g. Rohan, Sarah, CyberSam)..." 
+          maxlength="24" 
+          required 
+          autocomplete="off">
+      </div>
+      
+      <div class="contestant-modal-actions">
+        <button type="submit" class="btn-contestant-enter" id="btn-submit-contestant">
+          <span>ENTER CHALLENGE ARENA</span>
+          <span>⚡</span>
+        </button>
+        <button type="button" class="btn-contestant-anon" id="btn-contestant-anon">
+          Play as Anonymous
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- ================= STAGE 1: IDLE BILLBOARD / ATTRACT MODE ================= -->
 <section class="kiosk-view attract-mode active" id="view-attract">
@@ -269,6 +303,11 @@
               <div class="progress-bar-fill" id="breach-fill" style="width:0%"></div>
             </div>
           </div>
+
+          <!-- Finish Challenge Button -->
+          <button class="btn-finish-challenge" id="btn-sidebar-finish" title="Finish your challenge run and see official scorecard">
+            <span>🏁 Finish & View Final Results</span>
+          </button>
         </div>
 
         <!-- Live Activity Ticker Feed (Animated stream) -->
@@ -390,22 +429,71 @@
       Guardrail boundaries held firm. No compliance or disclosure indicators detected.
     </div>
 
-    <!-- Modal Action Buttons -->
+    <!-- Modal Action Buttons: Continue vs Stop & View Final Results -->
     <div class="verdict-actions">
-      <button class="btn-verdict-action primary" id="btn-try-again">
-        ⚡ TRY ANOTHER ATTACK
+      <button class="btn-verdict-action primary" id="btn-continue-attack">
+        ⚡ CONTINUE ATTACKING
       </button>
-      <button class="btn-verdict-action" id="btn-next-level">
-        🏆 NEXT LEVEL →
+      <button class="btn-verdict-action highlight-finish" id="btn-stop-and-finish">
+        🏁 STOP & VIEW FINAL RESULTS
       </button>
       <a href="/arena/playground" target="_blank" class="btn-verdict-action secondary">
         💬 OPEN FULL RAG CHATBOT ↗
       </a>
       <a href="/arena" target="_blank" class="btn-verdict-action tertiary">
-        📊 VIEW TECHNICAL SECURITY LOGS ↗
+        🏆 LIVE LEADERBOARD ↗
       </a>
     </div>
 
+  </div>
+</div>
+
+<!-- ================= STAGE 5: FINAL CONTESTANT PERFORMANCE SCORECARD ================= -->
+<div class="final-results-modal" id="modal-final-results">
+  <div class="final-results-card" id="final-results-card">
+    <div class="final-badge">EXHIBITION CHALLENGE COMPLETE</div>
+    <div class="final-trophy-icon" id="final-trophy-icon">🏆</div>
+    <h2 class="final-contestant-title" id="final-contestant-name">CONTESTANT: PARTICIPANT</h2>
+    <p class="final-verdict-summary" id="final-verdict-summary">“AI Defense Stood Strong — You challenged our model with 3 probes!”</p>
+    
+    <div class="final-stats-grid">
+      <div class="f-stat-card">
+        <span class="f-stat-num" id="final-score">0</span>
+        <span class="f-stat-label">FINAL BOUNTY PTS</span>
+      </div>
+      <div class="f-stat-card">
+        <span class="f-stat-num" id="final-attempts">0</span>
+        <span class="f-stat-label">TOTAL PROBES</span>
+      </div>
+      <div class="f-stat-card highlight-coral">
+        <span class="f-stat-num" id="final-breaks">0</span>
+        <span class="f-stat-label">SUCCESSFUL BREAKS</span>
+      </div>
+      <div class="f-stat-card highlight-cyan">
+        <span class="f-stat-num" id="final-defense-rate">100%</span>
+        <span class="f-stat-label">AI DEFENSE RATE</span>
+      </div>
+    </div>
+
+    <!-- Attack History Recap for Contestant -->
+    <div class="final-recap-box">
+      <div class="final-recap-title">YOUR ATTACK PROBE LOG:</div>
+      <div class="final-recap-list" id="final-recap-list">
+        <!-- Dynamically populated list of probes -->
+      </div>
+    </div>
+
+    <div class="final-actions">
+      <button class="btn-final-action primary" id="btn-next-contestant">
+        ↺ NEXT CONTESTANT (RESET ARENA)
+      </button>
+      <a href="/arena" target="_blank" class="btn-final-action secondary">
+        🏆 VIEW LIVE LEADERBOARD ↗
+      </a>
+      <a href="/arena/playground" target="_blank" class="btn-final-action tertiary">
+        💬 OPEN FULL RAG CHATBOT ↗
+      </a>
+    </div>
   </div>
 </div>
 
