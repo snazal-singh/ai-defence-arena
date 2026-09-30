@@ -630,19 +630,15 @@
     // 1. Render Right Sidebar Compact List
     if (el.kioskLeaderboardList) {
       el.kioskLeaderboardList.innerHTML = '';
-      rows.slice(0, 6).forEach((row, idx) => {
+      rows.slice(0, 8).forEach((row, idx) => {
         const isYou = currentName && (row.participant_name || '').toLowerCase() === currentName.toLowerCase();
         const item = document.createElement('div');
         item.className = 'klb-row' + (isYou ? ' is-you' : '');
-        const promptText = row.prompt || 'Adversarial probe query';
         item.innerHTML = `
           <div class="klb-col-name">
             <span class="klb-rank">#${String(idx + 1).padStart(2, '0')}</span>
             <strong class="klb-name-text">${escapeHtml(row.participant_name || 'Anonymous')}</strong>
             ${isYou ? '<span class="klb-you-chip">YOU</span>' : ''}
-          </div>
-          <div class="klb-col-prompt" title="${escapeHtml(promptText)}">
-            “${escapeHtml(promptText)}”
           </div>
           <div class="klb-col-pts ${(row.points || 0) > 0 ? 'has-bounty' : 'zero-pts'}">
             <strong>${row.points || 0}</strong><small>PTS</small>
@@ -652,22 +648,18 @@
       });
     }
 
-    // 2. Render Full Modal Rows (ONLY Participant Name, Entered Prompt, Bounty Points)
+    // 2. Render Full Modal Rows (ONLY Participant Name and Bounty Points)
     if (el.lbModalRows) {
       el.lbModalRows.innerHTML = '';
-      rows.slice(0, 20).forEach((row, idx) => {
+      rows.slice(0, 25).forEach((row, idx) => {
         const isYou = currentName && (row.participant_name || '').toLowerCase() === currentName.toLowerCase();
         const item = document.createElement('div');
         item.className = 'lb-modal-row' + (isYou ? ' is-you' : '');
-        const promptText = row.prompt || 'Adversarial probe query';
         item.innerHTML = `
           <div class="lbm-col-name">
             <span class="lbm-rank">#${String(idx + 1).padStart(2, '0')}</span>
             <strong class="lbm-name-text">${escapeHtml(row.participant_name || 'Anonymous')}</strong>
             ${isYou ? '<span class="lbm-you-chip">YOU</span>' : ''}
-          </div>
-          <div class="lbm-col-prompt">
-            <div class="lbm-prompt-box">“${escapeHtml(promptText)}”</div>
           </div>
           <div class="lbm-col-points ${(row.points || 0) > 0 ? 'has-bounty' : 'zero-pts'}">
             <span class="lbm-pts-val">${row.points || 0}</span>

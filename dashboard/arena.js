@@ -434,20 +434,13 @@ function renderLeaders(rows) {
       node('strong', row.participant_name || 'Anonymous', 'participant-title')
     );
 
-    // 2. Entered Prompt column
-    const promptText = row.prompt || 'Adversarial probe query';
-    const promptCol = node('div', null, 'leader-col-prompt');
-    const promptBubble = node('span', `“${promptText}”`, 'prompt-quote');
-    promptBubble.title = promptText;
-    promptCol.append(promptBubble);
-
-    // 3. Bounty Points column
+    // 2. Bounty Points column
     const ptsCol = node('div', null, 'leader-col-points');
     const ptsNum = node('span', format(row.points || 0), 'bounty-val' + ((row.points || 0) > 0 ? ' has-bounty' : ' zero-pts'));
     const ptsLbl = node('small', 'PTS', 'bounty-lbl');
     ptsCol.append(ptsNum, ptsLbl);
 
-    el.append(nameCol, promptCol, ptsCol);
+    el.append(nameCol, ptsCol);
     $('leaderboard').append(el);
   }
 }
