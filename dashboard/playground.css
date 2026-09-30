@@ -1053,6 +1053,121 @@ body {
   color: var(--coral-text);
 }
 
+/* Contestant Scorecard */
+.ik-contestant-card {
+  border-color: #cbd5e1;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+.ik-contestant-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ik-contestant-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 6px rgba(20, 184, 166, 0.25);
+  flex-shrink: 0;
+}
+.ik-contestant-meta {
+  flex: 1;
+  min-width: 0;
+}
+.ik-contestant-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ik-contestant-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ik-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ik-edit-name-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.ik-edit-name-btn:hover {
+  color: var(--ik-teal);
+  background: rgba(0,0,0,0.05);
+}
+.ik-contestant-rank {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0d9488;
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+
+/* Bounty Score Banner */
+.ik-score-banner {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+.ik-score-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #94a3b8;
+}
+.ik-score-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #34d399;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.ik-score-value small {
+  font-size: 11px;
+  color: #a7f3d0;
+  font-weight: 600;
+}
+
+/* Leaderboard Highlight for Current Player */
+.ik-lead-row.is-you {
+  border: 1.5px solid #14b8a6;
+  background: #f0fdfa;
+}
+.ik-lead-row.is-you .ik-lead-name {
+  color: #0f766e;
+  font-weight: 700;
+}
+.ik-you-tag {
+  font-size: 9px;
+  font-weight: 800;
+  background: #14b8a6;
+  color: #ffffff;
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 6px;
+  letter-spacing: 0.4px;
+}
+
 .ik-posture-rate-row {
   display: flex;
   align-items: baseline;

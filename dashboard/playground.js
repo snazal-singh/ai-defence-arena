@@ -20,7 +20,7 @@ const CHALLENGE_MAP = Object.fromEntries(CHALLENGES.map(c => [c.id, c.title]));
 
 // App state
 let state = {
-  challengerName: localStorage.getItem('sachet_pg_name') || 'Marie',
+  challengerName: localStorage.getItem('sachet_pg_name') || 'singhsnazal',
   currentObjective: localStorage.getItem('sachet_pg_obj') || 'open',
   botEndpoint: localStorage.getItem('sachet_pg_endpoint') || '/api/v1/redteam/ask',
   messageField: localStorage.getItem('sachet_pg_field') || 'message',
@@ -181,10 +181,8 @@ async function sendQuery(promptText) {
     removeLoadingMessage();
     appendMessage('ai', aiResponseText, false, contextData);
 
-    // If querying an external bot target, send telemetry to universal logger
-    if (state.botEndpoint !== '/api/v1/ask' && state.botEndpoint !== '/api/v1/trial-ask' && state.botEndpoint !== '/api/v1/redteam/ask') {
-      logExternalAttempt(promptText, aiResponseText, elapsedMs, wasBlocked);
-    }
+    // ALWAYS submit telemetry for this contestant so their live scorecard, points, and attacks update dynamically!
+    logAttempt(promptText, aiResponseText, elapsedMs, wasBlocked);
 
   } catch (err) {
     removeLoadingMessage();
@@ -196,9 +194,9 @@ async function sendQuery(promptText) {
   }
 }
 
-async function logExternalAttempt(prompt, response, latencyMs, blocked) {
+async function logAttempt(prompt, response, latencyMs, blocked) {
   try {
-    await fetch('/api/v1/redteam/log', {
+    const res = await fetch('/api/v1/redteam/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -210,6 +208,9 @@ async function logExternalAttempt(prompt, response, latencyMs, blocked) {
         blocked: blocked
       })
     });
+    if (res.ok) {
+      setTimeout(loadSnapshot, 120);
+    }
   } catch {}
 }
 
@@ -244,36 +245,57 @@ async function loadSnapshot() {
 }
 
 function renderSnapshot(snap) {
-  const s = snap.stats || {};
+  const allEvents = snap.events || [];
+  const currentName = (state.challengerName || 'singhsnazal').toLowerCase().trim();
+  const rawLeaderboard = snap.leaderboard || [];
 
-  // Posture Card
-  const defRateEl = $('m-defense-rate');
-  if (defRateEl) {
-    defRateEl.textContent = (s.defense_rate != null ? Math.round(s.defense_rate) : 100) + '%';
-  }
-  if ($('m-probes')) $('m-probes').textContent = s.attack_attempts || 0;
-  if ($('m-defended')) $('m-defended').textContent = (s.defended || 0) + (s.blocked || 0);
-  if ($('m-bypasses')) $('m-bypasses').textContent = s.successful || 0;
+  // Filter events sent by THIS active contestant
+  const myEvents = allEvents.filter(e => (e.participant_name || '').toLowerCase().trim() === currentName);
 
-  const postureTag = $('posture-tag');
-  if (postureTag) {
-    if (s.under_attack) {
-      postureTag.textContent = 'UNDER ATTACK';
-      postureTag.className = 'ik-status-chip coral';
-    } else if (s.successful > 0) {
-      postureTag.textContent = 'BYPASS DETECTED';
-      postureTag.className = 'ik-status-chip coral';
-    } else {
-      postureTag.textContent = 'MAX RESILIENCE';
-      postureTag.className = 'ik-status-chip mint';
-    }
+  // Find or construct current contestant's record
+  let myEntry = rawLeaderboard.find(p => (p.participant_name || '').toLowerCase().trim() === currentName);
+  if (!myEntry) {
+    const myAttempts = myEvents.length;
+    const mySuccesses = myEvents.filter(e => e.outcome === 'SUCCESSFUL' || e.outcome === 'PARTIAL').length;
+    const myPoints = myEvents.reduce((acc, ev) => acc + (ev.points || 0), 0);
+    myEntry = {
+      participant_name: state.challengerName,
+      points: myPoints,
+      attempts: myAttempts,
+      successes: mySuccesses,
+    };
   }
 
-  // Feed
-  renderFeed(snap.events || []);
+  // Calculate dynamic stats for THIS contestant
+  const attacksCount = myEntry.attempts || myEvents.length;
+  const bypassesCount = myEntry.successes || myEvents.filter(e => e.outcome === 'SUCCESSFUL' || e.outcome === 'PARTIAL').length;
+  const defendedCount = myEvents.filter(e => e.outcome === 'DEFENDED' || e.outcome === 'BLOCKED').length || Math.max(0, attacksCount - bypassesCount);
+  const pointsCount = myEntry.points != null ? myEntry.points : (bypassesCount * 100);
 
-  // Leaderboard
-  renderLeaderboard(snap.leaderboard || []);
+  // Sorted leaderboard with current contestant guaranteed present
+  const leadList = [...rawLeaderboard];
+  if (!leadList.some(p => (p.participant_name || '').toLowerCase().trim() === currentName)) {
+    leadList.push(myEntry);
+  }
+  leadList.sort((a,b) => (b.points || 0) - (a.points || 0) || (b.successes || 0) - (a.successes || 0) || (b.attempts || 0) - (a.attempts || 0));
+
+  const rankIdx = leadList.findIndex(p => (p.participant_name || '').toLowerCase().trim() === currentName);
+  const rankLabel = rankIdx >= 0 ? `🏆 RANK #${rankIdx + 1}` : '🏆 RANK #1';
+
+  // Update Contestant Scorecard in Right Panel
+  if ($('c-name')) $('c-name').textContent = state.challengerName;
+  if ($('c-avatar')) $('c-avatar').textContent = (state.challengerName.slice(0, 2).toUpperCase() || 'SN');
+  if ($('c-score-pts')) $('c-score-pts').textContent = pointsCount;
+  if ($('c-rank-badge')) $('c-rank-badge').textContent = rankLabel;
+  if ($('m-probes')) $('m-probes').textContent = attacksCount;
+  if ($('m-defended')) $('m-defended').textContent = defendedCount;
+  if ($('m-bypasses')) $('m-bypasses').textContent = bypassesCount;
+
+  // Render Contestant's personal feed
+  renderFeed(myEvents.length > 0 ? myEvents : allEvents, myEvents.length > 0);
+
+  // Render Leaderboard with YOU highlighted
+  renderLeaderboard(leadList);
 
   // Update verdict strip with latest attack if any
   if (snap.latest && snap.latest.attack_detected) {
@@ -281,21 +303,23 @@ function renderSnapshot(snap) {
   }
 }
 
-function renderFeed(events) {
+function renderFeed(events, isPersonal = false) {
   const container = $('pg-feed');
   if (!container) return;
   const attacks = events.filter(e => e.attack_detected).slice(0, 15);
   container.replaceChildren();
 
+  if ($('feed-count')) {
+    $('feed-count').textContent = `${attacks.length} ${attacks.length === 1 ? 'Probe' : 'Probes'}`;
+  }
+
   if (!attacks.length) {
     const empty = document.createElement('div');
     empty.className = 'ik-feed-empty';
-    empty.textContent = 'No attack probes recorded yet. Send one to test!';
+    empty.textContent = `No attack probes recorded yet for ${state.challengerName}. Try sending an attack probe below!`;
     container.append(empty);
     return;
   }
-
-  if ($('feed-count')) $('feed-count').textContent = `${attacks.length} recent`;
 
   for (const ev of attacks) {
     const row = document.createElement('div');
@@ -305,13 +329,14 @@ function renderFeed(events) {
     info.className = 'ik-feed-info';
     info.innerHTML = `
       <span class="ik-feed-cat">${escapeHtml(ev.attack_category)}</span>
-      <span class="ik-feed-sub">${escapeHtml(ev.participant_name || 'Anon')} · ${ev.response_time_ms || 0}ms · ${ev.risk_score || 0}/100</span>
+      <span class="ik-feed-sub">${ev.response_time_ms || 0}ms · Threat: ${ev.risk_score || 0}/100</span>
     `;
 
     const badge = document.createElement('span');
     const outcomeCls = (ev.outcome || 'unknown').toLowerCase();
+    const isBypass = ev.outcome === 'SUCCESSFUL' || ev.outcome === 'PARTIAL';
     badge.className = `ik-feed-badge ${outcomeCls}`;
-    badge.textContent = ev.outcome === 'DEFENDED' ? '🛡️ DEFENDED' : (ev.outcome === 'BLOCKED' ? '⛔ BLOCKED' : ev.outcome);
+    badge.textContent = isBypass ? `💥 BYPASS (+${ev.points || 100} PTS)` : `🛡️ DEFENDED (+0 PTS)`;
 
     row.append(info, badge);
     row.addEventListener('click', () => openEventInspector(ev));
@@ -324,6 +349,8 @@ function renderLeaderboard(leaders) {
   if (!container) return;
   container.replaceChildren();
 
+  const currentName = (state.challengerName || '').toLowerCase().trim();
+
   if (!leaders.length) {
     const empty = document.createElement('div');
     empty.className = 'ik-feed-empty';
@@ -332,9 +359,10 @@ function renderLeaderboard(leaders) {
     return;
   }
 
-  for (const [idx, row] of leaders.slice(0, 8).entries()) {
+  for (const [idx, row] of leaders.slice(0, 10).entries()) {
+    const isYou = (row.participant_name || '').toLowerCase().trim() === currentName;
     const el = document.createElement('div');
-    el.className = 'ik-lead-row';
+    el.className = 'ik-lead-row' + (isYou ? ' is-you' : '');
 
     const rank = document.createElement('span');
     rank.className = 'ik-lead-rank';
@@ -345,18 +373,18 @@ function renderLeaderboard(leaders) {
 
     const name = document.createElement('span');
     name.className = 'ik-lead-name';
-    name.textContent = row.participant_name;
+    name.innerHTML = `${escapeHtml(row.participant_name)}${isYou ? '<span class="ik-you-tag">YOU</span>' : ''}`;
 
     const stats = document.createElement('span');
     stats.className = 'ik-lead-stats';
     const bypassStr = row.successes > 0 ? `${row.successes} bypasses` : '0 bypasses (Defended)';
-    stats.textContent = `${bypassStr} · ${row.attempts} attempts`;
+    stats.textContent = `${bypassStr} · ${row.attempts || 0} attempts`;
 
     info.append(name, stats);
 
     const pts = document.createElement('div');
     pts.className = 'ik-lead-pts';
-    pts.innerHTML = `${row.points}<small>PTS</small>`;
+    pts.innerHTML = `${row.points || 0}<small>PTS</small>`;
 
     el.append(rank, info, pts);
     container.append(el);
@@ -798,10 +826,12 @@ function updateHUD() {
 /* ─── MODALS INITIALIZATION ──────────────────────────────────── */
 function initModals() {
   // Challenger Modal
-  $('btn-edit-challenger').onclick = () => {
+  const openChallengerModal = () => {
     $('input-nickname').value = state.challengerName;
     $('modal-challenger').showModal();
   };
+  if ($('btn-edit-challenger')) $('btn-edit-challenger').onclick = openChallengerModal;
+  if ($('btn-edit-cname')) $('btn-edit-cname').onclick = openChallengerModal;
   $('form-challenger').onsubmit = async ev => {
     ev.preventDefault();
     const newName = $('input-nickname').value.trim();

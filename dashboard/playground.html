@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="/arena/assets/playground.css?v=2.3">
-<script defer src="/arena/assets/playground.js?v=2.3"></script>
+<link rel="stylesheet" href="/arena/assets/playground.css?v=2.4">
+<script defer src="/arena/assets/playground.js?v=2.4"></script>
 </head>
 <body class="ik-theme-light">
 <div class="ik-app-layout">
@@ -98,14 +98,6 @@
       <div class="ik-nav-group">
         <div class="ik-nav-group-title">Containers</div>
         <div class="ik-containers-menu" id="sidebar-containers">
-          <!-- Populated by JS -->
-        </div>
-      </div>
-
-      <!-- Red Team Objectives Section -->
-      <div class="ik-nav-group">
-        <div class="ik-nav-group-title">Attack Objectives</div>
-        <div class="ik-objectives-menu" id="sidebar-objectives">
           <!-- Populated by JS -->
         </div>
       </div>
@@ -221,30 +213,38 @@
       </button>
     </main>
 
-    <!-- RIGHT SLIDE-OUT PANEL: Security Telemetry & Leaderboard -->
+    <!-- RIGHT SLIDE-OUT PANEL: Contestant Telemetry & Results -->
     <aside class="ik-telemetry-sidebar" id="ik-telemetry-panel">
       <div class="ik-tel-header">
         <div class="ik-tel-header-title">
-          <span class="ik-tel-icon">🛡️</span>
-          <h3>Security Telemetry</h3>
+          <span class="ik-tel-icon">🎯</span>
+          <h3>Contestant Results</h3>
         </div>
-        <button class="ik-tel-close-btn" id="btn-close-tel" title="Collapse Telemetry Sidebar">✕</button>
+        <button class="ik-tel-close-btn" id="btn-close-tel" title="Collapse Results Sidebar">✕</button>
       </div>
 
-      <!-- Posture Card -->
-      <div class="ik-tel-card">
-        <div class="ik-tel-card-header">
-          <span class="ik-tel-card-title">DEFENSE POSTURE</span>
-          <span class="ik-status-chip mint" id="posture-tag">MAX RESILIENCE</span>
+      <!-- Contestant Scorecard Card -->
+      <div class="ik-tel-card ik-contestant-card">
+        <div class="ik-contestant-profile-row">
+          <div class="ik-contestant-avatar" id="c-avatar">SN</div>
+          <div class="ik-contestant-meta">
+            <div class="ik-contestant-name-row">
+              <span class="ik-contestant-name" id="c-name">singhsnazal</span>
+              <button class="ik-edit-name-btn" id="btn-edit-cname" title="Change name">✎</button>
+            </div>
+            <div class="ik-contestant-rank" id="c-rank-badge">🏆 RANK #1</div>
+          </div>
         </div>
-        <div class="ik-posture-rate-row">
-          <div class="ik-posture-rate" id="m-defense-rate">100%</div>
-          <div class="ik-posture-rate-sub">DEFENSE RATE</div>
+
+        <div class="ik-score-banner">
+          <div class="ik-score-label">BOUNTY SCORE</div>
+          <div class="ik-score-value"><span id="c-score-pts">0</span> <small>PTS</small></div>
         </div>
+
         <div class="ik-posture-metrics">
           <div class="ik-metric-item">
             <strong id="m-probes">0</strong>
-            <small>PROBES</small>
+            <small>ATTACKS</small>
           </div>
           <div class="ik-metric-item mint">
             <strong id="m-defended">0</strong>
@@ -260,8 +260,8 @@
       <!-- Live Stream Feed Card -->
       <div class="ik-tel-card feed-card">
         <div class="ik-tel-card-header">
-          <span class="ik-tel-card-title">RECENT PROBES</span>
-          <span class="ik-tel-card-sub" id="feed-count">Live</span>
+          <span class="ik-tel-card-title">MY ATTACK RESULTS</span>
+          <span class="ik-tel-card-sub" id="feed-count">0 Probes</span>
         </div>
         <div class="ik-probes-feed-list" id="pg-feed">
           <div class="ik-feed-empty">No attack probes sent yet.</div>
@@ -271,8 +271,8 @@
       <!-- Live CTF Leaderboard Card -->
       <div class="ik-tel-card leaderboard-card">
         <div class="ik-tel-card-header">
-          <span class="ik-tel-card-title">LEADERBOARD</span>
-          <span class="ik-tel-card-sub">Bug Bounty</span>
+          <span class="ik-tel-card-title">ARENA LEADERBOARD</span>
+          <span class="ik-tel-card-sub">Live Standings</span>
         </div>
         <div class="ik-leaderboard-list" id="pg-leaderboard">
           <div class="ik-feed-empty">Loading leaderboard…</div>
