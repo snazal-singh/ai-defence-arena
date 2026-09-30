@@ -1,4 +1,5 @@
 import json
+from app.redteam.instrumentation import capture
 import logging
 import time
 import os
@@ -264,6 +265,8 @@ def ask_stream(
         return JSONResponse(content=response, status_code=status_code)
 
     def generate():
+        final_response = {}
+        stream_status = 500
         try:
             from utils.translation import translate_to_indic
             user_query = query_service._extract_query_parameters(data)
@@ -275,6 +278,8 @@ def ask_stream(
 
             guardrail_response = query_service._guardrail.process_input(user_query["message"])
             if guardrail_response.get("status") == "blocked":
+                final_response = guardrail_response
+                stream_status = 400
                 yield f"data: {json.dumps({'type': 'error', 'content': guardrail_response})}\n\n"
                 return
 
@@ -305,11 +310,17 @@ def ask_stream(
                     content = event.get("content", {})
                     if isinstance(content, dict) and content.get("answer"):
                         content["answer"] = translate_to_indic(content["answer"], out_lang_name)
+                if event.get("type") == "complete":
+                    final_response = event.get("content", {})
+                    stream_status = 200
                 yield f"data: {json.dumps(event)}\n\n"
 
         except Exception as e:
             logger.error(f"SSE streaming error: {e}")
             yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
+
+        finally:
+            capture(message, final_response, stream_status)
 
     return StreamingResponse(
         generate(),

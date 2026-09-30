@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#060a10">
+<meta name="description" content="Join the SACHET AI Red Team Arena. Choose a challenge objective and start testing the AI.">
+<title>Join the AI Red Team Arena · SACHET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/arena/assets/arena.css">
+<script type="module" src="/arena/assets/join.js"></script>
+</head>
+<body>
+<main class="join-shell">
+  <a class="join-brand" href="/arena">⌘ SACHET <b>/</b> SECURITY LAB</a>
+
+  <p class="eyebrow">YOUR CURIOSITY IS THE CHALLENGE</p>
+  <h1>ENTER THE <span class="hero-accent">ARENA</span><span class="accent-dot">.</span></h1>
+  <p class="join-intro">
+    Pick a nickname, choose your attack objective, and head to the chatbot.
+    Every attempt is classified, evaluated, and appears live on the arena dashboard.
+  </p>
+
+  <div class="join-info-strip">
+    <div class="join-info-card">
+      <span class="join-info-icon">🎯</span>
+      <strong>Choose an objective</strong>
+      <span>Each challenge targets a different OWASP LLM Top-10 risk</span>
+    </div>
+    <div class="join-info-card">
+      <span class="join-info-icon">⚔️</span>
+      <strong>Attack the chatbot</strong>
+      <span>Use the hint prompts or craft your own in the chatbot</span>
+    </div>
+    <div class="join-info-card">
+      <span class="join-info-icon">📊</span>
+      <strong>Watch it live</strong>
+      <span>Your attempt appears on the arena dashboard in real time</span>
+    </div>
+    <div class="join-info-card">
+      <span class="join-info-icon">🏆</span>
+      <strong>Earn Bounty Points</strong>
+      <span>DEFENDED 0 PTS (Model Holds) · PARTIAL +50 · BYPASS +100</span>
+    </div>
+  </div>
+
+  <form id="join-form" class="panel join-form">
+    <div id="player-status-badge" style="display:none;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:8px;padding:8px 12px;margin-bottom:14px;align-items:center;justify-content:space-between;gap:8px;font-size:0.85rem;">
+      <span>Currently registered as: <strong id="player-status-name" style="color:#60a5fa;"></strong></span>
+      <button type="button" id="switch-player-btn" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);color:#cbd5e1;border-radius:4px;padding:3px 9px;font-size:0.75rem;cursor:pointer;">Change / New Player</button>
+    </div>
+    <label for="nickname">YOUR CHALLENGER NAME <span>OPTIONAL</span></label>
+    <input type="text" id="nickname" name="nickname" maxlength="24" autocomplete="off" placeholder="e.g. CuriousHuman42" aria-describedby="nickname-hint">
+    <p id="nickname-hint">No personal information. Visible on the public leaderboard. Leave blank for an anonymous name.</p>
+
+    <fieldset class="challenge-picker">
+      <legend>CHOOSE YOUR ATTACK OBJECTIVE</legend>
+      <div id="missions">Loading challenges…</div>
+    </fieldset>
+
+    <button type="submit" id="join-button" disabled>Join the challenge →</button>
+    <p id="join-status" role="status" aria-live="polite"></p>
+  </form>
+
+  <section class="panel participant-progress" id="progress" hidden>
+    <h2>YOUR CHALLENGE PROGRESS</h2>
+    <p id="progress-stats"></p>
+    <div id="progress-events"></div>
+    <a class="continue-link" href="http://localhost:3000/" target="_blank">Open the Chatbot to attack ↗</a>
+  </section>
+
+  <p class="join-note">
+    Already joined? Your identity and score are preserved when you switch objectives.
+    <br>Duplicate prompts and unverified outcomes earn no new points.
+    <br>Return to the connected chatbot in this browser after joining.
+  </p>
+
+  <div class="join-links">
+    <a href="/arena">← Back to arena dashboard</a>
+    <a href="http://localhost:3000/" target="_blank">Open chatbot ↗</a>
+  </div>
+</main>
+</body>
+</html>

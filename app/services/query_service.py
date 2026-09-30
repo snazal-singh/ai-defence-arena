@@ -6,6 +6,7 @@ Updated to use the agent-based approach for more efficient and modular processin
 """
 
 import logging
+from app.redteam.instrumentation import observe_query
 import time
 from typing import Dict, Any, Optional, Tuple
 
@@ -28,6 +29,7 @@ class QueryService:
         self._guardrail = input_guardrail_pipeline()
         self.query_agent = get_query_agent_service()
     
+    @observe_query
     def process_trial_query(self, data: Dict[str, Any]) -> Tuple[Dict[str, Any], int]:
         """
         Process a query from a trial user.
@@ -107,6 +109,7 @@ class QueryService:
         logger.info('--- %s seconds to complete query response ---' % (time.time() - start_time))
         return response, 200
     
+    @observe_query
     def process_authenticated_query(self, data: Dict[str, Any], user_email: str, 
                                   session_name: str, chat_id: str = None) -> Tuple[Dict[str, Any], int]:
         """
@@ -197,6 +200,7 @@ class QueryService:
         logger.info('--- %s seconds to complete query response ---' % (time.time() - start_time))
         return response, 200
     
+    @observe_query
     def process_demo_query(self, data: Dict[str, Any]) -> Tuple[Dict[str, Any], int]:
         """
         Process a demo query for public transport information.

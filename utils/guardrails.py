@@ -187,7 +187,7 @@ class LLMClassifier:
         """
         prompt = self.validation_prompt.format(user_input=user_input)
         response = self._call_llm(prompt).strip().upper()
-        is_malicious = response == "YES"
+        is_malicious = response.startswith("YES") or "YES" in response.split()
         
         if is_malicious:
             logger.warning(f"LLM classified input as potentially harmful: {user_input[:50]}...")

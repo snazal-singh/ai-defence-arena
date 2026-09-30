@@ -10,6 +10,11 @@ from beanie import init_beanie
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from app.redteam.api import mount_arena
+from app.redteam.instrumentation import ArenaObservationMiddleware
+from app.redteam.telemetry import get_telemetry
+from starlette.concurrency import run_in_threadpool
+
 from app.core.config import settings
 from app.core.limiter import limiter
 from app.models.mongo import Fingerprint, UserSession, User
@@ -39,7 +44,16 @@ async def init_db() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    yield
+    try:
+        get_telemetry()
+    except Exception:
+        logger.warning("Arena telemetry unavailable; chatbot continuing")
+    try:
+        yield
+    finally:
+        if get_telemetry.cache_info().currsize:
+            await run_in_threadpool(get_telemetry().close)
+            get_telemetry.cache_clear()
 
 
 app = FastAPI(
@@ -48,6 +62,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+mount_arena(app)
+app.add_middleware(ArenaObservationMiddleware)
 
 # Rate limiter
 app.state.limiter = limiter

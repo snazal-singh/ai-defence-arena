@@ -276,3 +276,18 @@ This project is proprietary software. See [LICENSE](LICENSE) for details.
 <p align="center">
   Made with ❤️ by <a href="https://carnotresearch.com">Carnot Research</a>
 </p>
+
+## AI Red Team Arena
+
+The existing FastAPI backend now serves a separate live security dashboard at **`/arena`**.
+Chatbot routes keep their existing behavior and emit privacy-preserving telemetry. The display
+includes attack detection, evidence-based outcomes, SSE updates/replay, charts, a leaderboard,
+and clearly separated simulation mode.
+
+```bash
+python -m uvicorn main:app --host 127.0.0.1 --port 5000 --env-file .env
+# Dashboard: http://localhost:5000/arena
+```
+
+See [REDTEAM_ARENA.md](REDTEAM_ARENA.md) for setup, nickname integration in the separate chatbot
+frontend, configuration, API/schema contracts, response criteria, simulation, and tests.

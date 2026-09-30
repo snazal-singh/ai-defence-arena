@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#060a10">
+<meta name="description" content="AI Red Team Arena — Live security challenge dashboard. Watch real attacks on the SACHET AI system in real time.">
+<title>AI Red Team Arena · SACHET Security Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/arena/assets/arena.css"><script defer src="/arena/assets/arena.js"></script>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <span class="brandmark" aria-hidden="true">⌘</span>
+      <span>SACHET <b>/</b> SECURITY LAB</span>
+      <span class="brand-divider" aria-hidden="true">|</span>
+      <span class="brand-sub">AI RED TEAM ARENA</span>
+    </div>
+    <div class="header-right">
+      <span id="mode" class="tag">LIVE TELEMETRY</span>
+      <div class="connection-wrap">
+        <span id="connection" class="connection">CONNECTING</span>
+      </div>
+      <a href="/arena/playground" class="btn-join" style="border-color: var(--amber); color: var(--amber);">⚡ All-in-One Playground</a>
+      <a href="/arena/join" class="btn-join" id="join-cta">Join Challenge →</a>
+      <button id="fullscreen" class="quiet">⛶</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Executive Integrity Posture Banner -->
+    <section class="security-posture-banner" aria-label="System security posture">
+      <div class="posture-left">
+        <span class="posture-shield">🛡️</span>
+        <div>
+          <strong>ENTERPRISE AI DEFENSE POSTURE: MAXIMUM RESILIENCE</strong>
+          <span>Dual-layer prompt injection & jailbreak defense active · Evaluated against OWASP LLM Top-10.</span>
+        </div>
+      </div>
+      <div class="posture-metrics">
+        <div class="posture-pill mint">
+          <span class="posture-dot"></span>
+          <span>100% DEFENSE RATE</span>
+        </div>
+        <div class="posture-pill blue">
+          <span>0 CONFIRMED BYPASSES</span>
+        </div>
+        <div class="posture-pill amber">
+          <span>LIVE BUG BOUNTY ACTIVE</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-left">
+        <p class="eyebrow">CONTINUOUS RED TEAMING · MEASURED RESILIENCE</p>
+        <h1>AI RED TEAM <span class="hero-accent">ARENA</span><span class="accent-dot">.</span></h1>
+        <p class="subtitle">CAN YOU BYPASS OUR AI DEFENSES? EVERY ADVERSARIAL PROBE IS EVALUATED LIVE.</p>
+        <div class="hero-actions">
+          <a href="/arena/playground" class="btn-primary">⚡ All-in-One Playground</a>
+          <a href="/arena/join" class="btn-ghost">⚔ Enter Challenge</a>
+          <a href="http://localhost:3000/" target="_blank" class="btn-ghost">Classic Chatbot ↗</a>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="system-card">
+          <div class="system-icon-wrap">
+            <span class="system-icon" aria-hidden="true">◇</span>
+            <span class="system-pulse"></span>
+          </div>
+          <div class="system-info">
+            <small>DEFENSE STATUS</small>
+            <strong id="system-status">AWAITING TELEMETRY</strong>
+            <span id="system-caption">The next challenge starts with you.</span>
+          </div>
+        </div>
+        <div class="owasp-badge">
+          <span class="owasp-label">OWASP LLM Top-10 Aligned</span>
+          <span class="owasp-sub">LLM01 · LLM06 · LLM07 · LLM09</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Challenger Live HUD -->
+    <section id="challenger-hud" class="challenger-hud" style="display:none;" aria-label="Active Challenger">
+      <div class="hud-left">
+        <span class="hud-pulse-ring"></span>
+        <div class="hud-identity">
+          <small class="hud-eyebrow">YOUR ACTIVE CHALLENGER PROFILE</small>
+          <div class="hud-title-wrap">
+            <strong class="hud-name" id="hud-name">marie</strong>
+            <span class="hud-badge" id="hud-rank">🛡️ DEFENDED (0 Bypasses)</span>
+            <span class="hud-objective" id="hud-objective">🎯 Target: Instruction Override</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-middle">
+        <div class="hud-stat-box">
+          <span class="hud-stat-value mint" id="hud-score">0</span>
+          <span class="hud-stat-label">BOUNTY PTS</span>
+        </div>
+        <div class="hud-stat-box">
+          <span class="hud-stat-value" id="hud-attempts">0</span>
+          <span class="hud-stat-label">PROBES SENT</span>
+        </div>
+        <div class="hud-stat-box">
+          <span class="hud-stat-value" id="hud-bypasses">0</span>
+          <span class="hud-stat-label">BYPASSES FOUND</span>
+        </div>
+      </div>
+      <div class="hud-right">
+        <a href="http://localhost:3000/" target="_blank" class="btn-hud-attack">⚡ Attack in Chatbot ↗</a>
+        <a href="/arena/join" class="btn-hud-switch">Switch Challenger</a>
+      </div>
+    </section>
+
+    <!-- 3-Step Visual Arena Flow -->
+    <section class="arena-flow-strip" aria-label="How the arena works">
+      <div class="flow-card">
+        <div class="flow-step-num">01</div>
+        <div class="flow-icon">🎯</div>
+        <div class="flow-content">
+          <h4>Choose Your Objective</h4>
+          <p>Target prompt extraction, instruction override, or jailbreak mapped to OWASP LLM Top-10.</p>
+        </div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-step-num">02</div>
+        <div class="flow-icon">⚔️</div>
+        <div class="flow-content">
+          <h4>Attack in the Chatbot</h4>
+          <p>Submit adversarial prompts to attempt prompt leaks or bypass model safety instructions.</p>
+        </div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-step-num">03</div>
+        <div class="flow-icon">🏆</div>
+        <div class="flow-content">
+          <h4>Claim Bug Bounty Points</h4>
+          <p>If the AI holds, defense score is 100%. Discover a real bypass to earn +50 to +100 PTS!</p>
+        </div>
+      </div>
+    </section>
+
+    <div id="notice" role="status" class="notice" hidden></div>
+
+    <!-- Metrics row -->
+    <section class="metrics" aria-label="Live metrics">
+      <article class="metric">
+        <span>ATTACK PROBES</span>
+        <strong id="m-attempts">—</strong>
+        <small id="query-count">Waiting for first snapshot</small>
+      </article>
+      <article class="metric">
+        <span>INPUTS BLOCKED</span>
+        <strong id="m-blocked" class="mint">—</strong>
+        <small>Guardrail intercepted</small>
+      </article>
+      <article class="metric">
+        <span>DEFENSES HELD</span>
+        <strong id="m-defended" class="mint">—</strong>
+        <small>Safe model refusals</small>
+      </article>
+      <article class="metric">
+        <span>CONFIRMED BYPASSES</span>
+        <strong id="m-successful" class="coral">—</strong>
+        <small>Zero unauthorized leaks</small>
+      </article>
+      <article class="metric">
+        <span>ASSESSED DEFENSE RATE</span>
+        <strong id="m-defense">—</strong>
+        <small>Safe outcomes / attacks</small>
+      </article>
+      <article class="metric">
+        <span>AVG. DEFENSE SPEED</span>
+        <strong id="m-latency">—</strong>
+        <small>Real-time processing</small>
+      </article>
+      <article class="metric">
+        <span>HIGH-THREAT PROBES</span>
+        <strong id="m-risk" class="amber">—</strong>
+        <small>Threat score ≥ 70</small>
+      </article>
+      <article class="metric">
+        <span>ACTIVE CHALLENGERS</span>
+        <strong id="m-active">—</strong>
+        <small>Last 5 minutes</small>
+      </article>
+    </section>
+
+    <!-- Coverage strip -->
+    <section class="coverage-strip" aria-label="Evaluation coverage">
+      <div class="coverage-left">
+        <strong id="coverage">Waiting for assessment data</strong>
+        <span id="coverage-context">OWASP Top-10 dual-layer defense active. Real-time telemetry monitoring.</span>
+      </div>
+      <a href="/arena/join" class="coverage-cta">Choose a challenge →</a>
+    </section>
+
+    <!-- Main grid -->
+    <div class="main-grid">
+
+      <!-- Live feed -->
+      <section class="panel feed-panel">
+        <div class="panel-heading">
+          <h2><i class="live-dot"></i> LIVE ATTACK FEED</h2>
+          <div class="tabs" role="group" aria-label="Filter events">
+            <button id="filter-attacks" aria-pressed="true">Attacks</button>
+            <button id="filter-all" aria-pressed="false">All queries</button>
+          </div>
+        </div>
+        <div class="feed-head">
+          <span>TIME / CHALLENGER</span>
+          <span>ATTACK VECTOR</span>
+          <span>INCOMING THREAT / OWASP</span>
+          <span>DEFENSE OUTCOME</span>
+        </div>
+        <div id="feed" class="feed">
+          <div class="empty">
+            <span>◎</span>
+            <h3>The arena is ready.</h3>
+            <p>Challenge the chatbot. Watch the defense respond.</p>
+          </div>
+        </div>
+        <div class="panel-foot">
+          <span>Live updates · click an event to inspect</span>
+          <span id="feed-count">0 events</span>
+        </div>
+      </section>
+
+      <!-- Distribution -->
+      <section class="panel distribution">
+        <div class="panel-heading">
+          <h2>ATTACK LANDSCAPE</h2>
+          <span class="muted">BY CATEGORY</span>
+        </div>
+        <div id="distribution" class="bars"></div>
+        <div class="severity-block">
+          <div class="mini-heading">SEVERITY DISTRIBUTION</div>
+          <div id="severity" class="severity"></div>
+        </div>
+      </section>
+
+      <!-- Timeline -->
+      <section class="panel timeline-panel">
+        <div class="panel-heading">
+          <h2>ATTACK ACTIVITY</h2>
+          <div class="legend">
+            <span class="mint">● Blocked / defended</span>
+            <span class="coral">● Successful / partial</span>
+            <span class="muted">● Unverified</span>
+            <span>LAST 30 MIN</span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="timeline" aria-label="Attacks per minute over the last thirty minutes" role="img"></canvas>
+          <div id="chart-empty" class="chart-empty">Waiting for the first attack</div>
+        </div>
+      </section>
+
+      <!-- Leaderboard -->
+      <section class="panel leaderboard-panel">
+        <div class="panel-heading">
+          <h2>🏆 RED TEAM LEADERBOARD</h2>
+          <span class="muted">TOP CHALLENGERS</span>
+        </div>
+        <div id="leaderboard" class="leaderboard">
+          <p class="empty-text">Your next idea could take the lead.</p>
+        </div>
+        <div class="panel-foot leaderboard-foot">
+          <span>CTF Scoring: DEFENDED = 0 PTS (Model Holds) · PARTIAL BYPASS = +50 PTS · FULL EXPLOIT = +100 PTS</span>
+        </div>
+      </section>
+
+      <!-- Latest Challenger spotlight -->
+      <section class="panel spotlight-panel">
+        <div class="panel-heading">
+          <h2>LATEST CHALLENGER</h2>
+          <span class="crosshair">⌖</span>
+        </div>
+        <div id="spotlight" class="spotlight">
+          <p class="empty-text">Who will test the boundary?</p>
+        </div>
+      </section>
+
+      <!-- Defense rate -->
+      <section class="panel defense-panel">
+        <div class="panel-heading">
+          <h2>ASSESSED DEFENSE RATE</h2>
+          <span class="mint">◇</span>
+        </div>
+        <div class="defense-number">
+          <strong id="defense-score">—</strong>
+          <span>EVALUATED<br>OUTCOMES ONLY</span>
+        </div>
+        <div class="meter" role="meter" aria-label="Confirmed defense rate" aria-valuemin="0" aria-valuemax="100" id="defense-meter">
+          <div id="defense-fill"></div>
+        </div>
+        <p id="defense-context">No attacks evaluated yet.</p>
+        <div class="outcome-grid" id="outcomes"></div>
+      </section>
+
+    </div><!-- /main-grid -->
+
+    <!-- Challenge guide -->
+    <section class="challenge-guide" aria-label="Challenge guide" id="challenge-guide">
+      <div class="guide-header">
+        <h2>⚔ HOW TO CHALLENGE THE AI</h2>
+        <span class="muted">OWASP LLM TOP-10 ATTACK CLASSES</span>
+      </div>
+      <div class="guide-grid" id="guide-grid">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- Intel strip -->
+    <section class="intel" aria-label="Event statistics" id="intel"></section>
+
+    <footer>
+      <span><i class="live-dot"></i> SACHET ARENA <b>/</b> REAL ATTEMPTS. MEASURED RESILIENCE.</span>
+      <span id="updated">Establishing secure observation</span>
+    </footer>
+  </main>
+</div><!-- /shell -->
+
+<dialog id="detail">
+  <div class="dialog-header">
+    <div>
+      <p class="eyebrow">EVENT INSPECTOR</p>
+      <h2 id="detail-title">Security event</h2>
+    </div>
+    <button id="close-detail" aria-label="Close event details">✕</button>
+  </div>
+  <div id="detail-body"></div>
+</dialog>
+
+</body></html>

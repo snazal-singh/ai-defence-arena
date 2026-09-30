@@ -1,0 +1,7 @@
+# Minimal isolated suite matching the backend's pinned framework.
+fastapi==0.104.1
+pydantic==2.10.4
+slowapi==0.1.9
+# Starlette 0.27 TestClient requires the pre-0.28 HTTPX API.
+httpx==0.27.2
+pytest==8.4.2

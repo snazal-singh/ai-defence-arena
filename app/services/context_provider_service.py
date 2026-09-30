@@ -8,6 +8,7 @@ This module provides context for user queries from different sources:
 """
 
 import logging
+from app.redteam.instrumentation import observe_stage
 import os
 from typing import Dict, Any, List, Optional
 import re
@@ -33,6 +34,7 @@ class ContextProviderService:
         logger.info("Initializing enhanced context provider service")
         self.summary_service = get_summary_service()
         
+    @observe_stage("retrieval")
     def get_document_context(self, user_session: str, user_query: str,
                            chat_context: Optional[Dict[str, Any]] = None) -> str:
         """
