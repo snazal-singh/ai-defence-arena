@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="/arena/assets/playground.css">
-<script defer src="/arena/assets/playground.js"></script>
+<link rel="stylesheet" href="/arena/assets/playground.css?v=2.2">
+<script defer src="/arena/assets/playground.js?v=2.2"></script>
 </head>
 <body class="ik-theme-light">
 <div class="ik-app-layout">
@@ -349,6 +349,8 @@
     </div>
     <div class="ik-modal-detail-content" id="event-detail-body"></div>
   </div>
+</dialog>
+
 <!-- Knowledge Container Ingestion Modal -->
 <dialog id="modal-container" class="ik-modal">
   <div class="ik-modal-dialog ik-modal-wide">
@@ -373,7 +375,12 @@
 
         <div class="ik-paste-section" style="margin-top:14px;">
           <label for="input-raw-text">Or Paste Raw Ground Truth / Confidential Policy Text:</label>
-          <textarea id="input-raw-text" rows="5" placeholder="Paste confidential notes, internal policies, or text to test RAG grounding / retrieval extraction attacks..."></textarea>
+          <textarea id="input-raw-text" rows="4" placeholder="Paste confidential notes, internal policies, or text to test RAG grounding / retrieval extraction attacks..."></textarea>
+        </div>
+
+        <div class="ik-paste-section" style="margin-top:14px;">
+          <label for="input-urls">Or Ingest from Website / Document URLs (one per line or comma-separated):</label>
+          <input type="text" id="input-urls" placeholder="https://example.com/policy.html">
         </div>
       </div>
 

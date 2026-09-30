@@ -411,8 +411,19 @@ function renderContainers() {
     card.innerHTML = `
       <span class="ik-caret">›</span>
       <span class="ik-container-label" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</span>
-      <span class="ik-more-options">⋮</span>
+      <button class="ik-add-source-btn" title="Add / Ingest documents into this container" style="background:none;border:none;color:inherit;cursor:pointer;font-size:14px;padding:2px 6px;">+</button>
     `;
+    
+    // Add documents button inside container
+    const addBtn = card.querySelector('.ik-add-source-btn');
+    if (addBtn) {
+      addBtn.onclick = (e) => {
+        e.stopPropagation();
+        selectContainer(c.id);
+        openContainerModal(c.name, c.id);
+      };
+    }
+
     card.onclick = () => selectContainer(c.id);
     container.append(card);
   }
@@ -425,8 +436,32 @@ function selectContainer(containerId) {
 
   const c = state.containers.find(x => x.id === containerId);
   if (c) {
-    appendMessage('ai', `Switched active container to: <b>${escapeHtml(c.name)}</b> (${(c.files || []).length} document(s)). All queries and attack probes will now target this container.`);
+    appendMessage('ai', `📁 Active container: <b>${escapeHtml(c.name)}</b> (${(c.files || []).length} document(s)). All queries and attack probes now target this container index.`);
   }
+}
+
+function openContainerModal(existingName, existingId) {
+  const modal = $('modal-container');
+  if (!modal) return;
+  const nameInput = $('input-container-name');
+  const fileInput = $('input-container-files');
+  const fileLabel = $('selected-files-label');
+  const rawTextInput = $('input-raw-text');
+  const urlsInput = $('input-urls');
+
+  if (nameInput) {
+    nameInput.value = existingName || `Knowledge Container ${state.containers.length + 1}`;
+    if (existingId) {
+      nameInput.dataset.targetId = existingId;
+    } else {
+      delete nameInput.dataset.targetId;
+    }
+  }
+  if (fileInput) fileInput.value = '';
+  if (fileLabel) fileLabel.textContent = 'No files selected';
+  if (rawTextInput) rawTextInput.value = '';
+  if (urlsInput) urlsInput.value = '';
+  modal.showModal();
 }
 
 function initContainerModal() {
@@ -434,17 +469,34 @@ function initContainerModal() {
   const modal = $('modal-container');
   const fileInput = $('input-container-files');
   const fileLabel = $('selected-files-label');
+  const dropzone = $('dropzone-files');
   const form = $('form-container');
   const btnSubmit = $('btn-submit-container');
 
-  if (btnNew && modal) {
-    btnNew.onclick = () => {
-      $('input-container-name').value = `Knowledge Container ${state.containers.length + 1}`;
-      if (fileInput) fileInput.value = '';
-      if (fileLabel) fileLabel.textContent = 'No files selected';
-      if ($('input-raw-text')) $('input-raw-text').value = '';
-      modal.showModal();
-    };
+  if (btnNew) {
+    btnNew.onclick = () => openContainerModal();
+  }
+
+  // Drag and drop support on dropzone
+  if (dropzone && fileInput) {
+    ['dragenter', 'dragover'].forEach(name => {
+      dropzone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('ik-drag-over');
+      });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropzone.addEventListener(name, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('ik-drag-over');
+      });
+    });
+    dropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        fileInput.files = e.dataTransfer.files;
+        fileInput.dispatchEvent(new Event('change'));
+      }
+    });
   }
 
   if (fileInput && fileLabel) {
@@ -463,12 +515,15 @@ function initContainerModal() {
   if (form) {
     form.onsubmit = async ev => {
       ev.preventDefault();
-      const name = $('input-container-name').value.trim() || 'New Knowledge Container';
+      const nameInput = $('input-container-name');
+      const name = (nameInput ? nameInput.value.trim() : '') || 'Knowledge Container';
+      const targetId = nameInput ? nameInput.dataset.targetId : null;
       const rawText = $('input-raw-text') ? $('input-raw-text').value.trim() : '';
+      const urlsText = $('input-urls') ? $('input-urls').value.trim() : '';
       const files = fileInput ? fileInput.files : [];
 
-      if (files.length === 0 && !rawText) {
-        alert('Please choose at least one file to upload or enter text in the box to ingest.');
+      if (files.length === 0 && !rawText && !urlsText) {
+        alert('Please choose at least one file, paste text, or enter a URL to ingest.');
         return;
       }
 
@@ -479,8 +534,9 @@ function initContainerModal() {
       try {
         const formData = new FormData();
         formData.append('container_name', name);
-        formData.append('session_id', 'kc_' + Math.random().toString(36).slice(2, 9));
+        formData.append('session_id', targetId || ('kc_' + Math.random().toString(36).slice(2, 9)));
         if (rawText) formData.append('raw_text', rawText);
+        if (urlsText) formData.append('urls', urlsText);
 
         for (let i = 0; i < files.length; i++) {
           formData.append('files', files[i]);
@@ -493,19 +549,25 @@ function initContainerModal() {
 
         if (res.ok) {
           const data = await res.json();
-          const newContainer = {
-            id: data.container_id,
-            name: data.name || name,
-            files: data.filenames || [],
-          };
-          state.containers.push(newContainer);
+          let matched = state.containers.find(c => c.id === data.container_id);
+          if (!matched) {
+            matched = {
+              id: data.container_id,
+              name: data.name || name,
+              files: data.filenames || [],
+            };
+            state.containers.push(matched);
+          } else {
+            matched.name = data.name || name;
+            matched.files = Array.from(new Set([...(matched.files || []), ...(data.filenames || [])]));
+          }
           localStorage.setItem('sachet_pg_containers', JSON.stringify(state.containers));
-          state.activeContainerId = newContainer.id;
-          localStorage.setItem('sachet_pg_active_container', newContainer.id);
+          state.activeContainerId = matched.id;
+          localStorage.setItem('sachet_pg_active_container', matched.id);
           renderContainers();
 
           modal.close();
-          appendMessage('ai', `📁 <b>${escapeHtml(newContainer.name)}</b> created and indexed successfully with ${newContainer.files.length || 1} document(s). You can now ask questions or launch RAG security probes against this container.`);
+          appendMessage('ai', `✅ <b>${escapeHtml(matched.name)}</b> successfully indexed! ${data.filenames.length || 1} document(s) chunked and stored in Elasticsearch vector store. You can now chat or launch security probes against it.`);
         } else {
           const errData = await res.json().catch(() => ({}));
           alert('Ingestion failed: ' + (errData.detail || errData.message || res.statusText));
