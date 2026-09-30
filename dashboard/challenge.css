@@ -274,93 +274,46 @@ html, body {
   color: #ef4444;
 }
 
-.kiosk-btn-demo {
-  background: rgba(168, 85, 247, 0.15);
-  border: 1px solid rgba(168, 85, 247, 0.45);
-  color: #c084fc;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  box-shadow: 0 0 14px rgba(168, 85, 247, 0.2);
-}
-
-.kiosk-btn-demo:hover {
-  background: rgba(168, 85, 247, 0.3);
-  color: #fff;
-  border-color: #a855f7;
-  box-shadow: 0 0 22px rgba(168, 85, 247, 0.4);
-  transform: translateY(-1px);
-}
-
-.kiosk-btn-record {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.45);
-  color: #f87171;
-  height: 36px;
-  padding: 0 14px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  box-shadow: 0 0 14px rgba(239, 68, 68, 0.2);
-}
-
-.kiosk-btn-record:hover {
-  background: rgba(239, 68, 68, 0.3);
-  color: #fff;
-  border-color: #ef4444;
-  box-shadow: 0 0 22px rgba(239, 68, 68, 0.4);
-  transform: translateY(-1px);
-}
-
 .attract-cta-buttons {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
 .kiosk-demo-cta-btn {
   position: relative;
   overflow: hidden;
-  height: 56px;
-  padding: 0 26px;
-  border-radius: 28px;
-  background: rgba(168, 85, 247, 0.12);
-  border: 1px solid rgba(168, 85, 247, 0.45);
-  color: #e9d5ff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 22px 48px;
+  border-radius: var(--radius-xl);
+  background: rgba(168, 85, 247, 0.15);
+  border: 2px solid rgba(168, 85, 247, 0.6);
+  color: #f3e8ff;
   font-family: var(--font-display);
-  font-size: 0.92rem;
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
   font-weight: 800;
   letter-spacing: 0.08em;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  white-space: nowrap;
   cursor: pointer;
-  box-shadow: 0 0 24px rgba(168, 85, 247, 0.2);
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.3);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .kiosk-demo-cta-btn:hover {
-  background: rgba(168, 85, 247, 0.25);
+  background: rgba(168, 85, 247, 0.3);
   border-color: #c084fc;
   color: #fff;
-  box-shadow: 0 0 32px rgba(168, 85, 247, 0.45);
-  transform: translateY(-2px);
+  box-shadow: 0 0 50px rgba(168, 85, 247, 0.6);
+  transform: translateY(-4px) scale(1.03);
+}
+
+.kiosk-demo-cta-btn:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .demo-mode-indicator {
