@@ -163,6 +163,22 @@ class ExternalLogRequest(BaseModel):
     blocked: bool = False
 
 
+class ClassifyRequest(BaseModel):
+    prompt: str = Field(max_length=16000)
+
+
+@router.post('/classify', status_code=200)
+def classify_prompt(body: ClassifyRequest):
+    service = get_telemetry()
+    classification = service.classifier.classify(body.prompt, {})
+    return {
+        'category': classification.category,
+        'threat_score': classification.risk,
+        'severity': classification.severity,
+        'detected': classification.detected
+    }
+
+
 @router.post('/log', status_code=200)
 @limiter.limit('120/minute')
 def log_external_event(request: Request, body: ExternalLogRequest):
