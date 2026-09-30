@@ -715,9 +715,6 @@
 
     isBypass = isExplicitBypass || (!isDefended && lowerPrompt.includes('override') && Math.random() < 0.05);
 
-    // Wait for the scanning animation to complete
-    await scanPromise;
-
     const endTime = performance.now();
     const latencySec = ((endTime - startTime) / 1000).toFixed(2);
 
