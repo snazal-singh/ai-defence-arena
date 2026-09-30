@@ -341,10 +341,15 @@
   // --- 3. Attract Mode & Idle Detection ---
   function resetIdleTimer() {
     clearTimeout(state.idleTimer);
-    // If currently in arena and no user activity for 25 seconds, switch to Attract mode
+    if (state.isScanning) {
+      return; // Do NOT count idle while probe is actively scanning or LLM is thinking!
+    }
+    // If currently in arena and no user activity for 45 seconds, switch to Attract mode
     state.idleTimer = setTimeout(() => {
-      enterAttractMode();
-    }, 25000);
+      if (!state.isScanning) {
+        enterAttractMode();
+      }
+    }, 45000);
   }
 
   function enterAttractMode() {
@@ -587,7 +592,20 @@
   }
 
   // --- 7. Scan Sequence & Attack Submission ---
-  async function runScanningSequence() {
+  // --- 7. Scan Sequence & Attack Submission ---
+  async function handleAttackSubmit(e) {
+    e.preventDefault();
+    if (state.isScanning) return;
+
+    const promptText = el.inputAttackPrompt.value.trim();
+    if (!promptText) return;
+
+    state.isScanning = true;
+    clearTimeout(state.idleTimer); // FREEZE IDLE TIMER so attract mode never interrupts
+    el.btnSubmitAttack.disabled = true;
+    const startTime = performance.now();
+
+    // Open scanning modal and initialize steps
     el.modalScanning.classList.add('active');
     const steps = [
       document.getElementById('step-1'),
@@ -597,42 +615,40 @@
       document.getElementById('step-5')
     ];
 
-    for (let i = 0; i < steps.length; i++) {
-      if (steps[i]) {
-        steps[i].className = 'scan-step active';
-        steps[i].querySelector('.step-icon').textContent = '▶';
+    // Reset steps state
+    steps.forEach((s, idx) => {
+      if (s) {
+        s.className = 'scan-step' + (idx === 0 ? ' active' : '');
+        const icon = s.querySelector('.step-icon');
+        if (icon) icon.textContent = idx === 0 ? '▶' : '○';
       }
-      await new Promise(r => setTimeout(r, 260));
-      if (steps[i]) {
-        steps[i].className = 'scan-step completed';
-        steps[i].querySelector('.step-icon').textContent = '✓';
+    });
+
+    // Animate scanning steps dynamically while waiting for real backend
+    let currentStep = 0;
+    const stepInterval = setInterval(() => {
+      if (currentStep < 4) {
+        if (steps[currentStep]) {
+          steps[currentStep].className = 'scan-step completed';
+          const icon = steps[currentStep].querySelector('.step-icon');
+          if (icon) icon.textContent = '✓';
+        }
+        currentStep++;
+        if (steps[currentStep]) {
+          steps[currentStep].className = 'scan-step active';
+          const icon = steps[currentStep].querySelector('.step-icon');
+          if (icon) icon.textContent = '▶';
+        }
       }
-    }
-    el.modalScanning.classList.remove('active');
-  }
+    }, 2200);
 
-  async function handleAttackSubmit(e) {
-    e.preventDefault();
-    if (state.isScanning) return;
-
-    const promptText = el.inputAttackPrompt.value.trim();
-    if (!promptText) return;
-
-    state.isScanning = true;
-    el.btnSubmitAttack.disabled = true;
-    const startTime = performance.now();
-
-    // 1. Kick off visual scanning radar sequence
-    const scanPromise = runScanningSequence();
-
-    // 2. Concurrently call backend RAG & Red Team logging API
+    // Call real backend RAG & Red Team logging API
     let responseText = '';
     let isBypass = false;
     let threatScore = 85;
     let classification = state.activeCategory.name;
 
     try {
-      // Call real RAG endpoint
       const askRes = await fetch('/api/v1/redteam/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -658,6 +674,21 @@
     } catch (err) {
       responseText = 'Defensive boundary engaged: Instruction override detected and safely mitigated.';
     }
+
+    clearInterval(stepInterval);
+
+    // Mark all steps completed
+    steps.forEach(s => {
+      if (s) {
+        s.className = 'scan-step completed';
+        const icon = s.querySelector('.step-icon');
+        if (icon) icon.textContent = '✓';
+      }
+    });
+
+    // Brief smooth pause (350ms) so user sees the green checkmarks before verdict opens
+    await new Promise(r => setTimeout(r, 350));
+    el.modalScanning.classList.remove('active');
 
     // Determine defense outcome via evaluation indicators
     const lowerResp = responseText.toLowerCase();
