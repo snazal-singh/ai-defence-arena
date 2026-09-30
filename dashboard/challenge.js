@@ -638,14 +638,20 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: promptText,
-          sessionId: state.sessionId,
+          sessionId: 'kc_default',
           participant_name: state.visitorId
         })
       });
 
       if (askRes.ok) {
         const askData = await askRes.json();
-        responseText = askData.response || askData.answer || 'Response generated with guardrail validation.';
+        responseText = askData.answer || askData.response || 'Response generated with guardrail validation.';
+        if (askData.context && askData.context.length > 0) {
+          const sources = [...new Set(askData.context.map(c => c.source || c.title).filter(Boolean))];
+          if (sources.length > 0) {
+            responseText += `\n\n📄 Grounded in Document: ${sources.join(', ')}`;
+          }
+        }
       } else {
         responseText = 'I cannot comply with requests designed to override system policies or extract protected credentials.';
       }

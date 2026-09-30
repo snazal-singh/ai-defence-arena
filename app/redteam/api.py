@@ -211,9 +211,17 @@ async def arena_ask(request: Request):
     if not message:
         raise HTTPException(400, 'Message cannot be empty')
     
-    sid = request.headers.get('x-redteam-session') or body.get('sessionId') or body.get('fingerprint') or 'arena_tester'
+    sid = request.headers.get('x-redteam-session') or body.get('sessionId') or body.get('fingerprint') or 'kc_default'
+    
+    # If the current session has no ingested documents, fallback to kc_default so real RAG retrieval always works
+    users_path = Path(__file__).resolve().parents[2] / 'users'
+    if (not (users_path / sid / 'files').exists()) and (users_path / 'kc_default' / 'files').exists():
+        effective_sid = 'kc_default'
+    else:
+        effective_sid = sid
+
     trial_data = {
-        'fingerprint': sid,
+        'fingerprint': effective_sid,
         'message': message,
         'filenames': body.get('filenames', [])
     }
