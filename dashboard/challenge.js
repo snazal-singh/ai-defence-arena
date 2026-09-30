@@ -216,6 +216,7 @@
     btnToggleAudio: document.getElementById('btn-toggle-audio'),
     audioIcon: document.getElementById('audio-icon'),
     btnNavDemo: document.getElementById('btn-nav-demo'),
+    btnRecordShowcase: document.getElementById('btn-record-showcase'),
     btnAttractDemo: document.getElementById('btn-attract-demo'),
     demoIndicator: document.getElementById('demo-indicator'),
     demoIndicatorText: document.getElementById('demo-indicator-text'),
@@ -1471,6 +1472,58 @@
     if (el.demoIndicator) el.demoIndicator.style.display = 'none';
   }
 
+  // ================= 1-CLICK VIDEO RECORDER (60s FOR BOSS) =================
+  async function recordShowcaseVideo() {
+    try {
+      soundEngine.unlock();
+      alert('🎥 GET READY TO RECORD:\n\n1. A browser dialog will open.\n2. Choose "This Tab" (or Window) and click Share.\n3. The 60-second showcase will automatically start from the "CAN YOU BREAK OUR AI?" opening billboard.\n4. When completed, the video will automatically download into your Downloads folder!');
+
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { displaySurface: 'browser' },
+        audio: true
+      });
+
+      const options = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? { mimeType: 'video/webm;codecs=vp9' }
+        : (MediaRecorder.isTypeSupported('video/webm') ? { mimeType: 'video/webm' } : {});
+
+      const mediaRecorder = new MediaRecorder(stream, options);
+      const chunks = [];
+
+      mediaRecorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: options.mimeType || 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'kiosk_exhibition_60s_demo.webm';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        stream.getTracks().forEach(t => t.stop());
+      };
+
+      mediaRecorder.start();
+
+      // Return to Attract Mode so the opening "CAN YOU BREAK OUR AI?" is prominently visible
+      enterAttractMode();
+      await sleep(3500); // 3.5s on the attract billboard
+      await runEndToEndShowcase();
+
+      // Ensure recording stops after the showcase
+      await sleep(2000);
+      if (mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+    } catch (err) {
+      console.warn('Recording canceled or error:', err);
+    }
+  }
+
   function toggleFullscreen() {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
@@ -1530,6 +1583,13 @@
       el.btnNavDemo.addEventListener('click', () => {
         soundEngine.playClick();
         runEndToEndShowcase();
+      });
+    }
+
+    if (el.btnRecordShowcase) {
+      el.btnRecordShowcase.addEventListener('click', () => {
+        soundEngine.playClick();
+        recordShowcaseVideo();
       });
     }
 
