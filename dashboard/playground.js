@@ -466,6 +466,7 @@ function renderContainers() {
       <span class="ik-container-label" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</span>
       <span class="ik-container-badge">${docCount} ${docCount === 1 ? 'doc' : 'docs'}</span>
       <button class="ik-add-source-btn" title="Add / Ingest documents into this container" style="background:none;border:none;color:inherit;cursor:pointer;font-size:14px;padding:2px 6px;">+</button>
+      <button class="ik-del-container-btn" title="Delete container" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:12px;padding:2px 6px;">🗑️</button>
     `;
     
     // Toggle expand when clicking caret
@@ -489,6 +490,15 @@ function renderContainers() {
       };
     }
 
+    // Delete container button
+    const delBtn = card.querySelector('.ik-del-container-btn');
+    if (delBtn) {
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        handleDeleteContainer(c.id, c.name);
+      };
+    }
+
     card.onclick = () => {
       selectContainer(c.id);
       state.expandedFolders[c.id] = true;
@@ -508,7 +518,15 @@ function renderContainers() {
           fileItem.innerHTML = `
             <span>${getFileIcon(fname)}</span>
             <span class="ik-file-item-name" title="${escapeHtml(fname)}">${escapeHtml(fname)}</span>
+            <button class="ik-del-file-btn" title="Delete this file from container" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:11px;padding:2px 4px;">✕</button>
           `;
+          const delFileBtn = fileItem.querySelector('.ik-del-file-btn');
+          if (delFileBtn) {
+            delFileBtn.onclick = (e) => {
+              e.stopPropagation();
+              handleDeleteFile(c.id, fname);
+            };
+          }
           fileListEl.append(fileItem);
         }
       } else {
@@ -526,6 +544,53 @@ function renderContainers() {
     }
 
     container.append(group);
+  }
+}
+
+async function handleDeleteContainer(containerId, containerName) {
+  const confirmMsg = `Are you sure you want to delete "${containerName}"?\nThis knowledge container along with all its files will be deleted.`;
+  if (!window.confirm(confirmMsg)) return;
+
+  try {
+    await fetch(`/api/v1/redteam/container/${containerId}`, { method: 'DELETE' });
+    state.containers = state.containers.filter(c => c.id !== containerId);
+    if (state.containers.length === 0) {
+      state.containers = [{ id: 'kc_default', name: 'Knowledge container 1', files: [] }];
+    }
+    delete state.expandedFolders[containerId];
+
+    if (state.activeContainerId === containerId) {
+      state.activeContainerId = state.containers[0].id;
+    }
+
+    localStorage.setItem('sachet_pg_containers', JSON.stringify(state.containers));
+    localStorage.setItem('sachet_pg_expanded', JSON.stringify(state.expandedFolders));
+    localStorage.setItem('sachet_pg_active_container', state.activeContainerId);
+    renderContainers();
+    appendMessage('ai', `🗑️ Container <b>${escapeHtml(containerName)}</b> and its vector index deleted successfully.`);
+  } catch (err) {
+    alert('Failed to delete container: ' + err.message);
+  }
+}
+
+async function handleDeleteFile(containerId, fileName) {
+  const confirmMsg = `Are you sure you want to delete "${fileName}" from this knowledge container?\n\nThis action cannot be undone.`;
+  if (!window.confirm(confirmMsg)) return;
+
+  try {
+    await fetch(`/api/v1/redteam/container/${containerId}/sources/${encodeURIComponent(fileName)}`, {
+      method: 'DELETE'
+    });
+
+    const c = state.containers.find(x => x.id === containerId);
+    if (c) {
+      c.files = (c.files || []).filter(f => f !== fileName);
+      localStorage.setItem('sachet_pg_containers', JSON.stringify(state.containers));
+      renderContainers();
+      appendMessage('ai', `🗑️ Document <b>${escapeHtml(fileName)}</b> deleted from container <b>${escapeHtml(c.name)}</b> and vector database.`);
+    }
+  } catch (err) {
+    alert('Failed to delete file: ' + err.message);
   }
 }
 

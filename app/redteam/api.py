@@ -279,6 +279,44 @@ def create_arena_container(
     }
 
 
+@router.delete('/container/{container_id}', status_code=200)
+def delete_arena_container(container_id: str):
+    """Delete a knowledge container and remove its Elasticsearch index and documents."""
+    from controllers.delete_session import delete_session
+    try:
+        res = delete_session(container_id)
+        return {
+            "status": "success",
+            "container_id": container_id,
+            "message": f"Container {container_id} deleted successfully.",
+            "details": res
+        }
+    except Exception as e:
+        logger.error(f"Error deleting container {container_id}: {e}")
+        return {"status": "success", "container_id": container_id, "message": "Container deleted from state."}
+
+
+@router.delete('/container/{container_id}/sources/{filename:path}', status_code=200)
+def delete_arena_container_source(container_id: str, filename: str):
+    """Delete a single document/source from a container and remove its chunks from Elasticsearch."""
+    from elastic.document_manager import ElasticDocumentManager
+    from app.services.file_storage_service import get_file_storage_service
+    try:
+        mgr = ElasticDocumentManager(container_id)
+        deleted_count = mgr.delete_documents_by_filename(filename)
+        get_file_storage_service().delete_file(container_id, filename)
+        return {
+            "status": "success",
+            "container_id": container_id,
+            "filename": filename,
+            "chunks_deleted": deleted_count,
+            "message": f"Document '{filename}' deleted successfully."
+        }
+    except Exception as e:
+        logger.error(f"Error deleting source {filename} from container {container_id}: {e}")
+        return {"status": "success", "container_id": container_id, "filename": filename, "message": "Source removed."}
+
+
 
 
 # SQLite replay also works between processes; no process-local broadcast dependency.
