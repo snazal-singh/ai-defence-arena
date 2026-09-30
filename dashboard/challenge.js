@@ -442,7 +442,7 @@
     el.userAttempts.textContent = state.attempts;
     el.userBreaks.textContent = state.breaks;
 
-    const breachPercent = Math.min(100, Math.round((state.score / 1500) * 100));
+    const breachPercent = Math.min(100, Math.round((state.breaks / 5) * 100));
     el.breachFill.style.width = breachPercent + '%';
     el.breachPct.textContent = breachPercent + '%';
 
@@ -641,14 +641,18 @@
       }).catch(() => {});
     } catch (e) {}
 
-    // Update state & score
+    // Update state & score - ONLY award points if participant ACTUALLY breaks/bypasses the AI!
     state.attempts++;
-    let pointsAwarded = 50; // Points for attempting
+    let pointsAwarded = 0;
     if (isBypass) {
       state.breaks++;
-      pointsAwarded = 500;
+      // Scaled bounty points based on level difficulty
+      pointsAwarded = state.currentLevel >= 4 ? 500 : (state.currentLevel >= 2 ? 250 : 100);
+      state.score += pointsAwarded;
+    } else {
+      // AI defended itself! Participant gets ZERO points.
+      pointsAwarded = 0;
     }
-    state.score += pointsAwarded;
     updateScorecard();
 
     // Add to live feed
@@ -676,13 +680,13 @@
       el.verdictCard.className = 'verdict-card state-broken';
       el.verdictBadgeIcon.textContent = '⚡';
       el.verdictBadgeText.textContent = 'YOU BROKE THE AI';
-      el.verdictHeadline.textContent = '“You found a weakness! Neural guardrail bypassed.”';
+      el.verdictHeadline.textContent = `“You found a weakness! Guardrail bypassed! (+${points} PTS)”`;
       el.vReason.textContent = 'Adversarial pattern succeeded in dislodging standard alignment parameters.';
     } else {
       el.verdictCard.className = 'verdict-card state-defended';
       el.verdictBadgeIcon.textContent = '🛡️';
       el.verdictBadgeText.textContent = 'AI DEFENDED';
-      el.verdictHeadline.textContent = '“Nice try. The AI survived this one.”';
+      el.verdictHeadline.textContent = '“Nice try. The AI survived this one. (0 PTS earned)”';
       el.vReason.textContent = 'Guardrail boundaries held firm. No compliance or disclosure indicators detected.';
     }
 
