@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="/arena/assets/challenge.css?v=2.3">
-<script defer src="/arena/assets/challenge.js?v=2.3"></script>
+<link rel="stylesheet" href="/arena/assets/challenge.css?v=2.4">
+<script defer src="/arena/assets/challenge.js?v=2.4"></script>
 </head>
 <body class="kiosk-body">
 
@@ -47,6 +47,9 @@
       <span class="score-value" id="nav-score">0</span>
       <span class="score-pts">PTS</span>
     </div>
+    <button class="kiosk-btn-demo" id="btn-nav-demo" title="Run 60-Second Automated Exhibition Showcase">
+      <span>🎬 Showcase Demo</span>
+    </button>
     <button class="kiosk-btn-leaderboard" id="btn-top-leaderboard" title="View Official Live Leaderboard">
       <span>🏆 Leaderboard</span>
     </button>
@@ -61,6 +64,17 @@
     </button>
   </div>
 </header>
+
+<!-- Live Showcase Demo Mode Banner -->
+<div class="demo-mode-indicator" id="demo-indicator" style="display: none;">
+  <div class="demo-ind-left">
+    <span class="demo-ind-badge"><span class="demo-dot"></span> LIVE SHOWCASE DEMO</span>
+    <span class="demo-ind-text" id="demo-indicator-text">Initializing simulated red-team probe...</span>
+  </div>
+  <button class="demo-ind-exit" id="btn-exit-demo" title="Stop Demo and Take Manual Control">
+    <span>✕ Stop Demo (Take Control)</span>
+  </button>
+</div>
 
 <!-- ================= CONTESTANT REGISTRATION MODAL ================= -->
 <div class="contestant-modal" id="modal-contestant">
@@ -115,12 +129,18 @@
 
     <!-- Main CTA -->
     <div class="attract-cta-wrapper">
-      <button class="kiosk-cta-btn" id="btn-start-challenge">
-        <span class="cta-flare"></span>
-        <span class="cta-icon">⚡</span>
-        <span class="cta-text">START THE CHALLENGE</span>
-        <span class="cta-arrow">→</span>
-      </button>
+      <div class="attract-cta-buttons">
+        <button class="kiosk-cta-btn" id="btn-start-challenge">
+          <span class="cta-flare"></span>
+          <span class="cta-icon">⚡</span>
+          <span class="cta-text">START THE CHALLENGE</span>
+          <span class="cta-arrow">→</span>
+        </button>
+        <button class="kiosk-demo-cta-btn" id="btn-attract-demo" title="Run 60-Second Automated Exhibition Showcase">
+          <span class="demo-icon">🎬</span>
+          <span class="demo-text">RUN LIVE 60s SHOWCASE</span>
+        </button>
+      </div>
       <div class="cta-sub-hint">TOUCH SCREEN OR CLICK TO BEGIN · NO LOGIN REQUIRED</div>
     </div>
 

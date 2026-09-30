@@ -274,6 +274,142 @@ html, body {
   color: #ef4444;
 }
 
+.kiosk-btn-demo {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  color: #c084fc;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.2);
+}
+
+.kiosk-btn-demo:hover {
+  background: rgba(168, 85, 247, 0.3);
+  color: #fff;
+  border-color: #a855f7;
+  box-shadow: 0 0 22px rgba(168, 85, 247, 0.4);
+  transform: translateY(-1px);
+}
+
+.attract-cta-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.kiosk-demo-cta-btn {
+  position: relative;
+  overflow: hidden;
+  height: 56px;
+  padding: 0 26px;
+  border-radius: 28px;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  color: #e9d5ff;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kiosk-demo-cta-btn:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: #c084fc;
+  color: #fff;
+  box-shadow: 0 0 32px rgba(168, 85, 247, 0.45);
+  transform: translateY(-2px);
+}
+
+.demo-mode-indicator {
+  position: fixed;
+  top: 68px;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background: linear-gradient(90deg, rgba(147, 51, 234, 0.95), rgba(79, 70, 229, 0.95));
+  backdrop-filter: blur(14px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 24px rgba(147, 51, 234, 0.4);
+  animation: slideDown 0.3s ease;
+}
+
+.demo-ind-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.demo-ind-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.08em;
+}
+
+.demo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 10px #34d399;
+  animation: pulse-ring 1.5s infinite;
+}
+
+.demo-ind-text {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.demo-ind-exit {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.demo-ind-exit:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #fff;
+}
+
 /* ================= VIEW SWITCHER (ATTRACT vs ARENA) ================= */
 .kiosk-view {
   position: relative;
