@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="/arena/assets/playground.css?v=2.4">
-<script defer src="/arena/assets/playground.js?v=2.4"></script>
+<link rel="stylesheet" href="/arena/assets/playground.css?v=2.5">
+<script defer src="/arena/assets/playground.js?v=2.5"></script>
 </head>
 <body class="ik-theme-light">
 <div class="ik-app-layout">
@@ -38,24 +38,12 @@
       </div>
     </div>
 
-    <!-- Center Arena Controls (Contestant, Objective, Bot Target) -->
+    <!-- Center Arena Controls (Contestant) -->
     <div class="ik-nav-center">
       <button class="ik-pill-btn" id="btn-edit-challenger" title="Change Contestant Name">
         <span class="ik-pill-dot">👤</span>
         <span class="ik-pill-label">Contestant:</span>
-        <strong id="hud-challenger-name">Marie</strong>
-      </button>
-
-      <button class="ik-pill-btn" id="btn-edit-objective" title="Change Attack Challenge Objective">
-        <span class="ik-pill-dot">🎯</span>
-        <span class="ik-pill-label">Challenge:</span>
-        <strong id="hud-objective-name">Instruction Override</strong>
-      </button>
-
-      <button class="ik-pill-btn ik-pill-target" id="btn-edit-endpoint" title="Configure Target Bot URL (Pluggable to any Bot)">
-        <span class="ik-pill-dot">⚙️</span>
-        <span class="ik-pill-label">Target:</span>
-        <strong id="hud-endpoint-label">/api/v1/redteam/ask</strong>
+        <strong id="hud-challenger-name">singhsnazal</strong>
       </button>
     </div>
 
@@ -63,7 +51,7 @@
     <div class="ik-nav-right">
       <button class="ik-telemetry-toggle-btn active" id="btn-toggle-telemetry" title="Toggle Live Security Telemetry & Leaderboard">
         <span class="ik-live-pulse-dot" id="pg-live-dot"></span>
-        <span id="pg-connection-status">Live Telemetry</span>
+        <span id="pg-connection-status">Live</span>
       </button>
 
       <a href="#about" class="ik-header-link" onclick="return false;">About Us</a>

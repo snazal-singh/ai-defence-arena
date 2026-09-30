@@ -396,7 +396,7 @@ function connectSSE() {
   state.streamSource = new EventSource(API + '/stream?after=' + state.cursor);
 
   state.streamSource.onopen = () => {
-    if ($('pg-connection-status')) $('pg-connection-status').textContent = 'Live Telemetry';
+    if ($('pg-connection-status')) $('pg-connection-status').textContent = 'Live';
     if ($('pg-live-dot')) $('pg-live-dot').style.background = 'var(--mint)';
   };
 
@@ -852,17 +852,21 @@ function initModals() {
   };
 
   // Objective Modal
-  $('btn-edit-objective').onclick = () => {
-    renderObjectiveModalList();
-    $('modal-objective').showModal();
-  };
+  if ($('btn-edit-objective')) {
+    $('btn-edit-objective').onclick = () => {
+      renderObjectiveModalList();
+      $('modal-objective').showModal();
+    };
+  }
 
   // Endpoint Modal
-  $('btn-edit-endpoint').onclick = () => {
-    $('input-bot-url').value = state.botEndpoint;
-    $('input-payload-field').value = state.messageField;
-    $('modal-endpoint').showModal();
-  };
+  if ($('btn-edit-endpoint')) {
+    $('btn-edit-endpoint').onclick = () => {
+      $('input-bot-url').value = state.botEndpoint;
+      $('input-payload-field').value = state.messageField;
+      $('modal-endpoint').showModal();
+    };
+  }
   $('form-endpoint').onsubmit = ev => {
     ev.preventDefault();
     state.botEndpoint = $('input-bot-url').value.trim() || '/api/v1/redteam/ask';
