@@ -30,10 +30,11 @@ let state = {
   isSending: false,
   streamSource: null,
   cursor: 0,
+  expandedFolders: JSON.parse(localStorage.getItem('sachet_pg_expanded') || '{"kc_default":true}'),
 };
 
 /* ─── CHAT MESSAGES ─────────────────────────────────────────── */
-function appendMessage(role, text) {
+function appendMessage(role, text, isHtml = false, context = null) {
   const container = $('chat-messages');
   const bubble = document.createElement('div');
   bubble.className = `ik-bubble ${role}`;
@@ -45,10 +46,37 @@ function appendMessage(role, text) {
   const content = document.createElement('div');
   content.className = 'ik-bubble-content';
   
-  if (role === 'ai') {
-    content.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+  if (isHtml) {
+    content.innerHTML = text;
+  } else if (role === 'ai') {
+    // Escape HTML but allow safe formatting tags like <b> and <code>
+    let formatted = escapeHtml(text)
+      .replace(/&lt;b&gt;/g, '<b>')
+      .replace(/&lt;\/b&gt;/g, '</b>')
+      .replace(/&lt;code&gt;/g, '<code>')
+      .replace(/&lt;\/code&gt;/g, '</code>')
+      .replace(/\n/g, '<br>');
+    content.innerHTML = formatted;
   } else {
     content.textContent = text;
+  }
+
+  // Render RAG Document Citations if returned
+  if (context && Array.isArray(context) && context.length > 0) {
+    const citationsBox = document.createElement('div');
+    citationsBox.className = 'ik-citations-box';
+    citationsBox.innerHTML = `
+      <div class="ik-citations-title">📄 Retrieved Knowledge Sources (${context.length})</div>
+      <div class="ik-citations-list">
+        ${context.map(c => `
+          <div class="ik-citation-item">
+            <span class="ik-citation-source">📎 <b>${escapeHtml(c.source || 'Document')}</b> ${c.page ? `(Page ${escapeHtml(c.page)})` : ''}</span>
+            <div class="ik-citation-excerpt">${escapeHtml(c.text || '')}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    content.append(citationsBox);
   }
 
   bubble.append(avatar, content);
@@ -140,16 +168,18 @@ async function sendQuery(promptText) {
 
     const elapsedMs = Math.round(performance.now() - startTime);
 
+    let contextData = null;
     if (res.ok) {
       const data = await res.json();
       aiResponseText = data.answer || data.response || data.text || data.message || JSON.stringify(data);
       wasBlocked = data.status === 'blocked';
+      contextData = data.context || null;
     } else {
       aiResponseText = `Bot Error (${res.status}): Failed to reach bot endpoint at ${state.botEndpoint}.`;
     }
 
     removeLoadingMessage();
-    appendMessage('ai', aiResponseText);
+    appendMessage('ai', aiResponseText, false, contextData);
 
     // If querying an external bot target, send telemetry to universal logger
     if (state.botEndpoint !== '/api/v1/ask' && state.botEndpoint !== '/api/v1/trial-ask' && state.botEndpoint !== '/api/v1/redteam/ask') {
@@ -399,21 +429,56 @@ function openEventInspector(event) {
 }
 
 /* ─── KNOWLEDGE CONTAINERS MANAGEMENT ────────────────────────── */
+function getFileIcon(filename) {
+  const ext = (filename || '').toLowerCase().split('.').pop();
+  if (filename && filename.startsWith('http')) return '🌐';
+  switch (ext) {
+    case 'pdf': return '📕';
+    case 'doc':
+    case 'docx': return '📘';
+    case 'xls':
+    case 'xlsx':
+    case 'csv': return '📗';
+    case 'txt':
+    case 'md':
+    case 'json': return '📄';
+    default: return '📄';
+  }
+}
+
 function renderContainers() {
   const container = $('sidebar-containers');
   if (!container) return;
   container.replaceChildren();
 
   for (const c of state.containers) {
+    const group = document.createElement('div');
+    group.className = 'ik-container-group';
+
     const card = document.createElement('div');
     const isActive = c.id === state.activeContainerId;
+    const isExpanded = !!state.expandedFolders[c.id];
+    const docCount = (c.files || []).length;
+
     card.className = 'ik-container-card' + (isActive ? ' active' : '');
     card.innerHTML = `
-      <span class="ik-caret">›</span>
+      <span class="ik-caret${isExpanded ? ' expanded' : ''}">›</span>
       <span class="ik-container-label" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</span>
+      <span class="ik-container-badge">${docCount} ${docCount === 1 ? 'doc' : 'docs'}</span>
       <button class="ik-add-source-btn" title="Add / Ingest documents into this container" style="background:none;border:none;color:inherit;cursor:pointer;font-size:14px;padding:2px 6px;">+</button>
     `;
     
+    // Toggle expand when clicking caret
+    const caret = card.querySelector('.ik-caret');
+    if (caret) {
+      caret.onclick = (e) => {
+        e.stopPropagation();
+        state.expandedFolders[c.id] = !state.expandedFolders[c.id];
+        localStorage.setItem('sachet_pg_expanded', JSON.stringify(state.expandedFolders));
+        renderContainers();
+      };
+    }
+
     // Add documents button inside container
     const addBtn = card.querySelector('.ik-add-source-btn');
     if (addBtn) {
@@ -424,8 +489,43 @@ function renderContainers() {
       };
     }
 
-    card.onclick = () => selectContainer(c.id);
-    container.append(card);
+    card.onclick = () => {
+      selectContainer(c.id);
+      state.expandedFolders[c.id] = true;
+      localStorage.setItem('sachet_pg_expanded', JSON.stringify(state.expandedFolders));
+      renderContainers();
+    };
+    group.append(card);
+
+    // Expandable file list
+    if (isExpanded) {
+      const fileListEl = document.createElement('div');
+      fileListEl.className = 'ik-container-files-list';
+      if (c.files && c.files.length > 0) {
+        for (const fname of c.files) {
+          const fileItem = document.createElement('div');
+          fileItem.className = 'ik-file-item';
+          fileItem.innerHTML = `
+            <span>${getFileIcon(fname)}</span>
+            <span class="ik-file-item-name" title="${escapeHtml(fname)}">${escapeHtml(fname)}</span>
+          `;
+          fileListEl.append(fileItem);
+        }
+      } else {
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'ik-file-empty';
+        emptyItem.innerHTML = `No documents yet · <a href="#" style="color:#2563eb;text-decoration:none;">Click + to add</a>`;
+        emptyItem.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openContainerModal(c.name, c.id);
+        };
+        fileListEl.append(emptyItem);
+      }
+      group.append(fileListEl);
+    }
+
+    container.append(group);
   }
 }
 
@@ -550,24 +650,31 @@ function initContainerModal() {
         if (res.ok) {
           const data = await res.json();
           let matched = state.containers.find(c => c.id === data.container_id);
+          const filenames = data.filenames && data.filenames.length > 0
+            ? data.filenames
+            : (rawText ? ['confidential_policy.txt'] : (files.length > 0 ? Array.from(files).map(f => f.name) : ['document.txt']));
+
           if (!matched) {
             matched = {
               id: data.container_id,
               name: data.name || name,
-              files: data.filenames || [],
+              files: filenames,
             };
             state.containers.push(matched);
           } else {
             matched.name = data.name || name;
-            matched.files = Array.from(new Set([...(matched.files || []), ...(data.filenames || [])]));
+            matched.files = Array.from(new Set([...(matched.files || []), ...filenames]));
           }
+          state.expandedFolders[matched.id] = true;
+          localStorage.setItem('sachet_pg_expanded', JSON.stringify(state.expandedFolders));
           localStorage.setItem('sachet_pg_containers', JSON.stringify(state.containers));
           state.activeContainerId = matched.id;
           localStorage.setItem('sachet_pg_active_container', matched.id);
           renderContainers();
 
           modal.close();
-          appendMessage('ai', `✅ <b>${escapeHtml(matched.name)}</b> successfully indexed! ${data.filenames.length || 1} document(s) chunked and stored in Elasticsearch vector store. You can now chat or launch security probes against it.`);
+          const fileDisplay = matched.files.join(', ');
+          appendMessage('ai', `✅ <b>${escapeHtml(matched.name)}</b> successfully indexed! Document(s) <code>${escapeHtml(fileDisplay)}</code> chunked and stored in Elasticsearch vector store. You can now chat or launch security probes against it.`);
         } else {
           const errData = await res.json().catch(() => ({}));
           alert('Ingestion failed: ' + (errData.detail || errData.message || res.statusText));

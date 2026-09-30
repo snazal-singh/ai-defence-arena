@@ -392,6 +392,96 @@ body {
   font-size: 16px;
   padding-left: 6px;
 }
+.ik-caret {
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+.ik-caret.expanded {
+  transform: rotate(90deg);
+}
+.ik-container-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.06);
+  color: var(--ik-text-muted);
+  margin-right: 6px;
+}
+.ik-container-files-list {
+  margin-top: 2px;
+  margin-bottom: 6px;
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ik-file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--ik-text-muted);
+  background: rgba(0,0,0,0.02);
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.ik-file-item-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ik-file-empty {
+  font-size: 11px;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 4px 8px;
+}
+
+/* Chat Citation Cards */
+.ik-citations-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.ik-citations-title {
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ik-citations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ik-citation-item {
+  padding: 6px 8px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #edf2f7;
+}
+.ik-citation-source {
+  display: block;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 2px;
+}
+.ik-citation-excerpt {
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  max-height: 80px;
+  overflow-y: auto;
+}
 
 /* Sidebar Objectives List */
 .ik-objectives-menu {
