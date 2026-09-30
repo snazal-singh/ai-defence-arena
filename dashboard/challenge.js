@@ -6,6 +6,16 @@
 (function () {
   'use strict';
 
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   // --- Attack Categories Definition ---
   const ATTACK_CATEGORIES = [
     {
@@ -878,23 +888,36 @@
     });
 
     // Update Live Leaderboard immediately with this probe & score
-    renderLiveLeaderboard();
+    try {
+      renderLiveLeaderboard();
+    } catch (lbErr) {
+      console.warn('Leaderboard update error:', lbErr);
+    }
 
     // Add to live feed
-    addFeedItem(state.visitorId, classification, isBypass ? 'SUCCESS' : 'BLOCKED');
+    try {
+      addFeedItem(state.visitorId, classification, isBypass ? 'SUCCESS' : 'BLOCKED');
+    } catch (feedErr) {
+      console.warn('Feed update error:', feedErr);
+    }
 
-    // Show Verdict
-    showVerdictModal({
-      isBypass,
-      classification,
-      threatScore: Math.floor(75 + Math.random() * 20),
-      latency: latencySec + 's',
-      responseText,
-      points: pointsAwarded
-    });
-
+    // Always release scanning lock and re-enable button
     state.isScanning = false;
-    el.btnSubmitAttack.disabled = false;
+    if (el.btnSubmitAttack) el.btnSubmitAttack.disabled = false;
+
+    // Show Verdict Modal
+    try {
+      showVerdictModal({
+        isBypass,
+        classification,
+        threatScore: Math.floor(75 + Math.random() * 20),
+        latency: latencySec + 's',
+        responseText,
+        points: pointsAwarded
+      });
+    } catch (vErr) {
+      console.error('Failed to show verdict modal:', vErr);
+    }
   }
 
   // --- 8. Verdict Modal Display ---
