@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#030712">
+<title>CAN YOU BREAK OUR AI? — AI Red Team Challenge & Exhibition Kiosk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/arena/assets/challenge.css?v=1.0">
+<script defer src="/arena/assets/challenge.js?v=1.0"></script>
+</head>
+<body class="kiosk-body">
+
+<!-- Cyber Ambient Canvas (Particles + Cyber Grid) -->
+<canvas id="cyber-canvas"></canvas>
+<div class="cyber-scanlines"></div>
+<div class="cyber-vignette"></div>
+
+<!-- Top Bar Kiosk Navigation -->
+<header class="kiosk-nav">
+  <div class="kiosk-nav-left">
+    <div class="kiosk-logo-badge">
+      <span class="cyber-pulse-dot"></span>
+      <span class="kiosk-logo-title">icarKno™</span>
+      <span class="kiosk-logo-sub">DEFENSE ARENA</span>
+    </div>
+    <div class="kiosk-agent-pill" id="agent-pill">
+      <span class="pill-label">CHALLENGER:</span>
+      <span class="pill-value" id="nav-agent-id">AGENT-714</span>
+    </div>
+  </div>
+
+  <div class="kiosk-nav-center">
+    <div class="kiosk-level-badge" id="level-badge">
+      <span class="level-chip">LEVEL 01</span>
+      <span class="level-name">Prompt Injection</span>
+    </div>
+  </div>
+
+  <div class="kiosk-nav-right">
+    <div class="kiosk-score-pill">
+      <span class="score-icon">⚡</span>
+      <span class="score-label">SCORE:</span>
+      <span class="score-value" id="nav-score">0</span>
+      <span class="score-pts">PTS</span>
+    </div>
+    <button class="kiosk-btn-fullscreen" id="btn-fullscreen" title="Toggle Fullscreen Exhibition Display">
+      <span id="fs-icon">⛶</span>
+    </button>
+    <button class="kiosk-btn-reset" id="btn-reset-session" title="Reset Session for Next Visitor">
+      <span>↺ Reset</span>
+    </button>
+  </div>
+</header>
+
+<!-- ================= STAGE 1: IDLE BILLBOARD / ATTRACT MODE ================= -->
+<section class="kiosk-view attract-mode active" id="view-attract">
+  <div class="attract-container">
+    <div class="attract-badge">
+      <span class="cyber-glitch-badge">LIVE EXHIBITION CHALLENGE</span>
+    </div>
+
+    <!-- Main Headline with Cyber Entrance Animation -->
+    <h1 class="attract-headline" id="attract-headline">
+      <span class="glitch-word" data-text="CAN YOU">CAN YOU</span><br>
+      <span class="glitch-word highlight-red" data-text="BREAK">BREAK</span><br>
+      <span class="glitch-word highlight-cyan" data-text="OUR AI?">OUR AI?</span>
+    </h1>
+
+    <p class="attract-subtitle" id="attract-subtitle">
+      “Think you can outsmart our safety guardrails? Try your best prompt.”
+    </p>
+
+    <!-- Main CTA -->
+    <div class="attract-cta-wrapper">
+      <button class="kiosk-cta-btn" id="btn-start-challenge">
+        <span class="cta-flare"></span>
+        <span class="cta-icon">⚡</span>
+        <span class="cta-text">START THE CHALLENGE</span>
+        <span class="cta-arrow">→</span>
+      </button>
+      <div class="cta-sub-hint">TOUCH SCREEN OR CLICK TO BEGIN · NO LOGIN REQUIRED</div>
+    </div>
+
+    <!-- Real-time Live Counters Bar (Animated Upward from API) -->
+    <div class="attract-counters-grid">
+      <div class="counter-card">
+        <div class="counter-value" id="stat-challenges-today">0</div>
+        <div class="counter-label">AI CHALLENGES TODAY</div>
+      </div>
+      <div class="counter-card">
+        <div class="counter-value" id="stat-attempts">0</div>
+        <div class="counter-label">ATTACK ATTEMPTS</div>
+      </div>
+      <div class="counter-card highlight-mint">
+        <div class="counter-value" id="stat-defended">0</div>
+        <div class="counter-label">AI DEFENDED 🛡️</div>
+      </div>
+      <div class="counter-card highlight-coral">
+        <div class="counter-value" id="stat-bypasses">0</div>
+        <div class="counter-label">SUCCESSFUL BREAKS ⚡</div>
+      </div>
+      <div class="counter-card highlight-cyan">
+        <div class="counter-value" id="stat-defense-rate">100%</div>
+        <div class="counter-label">DEFENSE RATE</div>
+      </div>
+    </div>
+
+    <!-- Attract Carousel Slides (Auto-cycles when idle for 20s) -->
+    <div class="attract-carousel" id="attract-carousel">
+      <div class="carousel-slide active" data-step="1">
+        <span class="slide-num">01</span>
+        <span class="slide-text">OVER <strong>240+ PARTICIPANTS</strong> HAVE ATTEMPTED TO BREACH THE SYSTEM</span>
+      </div>
+      <div class="carousel-slide" data-step="2">
+        <span class="slide-num">02</span>
+        <span class="slide-text">ONLY <strong>2 PROMPTS</strong> HAVE EVADED SAFETY BOUNDARIES</span>
+      </div>
+      <div class="carousel-slide" data-step="3">
+        <span class="slide-num">03</span>
+        <span class="slide-text">THINK YOU CAN DO BETTER? TEST YOUR JAILBREAK PROMPT NOW</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STAGE 2: INTERACTIVE HACKING ARENA ================= -->
+<section class="kiosk-view arena-mode" id="view-arena">
+  <div class="arena-layout">
+    
+    <!-- Top Level Track Progress Bar -->
+    <div class="arena-level-track">
+      <div class="track-step active" data-lvl="1">
+        <span class="track-dot">1</span>
+        <span class="track-name">Prompt Injection</span>
+      </div>
+      <div class="track-line"></div>
+      <div class="track-step" data-lvl="2">
+        <span class="track-dot">2</span>
+        <span class="track-name">Jailbreak (DAN)</span>
+      </div>
+      <div class="track-line"></div>
+      <div class="track-step" data-lvl="3">
+        <span class="track-dot">3</span>
+        <span class="track-name">Context Manipulation</span>
+      </div>
+      <div class="track-line"></div>
+      <div class="track-step" data-lvl="4">
+        <span class="track-dot">4</span>
+        <span class="track-name">Data Leakage</span>
+      </div>
+      <div class="track-line"></div>
+      <div class="track-step" data-lvl="5">
+        <span class="track-dot">5</span>
+        <span class="track-name">Ultimate Boss</span>
+      </div>
+    </div>
+
+    <!-- Arena Main Grid -->
+    <div class="arena-main-grid">
+      
+      <!-- Center Interactive Attack Stage -->
+      <div class="arena-center-stage">
+        
+        <!-- Live Mission Card -->
+        <div class="mission-header-card">
+          <div class="mission-info">
+            <span class="mission-tag">ACTIVE MISSION</span>
+            <h2 class="mission-title" id="arena-mission-title">Can you make the AI ignore its instructions?</h2>
+            <p class="mission-desc" id="arena-mission-desc">Your objective: Use prompt injection or system override commands to force the AI to break character or violate its directive.</p>
+          </div>
+          <div class="target-bot-status">
+            <div class="bot-status-indicator">
+              <span class="pulse-ring"></span>
+              <span class="bot-status-text">SHIELD: ACTIVE</span>
+            </div>
+            <div class="bot-model-name">GPT-OSS-20B + RAG GUARDRAILS</div>
+          </div>
+        </div>
+
+        <!-- Suggestion Chips Carousel (Rotating) -->
+        <div class="suggestion-chips-container">
+          <div class="suggestion-chips-header">
+            <span>⚡ QUICK ATTACK TEMPLATES (CLICK TO INSERT):</span>
+            <button class="btn-refresh-chips" id="btn-rotate-chips" title="Next suggestion chips">↻ Cycle Suggestions</button>
+          </div>
+          <div class="suggestion-chips-row" id="chips-row">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Prompt Terminal Input Box -->
+        <div class="arena-prompt-box">
+          <div class="prompt-box-header">
+            <div class="terminal-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="terminal-title">ADVERSARIAL PROMPT INJECTION TERMINAL</span>
+            <span class="terminal-mode" id="terminal-mode-label">LEVEL 1 / 5</span>
+          </div>
+
+          <form id="form-attack-prompt" class="prompt-form">
+            <textarea 
+              id="input-attack-prompt" 
+              class="attack-textarea" 
+              rows="4" 
+              placeholder="Try to break the AI... Type your adversarial prompt, instruction override, or persona exploit..."
+              required></textarea>
+            
+            <div class="prompt-form-foot">
+              <div class="prompt-hints">
+                <span class="hint-key">⏎ ENTER</span> to submit attack &nbsp;·&nbsp;
+                <span class="hint-key">ESC</span> to clear
+              </div>
+              <button type="submit" class="btn-launch-attack" id="btn-submit-attack">
+                <span class="btn-attack-glow"></span>
+                <span class="btn-attack-text">FIRE ATTACK PROBE</span>
+                <span class="btn-attack-icon">⚡</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Attack Categories Quick Grid (Click to load safe demo attack) -->
+        <div class="attack-categories-section">
+          <div class="categories-header">
+            <span>EXPLORE ATTACK VECTORS & TACTICS:</span>
+          </div>
+          <div class="categories-grid" id="categories-grid">
+            <!-- 8 Interactive Floating Category Cards -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Sidebar: Live Activity Ticker & Kiosk Leaderboard -->
+      <aside class="arena-right-sidebar">
+        
+        <!-- Current Visitor Scorecard -->
+        <div class="kiosk-panel visitor-score-panel">
+          <div class="panel-header">
+            <span class="panel-title">MY CHALLENGE POSTURE</span>
+            <span class="visitor-id-tag" id="sidebar-visitor-tag">AGENT-714</span>
+          </div>
+          
+          <div class="kiosk-stats-row">
+            <div class="k-stat-box">
+              <span class="k-stat-num" id="user-score">0</span>
+              <span class="k-stat-sub">BOUNTY PTS</span>
+            </div>
+            <div class="k-stat-box">
+              <span class="k-stat-num" id="user-attempts">0</span>
+              <span class="k-stat-sub">ATTEMPTS</span>
+            </div>
+            <div class="k-stat-box highlight-coral">
+              <span class="k-stat-num" id="user-breaks">0</span>
+              <span class="k-stat-sub">BREAKS</span>
+            </div>
+          </div>
+          
+          <div class="kiosk-progress-bar-wrap">
+            <div class="progress-bar-label">
+              <span>SECURITY BREACH PROGRESS</span>
+              <span id="breach-pct">0%</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="breach-fill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Activity Ticker Feed (Animated stream) -->
+        <div class="kiosk-panel live-feed-panel">
+          <div class="panel-header">
+            <span class="panel-title">LIVE ARENA FEED</span>
+            <span class="live-dot-pulse">● LIVE</span>
+          </div>
+          <div class="kiosk-feed-list" id="kiosk-feed">
+            <!-- Sliding attempt cards -->
+          </div>
+        </div>
+
+        <!-- Navigation Portals to Full Systems -->
+        <div class="kiosk-panel portals-panel">
+          <a href="/arena/playground" class="portal-link-btn" target="_blank">
+            <span class="portal-icon">💬</span>
+            <div class="portal-meta">
+              <strong>Open Full RAG Chatbot ↗</strong>
+              <small>Explore Knowledge Containers & Citations</small>
+            </div>
+          </a>
+          <a href="/arena" class="portal-link-btn" target="_blank">
+            <span class="portal-icon">📊</span>
+            <div class="portal-meta">
+              <strong>Detailed Security Analytics ↗</strong>
+              <small>Inspect OWASP Matrix & Red Team Logs</small>
+            </div>
+          </a>
+        </div>
+
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= STAGE 3: SCANNING / EVALUATION OVERLAY ================= -->
+<div class="scanning-modal" id="modal-scanning">
+  <div class="scanning-card">
+    <div class="scanning-radar">
+      <div class="radar-sweep"></div>
+      <div class="radar-circle"></div>
+      <div class="radar-crosshair-x"></div>
+      <div class="radar-crosshair-y"></div>
+      <div class="radar-center-dot"></div>
+    </div>
+
+    <h2 class="scanning-title">ANALYZING ATTACK PROBE...</h2>
+    <p class="scanning-sub">Neural Guardrail Pipeline Evaluating In Real-Time</p>
+
+    <div class="scanning-steps-list" id="scanning-steps">
+      <div class="scan-step active" id="step-1">
+        <span class="step-icon">▶</span>
+        <span class="step-text">Parsing prompt syntax and semantic intent...</span>
+      </div>
+      <div class="scan-step" id="step-2">
+        <span class="step-icon">○</span>
+        <span class="step-text">Checking for known prompt injection signatures (LLM01)...</span>
+      </div>
+      <div class="scan-step" id="step-3">
+        <span class="step-icon">○</span>
+        <span class="step-text">Verifying jailbreak heuristics and persona overrides...</span>
+      </div>
+      <div class="scan-step" id="step-4">
+        <span class="step-icon">○</span>
+        <span class="step-text">Evaluating RAG retrieval integrity and context bounds...</span>
+      </div>
+      <div class="scan-step" id="step-5">
+        <span class="step-icon">○</span>
+        <span class="step-text">Classifying safety response & scoring bounty points...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= STAGE 4: DRAMATIC VERDICT MODAL ================= -->
+<div class="verdict-modal" id="modal-verdict">
+  <div class="verdict-card" id="verdict-card">
+    
+    <!-- Top Result Banner -->
+    <div class="verdict-status-badge" id="verdict-badge">
+      <span id="verdict-badge-icon">🛡️</span>
+      <span id="verdict-badge-text">AI DEFENDED</span>
+    </div>
+
+    <h2 class="verdict-headline" id="verdict-headline">“Nice try. The AI survived this one.”</h2>
+    
+    <!-- Response Snippet from Model -->
+    <div class="verdict-response-box">
+      <div class="response-box-label">AI RESPONSE:</div>
+      <div class="response-box-text" id="verdict-response-text">
+        “I am sorry, but I cannot override my system instructions or security policies.”
+      </div>
+    </div>
+
+    <!-- Security Metrics Grid -->
+    <div class="verdict-metrics-grid">
+      <div class="v-metric">
+        <small>ATTACK CLASSIFICATION</small>
+        <strong id="v-category">Prompt Injection</strong>
+      </div>
+      <div class="v-metric">
+        <small>THREAT LEVEL</small>
+        <strong id="v-threat">HIGH · 88/100</strong>
+      </div>
+      <div class="v-metric">
+        <small>RESPONSE LATENCY</small>
+        <strong id="v-latency">1.12s</strong>
+      </div>
+      <div class="v-metric highlight">
+        <small>BOUNTY AWARD</small>
+        <strong id="v-points">+0 PTS</strong>
+      </div>
+    </div>
+
+    <!-- Ground Truth Evidence / Reason -->
+    <div class="verdict-evidence" id="v-reason">
+      Guardrail boundaries held firm. No compliance or disclosure indicators detected.
+    </div>
+
+    <!-- Modal Action Buttons -->
+    <div class="verdict-actions">
+      <button class="btn-verdict-action primary" id="btn-try-again">
+        ⚡ TRY ANOTHER ATTACK
+      </button>
+      <button class="btn-verdict-action" id="btn-next-level">
+        🏆 NEXT LEVEL →
+      </button>
+      <a href="/arena/playground" target="_blank" class="btn-verdict-action secondary">
+        💬 OPEN FULL RAG CHATBOT ↗
+      </a>
+      <a href="/arena" target="_blank" class="btn-verdict-action tertiary">
+        📊 VIEW TECHNICAL SECURITY LOGS ↗
+      </a>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -397,6 +397,15 @@ def mount_arena(app):
             'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' *; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'",
             'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store'})
 
+    @app.get('/arena/challenge', include_in_schema=False)
+    @app.get('/arena/challenge/', include_in_schema=False)
+    @app.get('/challenge', include_in_schema=False)
+    @app.get('/kiosk', include_in_schema=False)
+    def challenge_page():
+        return FileResponse(ASSETS / 'challenge.html', headers={
+            'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' *; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'",
+            'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store'})
+
 
 @asynccontextmanager
 async def arena_lifespan(app):
