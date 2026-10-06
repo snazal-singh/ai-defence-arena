@@ -440,7 +440,20 @@ function renderLeaders(rows) {
     const ptsLbl = node('small', 'PTS', 'bounty-lbl');
     ptsCol.append(ptsNum, ptsLbl);
 
-    el.append(nameCol, ptsCol);
+    // 3. Delete button
+    const delBtn = node('button', '🗑️', 'btn-del-row');
+    delBtn.style.cssText = 'background:none;border:none;color:#f87171;cursor:pointer;font-size:0.85rem;padding:2px 6px;margin-left:8px;opacity:0.7;transition:opacity 0.2s;';
+    delBtn.title = 'Delete contestant ' + (row.participant_name || '');
+    delBtn.addEventListener('click', async (evt) => {
+      evt.stopPropagation();
+      const pName = row.participant_name || '';
+      if (confirm(`Are you sure you want to delete contestant "${pName}"?`)) {
+        await fetch('/api/v1/redteam/leaderboard/' + encodeURIComponent(pName), { method: 'DELETE' });
+        loadSnapshot();
+      }
+    });
+
+    el.append(nameCol, ptsCol, delBtn);
     $('leaderboard').append(el);
   }
 }
@@ -643,6 +656,15 @@ $('filter-all').onclick = () => {
   $('filter-all').setAttribute('aria-pressed', 'true');
   renderFeed();
 };
+
+if ($('btn-clear-leaderboard')) {
+  $('btn-clear-leaderboard').onclick = async () => {
+    if (confirm('Are you sure you want to clear all leaderboard entries and contestant scores?')) {
+      await fetch('/api/v1/redteam/leaderboard/clear', { method: 'POST' });
+      loadSnapshot();
+    }
+  };
+}
 
 /* ─── DIALOG ──────────────────────────────────────────────────── */
 $('close-detail').onclick = () => $('detail').close();

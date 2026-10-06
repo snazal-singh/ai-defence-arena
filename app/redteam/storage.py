@@ -44,6 +44,18 @@ class TelemetryStore:
             CREATE TABLE IF NOT EXISTS arena_prompts (
                 participant_name TEXT PRIMARY KEY, prompt TEXT NOT NULL,
                 points INTEGER NOT NULL DEFAULT 0, updated REAL NOT NULL);
+            CREATE TABLE IF NOT EXISTS arena_contestants (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL,
+                name TEXT NOT NULL,
+                email TEXT,
+                phone TEXT,
+                created REAL NOT NULL,
+                total_score INTEGER DEFAULT 0,
+                attempts INTEGER DEFAULT 0,
+                evaluation_mode TEXT DEFAULT 'human',
+                evaluator_notes TEXT,
+                evaluations_json TEXT);
         ''')
         columns = {row[1] for row in self.db.execute('PRAGMA table_info(arena_sessions)')}
         if 'challenge_id' not in columns:
@@ -104,6 +116,54 @@ class TelemetryStore:
                     updated = excluded.updated
             ''', (participant_name, clean_prompt, points, time.time()))
 
+    def register_contestant(self, name: str, email: str = '', phone: str = '', session_id: str = ''):
+        name = (name or '').strip()[:64]
+        email = (email or '').strip()[:128]
+        phone = (phone or '').strip()[:32]
+        session_id = session_id or str(uuid.uuid4())
+        with self.transaction() as db:
+            db.execute('''
+                INSERT INTO arena_contestants (session_id, name, email, phone, created)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (session_id, name, email, phone, time.time()))
+        return {'status': 'registered', 'session_id': session_id, 'name': name, 'email': email, 'phone': phone}
+
+    def record_human_evaluation(self, name: str, session_id: str, score: int, notes: str = '', evaluations: list = None):
+        name = (name or '').strip()[:64]
+        score = max(0, int(score or 0))
+        notes = (notes or '').strip()[:500]
+        eval_json = json.dumps(evaluations or [])
+        with self.transaction() as db:
+            # Update contestant record if exists
+            db.execute('''
+                UPDATE arena_contestants
+                SET total_score = ?, evaluator_notes = ?, evaluations_json = ?, evaluation_mode = 'human'
+                WHERE name = ? OR session_id = ?
+            ''', (score, notes, eval_json, name, session_id))
+            
+            # Also update arena_prompts so live leaderboard shows the official human evaluated score
+            best_prompt = 'Human Evaluated Red Team Run'
+            if evaluations and len(evaluations) > 0:
+                best_prompt = evaluations[0].get('prompt', best_prompt)
+            db.execute('''
+                INSERT INTO arena_prompts (participant_name, prompt, points, updated)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(participant_name) DO UPDATE SET
+                    prompt = excluded.prompt,
+                    points = excluded.points,
+                    updated = excluded.updated
+            ''', (name, best_prompt, score, time.time()))
+        return {'status': 'saved', 'name': name, 'score': score}
+
+    def list_contestants(self, limit: int = 100):
+        with self.lock:
+            rows = self.db.execute('''
+                SELECT id, session_id, name, email, phone, created, total_score, attempts, evaluation_mode, evaluator_notes
+                FROM arena_contestants
+                ORDER BY created DESC LIMIT ?
+            ''', (limit,)).fetchall()
+        return [dict(r) for r in rows]
+
     def participant(self, session_id):
         with self.lock:
             row = self.db.execute('''SELECT COUNT(*) queries,COALESCE(SUM(points),0) points,
@@ -155,11 +215,38 @@ class TelemetryStore:
             outcomes = dict(db.execute('SELECT outcome,COUNT(*) FROM arena_events WHERE simulated=? AND attack=1 GROUP BY outcome', mode).fetchall())
             distribution = [{'category': r[0], 'count': r[1], 'successful': r[2]} for r in db.execute("SELECT category,COUNT(*),SUM(outcome='SUCCESSFUL') FROM arena_events WHERE simulated=? AND attack=1 GROUP BY category ORDER BY COUNT(*) DESC", mode)]
             severity = dict(db.execute("SELECT json_extract(payload,'$.severity'),COUNT(*) FROM arena_events WHERE simulated=? AND attack=1 GROUP BY 1", mode).fetchall())
-            leaderboard = [dict(r) for r in db.execute("""SELECT session_id, json_extract(payload,'$.participant_name') participant_name,
-                COALESCE((SELECT prompt FROM arena_prompts WHERE arena_prompts.participant_name = json_extract(arena_events.payload,'$.participant_name')), 'Adversarial probe') prompt,
-                COALESCE((SELECT challenge_id FROM arena_sessions WHERE arena_sessions.nickname = json_extract(arena_events.payload,'$.participant_name') ORDER BY created DESC LIMIT 1), 'open') challenge_id,
-                SUM(points) points, SUM(attack) attempts, SUM(outcome='SUCCESSFUL') successes, SUM(CASE WHEN json_extract(payload,'$.scoring_version') IS NULL THEN points ELSE 0 END) legacy_points FROM arena_events WHERE simulated=?
-                GROUP BY json_extract(payload,'$.participant_name') HAVING (SUM(points)>0 OR SUM(attack)>0) ORDER BY successes DESC,points DESC,attempts DESC,MIN(seq) ASC LIMIT 15""", mode)]
+            # Leaderboard queries arena_prompts for all exhibition contestants (including human evaluations)
+            leaderboard = [dict(r) for r in db.execute("""
+                SELECT 
+                    COALESCE(e.session_id, c.session_id, 'arena') session_id,
+                    p.participant_name,
+                    p.prompt,
+                    'open' challenge_id,
+                    p.points points,
+                    COALESCE(e.attempts, c.attempts, 1) attempts,
+                    COALESCE(e.successes, 0) successes,
+                    0 legacy_points
+                FROM arena_prompts p
+                LEFT JOIN arena_contestants c ON c.name = p.participant_name
+                LEFT JOIN (
+                    SELECT 
+                        json_extract(payload, '$.participant_name') as part_name,
+                        MAX(session_id) as session_id,
+                        SUM(attack) as attempts,
+                        SUM(outcome = 'SUCCESSFUL') as successes
+                    FROM arena_events
+                    WHERE simulated = ?
+                    GROUP BY json_extract(payload, '$.participant_name')
+                ) e ON e.part_name = p.participant_name
+                ORDER BY p.points DESC, p.updated DESC
+                LIMIT 25
+            """, mode)]
+            if not leaderboard:
+                leaderboard = [dict(r) for r in db.execute("""SELECT session_id, json_extract(payload,'$.participant_name') participant_name,
+                    COALESCE((SELECT prompt FROM arena_prompts WHERE arena_prompts.participant_name = json_extract(arena_events.payload,'$.participant_name')), 'Adversarial probe') prompt,
+                    COALESCE((SELECT challenge_id FROM arena_sessions WHERE arena_sessions.nickname = json_extract(arena_events.payload,'$.participant_name') ORDER BY created DESC LIMIT 1), 'open') challenge_id,
+                    SUM(points) points, SUM(attack) attempts, SUM(outcome='SUCCESSFUL') successes, SUM(CASE WHEN json_extract(payload,'$.scoring_version') IS NULL THEN points ELSE 0 END) legacy_points FROM arena_events WHERE simulated=?
+                    GROUP BY json_extract(payload,'$.participant_name') HAVING (SUM(points)>0 OR SUM(attack)>0) ORDER BY successes DESC,points DESC,attempts DESC,MIN(seq) ASC LIMIT 15""", mode)]
             active = db.execute('SELECT COUNT(DISTINCT session_id) FROM arena_events WHERE simulated=? AND created>?', (*mode, time.time()-300)).fetchone()[0]
             recent_attack = db.execute('SELECT MAX(created) FROM arena_events WHERE simulated=? AND attack=1', mode).fetchone()[0]
             timeline = [dict(r) for r in db.execute("SELECT CAST(created/60 AS INTEGER)*60 minute,outcome,COUNT(*) count FROM arena_events WHERE simulated=? AND attack=1 AND created>? GROUP BY minute,outcome ORDER BY minute", (*mode, time.time()-1800))]
@@ -200,6 +287,28 @@ class TelemetryStore:
                           'most_successful_category': max(eligible, key=lambda d:d['successful'])['category'] if any(d['successful'] for d in eligible) else None,
                           'under_attack': bool(recent_attack and time.time()-recent_attack < 20)},
                 'distribution': distribution, 'severity': severity, 'timeline': timeline, 'leaderboard': leaderboard}
+
+    def clear_leaderboard(self):
+        with self.transaction() as db:
+            db.execute("DELETE FROM arena_events")
+            db.execute("DELETE FROM arena_sessions")
+            db.execute("DELETE FROM arena_prompts")
+            db.execute("DELETE FROM arena_contestants")
+            try:
+                db.execute("VACUUM")
+            except Exception:
+                pass
+        return {"status": "cleared"}
+
+    def delete_participant(self, name: str):
+        if not name:
+            return {"status": "ignored"}
+        name_clean = name.strip()
+        with self.transaction() as db:
+            db.execute("DELETE FROM arena_prompts WHERE participant_name = ?", (name_clean,))
+            db.execute("DELETE FROM arena_contestants WHERE name = ?", (name_clean,))
+            db.execute("DELETE FROM arena_events WHERE json_extract(payload, '$.participant_name') = ?", (name_clean,))
+        return {"status": "deleted", "participant_name": name_clean}
 
     def close(self):
         with self.lock:
