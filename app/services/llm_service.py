@@ -315,6 +315,107 @@ class GPUServerChatModel(BaseChatModel):
             raise RuntimeError(f"GPU server streaming failed: {exc}") from exc
 
 
+
+class IcarKnoChatModel(BaseChatModel):
+    """
+    LangChain-compatible wrapper around the live icarKno Internet API endpoint.
+    Routes LLM invocations through the live icarKno backend service.
+    """
+    live_url: str = ""
+    auth_token: str = ""
+    session_id: str = ""
+    timeout: int = 45
+
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        if not self.live_url:
+            self.live_url = settings.ICARKNO_LIVE_URL or "https://qdocbackend.carnotresearch.com/api/v1/queries/ask"
+        if not self.auth_token:
+            self.auth_token = settings.ICARKNO_AUTH_TOKEN
+        if not self.session_id:
+            self.session_id = settings.ICARKNO_SESSION_ID or "20261002T032358"
+
+    class Config:
+        extra = "allow"
+
+    @property
+    def _llm_type(self) -> str:
+        return "icarkno_chat"
+
+    @property
+    def _identifying_params(self) -> Dict[str, Any]:
+        return {
+            "live_url": self.live_url,
+            "session_id": self.session_id,
+        }
+
+    def _generate(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        prompt_text = "\n".join([m.content if isinstance(m.content, str) else str(m.content) for m in messages])
+        
+        payload = {
+            "session_id": self.session_id,
+            "message": prompt_text,
+            "context": "files",
+            "mode": "contextual",
+            "has_csv_or_xlsx": False
+        }
+        headers = {
+            "Content-Type": "application/json"
+        }
+        if self.auth_token:
+            headers["Authorization"] = f"Bearer {self.auth_token}"
+
+        logger.info("IcarKnoChatModel → POST %s | session=%s", self.live_url, self.session_id)
+        
+        content = ""
+        try:
+            resp = requests.post(self.live_url, json=payload, headers=headers, timeout=self.timeout)
+            if resp.status_code == 200:
+                data = resp.json()
+                content = data.get("answer") or data.get("response") or data.get("message") or ""
+                if "upgrade your account" in content.lower():
+                    logger.warning("icarKno live ask returned quota limit, falling back to live trial-ask endpoint")
+                    content = ""
+            if not content:
+                trial_url = self.live_url.replace('/queries/ask', '/queries/trial-ask')
+                trial_payload = {
+                    "fingerprint": self.session_id,
+                    "message": prompt_text,
+                    "filenames": []
+                }
+                trial_resp = requests.post(trial_url, json=trial_payload, timeout=self.timeout)
+                if trial_resp.status_code == 200:
+                    data = trial_resp.json()
+                    content = data.get("answer") or data.get("response") or data.get("message") or ""
+                else:
+                    raise RuntimeError(f"icarKno trial-ask returned status {trial_resp.status_code}")
+        except Exception as exc:
+            logger.error("icarKno request failed: %s", exc)
+            raise RuntimeError(f"icarKno API request failed: {exc}") from exc
+
+        message = AIMessage(content=content)
+        return ChatResult(generations=[ChatGeneration(message=message)])
+
+    def _stream(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> Iterator[ChatGenerationChunk]:
+        result = self._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
+        content = result.generations[0].message.content
+        if run_manager and content:
+            run_manager.on_llm_new_token(content)
+        yield ChatGenerationChunk(message=AIMessage(content=content))
+
+
 # ---------------------------------------------------------------------------
 # LLM type enum (kept for backwards compatibility)
 # ---------------------------------------------------------------------------
@@ -345,6 +446,7 @@ def _make_llm(**kwargs) -> BaseChatModel:
     - 'mistral': Mistral AI models
     - 'ollama': Local Ollama models (via ChatOllama)
     - 'custom': Generic OpenAI-compatible endpoints (vLLM, LM Studio, OpenRouter, etc.)
+    - 'icarkno' / 'icarnko': Live icarKno Internet API (via IcarKnoChatModel)
     - 'gpu_server': Internal GPU server (via GPUServerChatModel)
     """
     common_kwargs = {}
@@ -354,6 +456,10 @@ def _make_llm(**kwargs) -> BaseChatModel:
         common_kwargs["temperature"] = kwargs["temperature"]
 
     provider = (settings.LLM_PROVIDER or "").lower().strip()
+
+    if provider in ("icarkno", "icarnko"):
+        logger.info("Initializing icarKno live integration provider")
+        return IcarKnoChatModel(**kwargs)
 
     # Explicit provider selection or auto-detection
     if provider == "nvidia" or (not provider and settings.USE_NVIDIA):

@@ -144,7 +144,7 @@ class Settings(BaseSettings):
     NUMARKDOWN_MODEL: str = "maternion/NuMarkdown-Thinking:8b"
     # Universal Multi-Provider LLM Configuration
     # Set LLM_PROVIDER in .env to any of:
-    # "openai", "groq", "nvidia", "gemini", "anthropic", "mistral", "ollama", "custom", "gpu_server"
+    # "openai", "groq", "nvidia", "gemini", "anthropic", "mistral", "ollama", "custom", "gpu_server", "icarkno"
     LLM_PROVIDER: str = ""
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_BASE_URL: str = ""
@@ -153,7 +153,11 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-1.5-flash"
     MISTRAL_API_KEY: str = ""
     MISTRAL_MODEL: str = "mistral-small-latest"
+    ICARKNO_LIVE_URL: str = "https://qdocbackend.carnotresearch.com/api/v1/queries/ask"
+    ICARKNO_SESSION_ID: str = "20261002T032358"
+    ICARKNO_AUTH_TOKEN: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 settings = Settings()
+
