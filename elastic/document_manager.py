@@ -1,7 +1,10 @@
 import logging
 from langchain.schema import Document
 from langchain_elasticsearch.vectorstores import ElasticsearchStore
-from langchain_ollama import OllamaEmbeddings
+try:
+    from langchain_ollama import OllamaEmbeddings
+except ImportError:
+    from langchain_community.embeddings import OllamaEmbeddings
 from .index_manager import ElasticIndexManager
 from .client import ElasticClient
 import unicodedata
