@@ -23,6 +23,7 @@ langchain-openai==0.3.35  # NVIDIA's OpenAI-compatible hosted inference API (USE
 
 # AI Services
 bert-extractive-summarizer==0.10.1  # NOTE: potential runtime compatibility issue with torch>=2.1.0 and transformers==4.47.1
+transformers==4.47.1
 torch>=2.1.0
 sentence-transformers  # cross-encoder reranker (bge-reranker-v2-m3)
 IndicTransToolkit
