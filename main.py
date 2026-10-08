@@ -43,7 +43,10 @@ async def init_db() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    try:
+        await init_db()
+    except Exception as e:
+        logger.warning(f"MongoDB connection unavailable: {e}. Continuing in standalone mode.")
     try:
         get_telemetry()
     except Exception:
