@@ -6,7 +6,10 @@ from langchain.retrievers import EnsembleRetriever
 from langchain.schema import Document
 from langchain_elasticsearch.retrievers import ElasticsearchRetriever
 from langchain_elasticsearch import ElasticsearchStore
-from langchain_ollama import OllamaEmbeddings
+try:
+    from langchain_ollama import OllamaEmbeddings
+except ImportError:
+    from langchain_community.embeddings import OllamaEmbeddings
 
 from .client import ElasticClient
 from .index_manager import ElasticIndexManager
