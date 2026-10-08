@@ -178,7 +178,11 @@ class DocumentSummaryService:
         sentence_count = self._calculate_dynamic_sentence_count(full_text)
         
         # Use BERT extractive summarizer model with calculated count
-        most_important_sents = self.bert_model(full_text, num_sentences=sentence_count)
+        if self.bert_model:
+            most_important_sents = self.bert_model(full_text, num_sentences=sentence_count)
+        else:
+            sents = [s.strip() for s in full_text.split('\n') if s.strip()]
+            most_important_sents = '\n'.join(sents[:sentence_count])
         
         # Save the most important sentences to a file
         with open(summary_path, 'w', encoding='utf8') as file:
