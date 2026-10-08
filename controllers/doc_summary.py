@@ -33,7 +33,11 @@ class DocumentSummaryService:
     def __init__(self):
         """Initialize the document summary service."""
         logger.info("Initializing document summary service")
-        self.bert_model = Summarizer()
+        try:
+            self.bert_model = Summarizer()
+        except Exception as e:
+            logger.warning(f"Summarizer BERT model could not be loaded: {e}")
+            self.bert_model = None
         # Use fast LLM for summary generation
         self.llm = get_fast_llm()
         
