@@ -307,9 +307,10 @@ async def arena_ask(request: Request):
         raise HTTPException(400, 'Message cannot be empty')
     
     # 1. Live icarKno Integration (if configured in .env)
+    # 1. Live icarKno Integration (if configured in .env)
     live_url = os.getenv('ICARKNO_LIVE_URL')
     live_token = os.getenv('ICARKNO_AUTH_TOKEN')
-    live_session = body.get('sessionId') or os.getenv('ICARKNO_SESSION_ID') or '20261002T032358'
+    live_session = (body.get('sessionId') or os.getenv('ICARKNO_SESSION_ID') or '20261002t032358').lower()
 
     if live_url:
         try:
@@ -473,7 +474,7 @@ def create_arena_container(
     from app.api.adapters import UploadFileList
     from app.services.document_service import get_document_service
 
-    sid = session_id or ('kc_' + str(uuid.uuid4())[:8])
+    sid = (session_id or ('kc_' + str(uuid.uuid4())[:8])).lower()
     file_objs = list(files) if files else []
 
     if raw_text and raw_text.strip():
@@ -496,6 +497,35 @@ def create_arena_container(
     if not file_list and not parsed_urls:
         raise HTTPException(400, "Please select a file to upload or enter text/URLs to ingest.")
 
+    # 1. Forward documents directly to live icarKno backend if configured
+    live_url = os.getenv('ICARKNO_LIVE_URL')
+    if live_url:
+        try:
+            import requests as req_lib
+            icar_ingest_url = 'https://qdocbackend.carnotresearch.com/api/v1/documents/free-trial'
+            upload_files = []
+            for f in file_objs:
+                filename = getattr(f, 'filename', 'document.txt')
+                if hasattr(f, 'file'):
+                    f.file.seek(0)
+                    content = f.file.read()
+                    f.file.seek(0)
+                else:
+                    content = b""
+                if content:
+                    upload_files.append(('files', (filename, content, 'application/octet-stream')))
+            if upload_files:
+                icar_resp = req_lib.post(
+                    icar_ingest_url,
+                    data={'fingerprint': sid},
+                    files=upload_files,
+                    timeout=45
+                )
+                logger.info(f"Forwarded container '{sid}' documents to live icarKno ({icar_resp.status_code}): {icar_resp.text[:200]}")
+        except Exception as e:
+            logger.warning(f"Could not forward documents to live icarKno: {e}")
+
+    # 2. Also process locally for local pipeline fallback
     doc_service = get_document_service()
     res = doc_service.process_files_and_urls(
         file_list, parsed_urls, sid, is_new_container=True, is_trial=True
