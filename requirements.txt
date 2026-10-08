@@ -11,6 +11,7 @@ openpyxl
 pandas==2.2.3
 PyMuPDF
 python-pptx
+pdf2image
 
 # Vector Store and Embedding
 elasticsearch>=8.13.1
