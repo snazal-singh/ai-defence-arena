@@ -646,7 +646,8 @@ def delete_mongo_database(user_session: str) -> bool:
     """Drop the container's internal MongoDB database (db_<user_session>)."""
     try:
         client = _get_client()
-        sanitized_db = f"db_{re.sub(r'\\W+', '_', user_session)[:64]}"
+        clean_sid = re.sub(r'\W+', '_', user_session)[:64]
+        sanitized_db = f"db_{clean_sid}"
         if sanitized_db in client.list_database_names():
             client.drop_database(sanitized_db)
             logger.info(f"Dropped internal MongoDB database '{sanitized_db}' for session {user_session}")
